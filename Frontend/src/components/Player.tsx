@@ -1,6 +1,7 @@
 import React from 'react'
 import shaka from 'shaka-player'
 
+// Adapted from https://dev.to/vanyaxk/shaka-player-for-media-playback-implementation-use-cases-pros-and-cons-3b87
 const exampleManifestUri =
   'https://storage.googleapis.com/livefeed-bucket/output/manifest.m3u8'
 
@@ -25,6 +26,7 @@ async function initPlayer() {
   }
 }
 
+// TODO: run from Player component
 document.addEventListener('DOMContentLoaded', initPlayer)
 
 export default function Player() {
