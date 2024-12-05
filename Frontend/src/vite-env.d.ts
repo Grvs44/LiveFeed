@@ -8,11 +8,3 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
-
-declare module 'shaka-player' {
-  export = shaka;
-}
-
-declare module 'shaka-player/dist/shaka-player.compiled' {
-  export = shaka;
-}
