@@ -4,7 +4,9 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import App from './App'
 import store from './redux/store'
-import { CssBaseline } from '@mui/material'
+import CssBaseline from '@mui/material/CssBaseline'
+import { ThemeProvider } from '@mui/material'
+import theme from './theme'
 import ErrorPage from './pages/ErrorPage'
 import Home from './pages/Home'
 
@@ -24,9 +26,11 @@ const router = createBrowserRouter([
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
-    <React.StrictMode>
-      <RouterProvider router={router}/>
-      <CssBaseline/>
-    </React.StrictMode>
+    <ThemeProvider theme={theme}>
+      <React.StrictMode>
+        <RouterProvider router={router} />
+        <CssBaseline />
+      </React.StrictMode>
+    </ThemeProvider>
   </Provider>
 )
