@@ -1,13 +1,15 @@
 import React from 'react'
 import { Outlet } from 'react-router-dom'
+import TopBar from './containers/TopBar'
+import Box from '@mui/material/Box'
 
-function App() {
+export default function App() {
   return (
     <div>
-      <h1>Live Feed</h1>
-      <Outlet />
+      <TopBar />
+      <Box sx={{ my: 4 }}>
+        <Outlet />
+      </Box>
     </div>
   )
 }
-
-export default App
