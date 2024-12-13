@@ -1,8 +1,10 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { apiSlice } from './apiSlice'
+import titleReducer from './titleSlice'
 
 export default configureStore({
   reducer: {
+    title: titleReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
