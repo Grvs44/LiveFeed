@@ -14,6 +14,7 @@ import OndemandPage from './pages/OndemandPage'
 import SavedPage from './pages/SavedPage'
 import RecipesPage from './pages/RecipesPage'
 import SettingsPage from './pages/SettingsPage'
+import WatchLivePage from './pages/WatchLivePage'
 
 const router = createBrowserRouter(
   [
@@ -29,6 +30,10 @@ const router = createBrowserRouter(
         {
           path: 'live',
           element: <LivePage />,
+        },
+        {
+          path: 'live/:id',
+          element: <WatchLivePage />,
         },
         {
           path: 'ondemand',
