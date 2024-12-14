@@ -11,6 +11,7 @@ export type Chat = {
 
 export type ChatState = {
   chats: Chat[]
+  clientReady:boolean
 }
 
 export type RecipeStep = {
