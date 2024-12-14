@@ -18,18 +18,21 @@ service = WebPubSubServiceClient.from_connection_string(connection_string, hub=h
 
 @app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Python HTTP trigger function processed a request.')
+    logging.info('Received chat token negotiation request')
 
     id = req.params.get('userId')
     group = req.params.get('channelId')
 
     if not id:
-        return func.HttpResponse("Missing user ID", status_code=400)
+        logging.info('Missing user ID')
+        return func.HttpResponse("Missing user ID from chat negotiation", status_code=400)
 
     if not group:
-        return func.HttpResponse("Missing channel ID", status_code=400)
+        logging.info('Missing channel ID')
+        return func.HttpResponse("Missing channel ID from chat negotiation", status_code=400)
 
     token = service.get_client_access_token(user_id=id, groups=[group])
     
     response_body = json.dumps({'url': token['url']})
+    logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
