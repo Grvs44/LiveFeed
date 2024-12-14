@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 import { CircularProgress, Container, Typography } from '@mui/material'
 import Grid from '@mui/material/Grid2'
 import VideoPlayer from '../components/VideoPlayer'
-import ChatContainer from '../containers/ChatContainer'
+import ChatBox from '../containers/ChatBox'
 
 export default function WatchLivePage() {
   const dispatch = useDispatch()
@@ -27,7 +27,7 @@ export default function WatchLivePage() {
         <Grid size={8}>
           <Typography>Stream {id}</Typography>
           <VideoPlayer />
-          <ChatContainer />
+          <ChatBox />
         </Grid>
         <Grid size={4}>
           <p>Shopping list</p>
