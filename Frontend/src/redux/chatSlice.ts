@@ -11,6 +11,8 @@ export const chatSlice = createSlice({
   initialState,
   reducers: {
     setClientReady: (state, action) => {
+      console.log('setclientready')
+      console.log(action)
       state.clientReady = action.payload
     },
   },
