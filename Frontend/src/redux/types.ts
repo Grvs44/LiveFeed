@@ -18,6 +18,12 @@ export type RecipeStep = {
   text: string
 }
 
+export type ShoppingListEntry = {
+  id:number
+  name:string
+  quantity?:string
+}
+
 export type State = {
   title: TitleState
   chat: ChatState

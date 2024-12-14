@@ -6,6 +6,7 @@ import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import RecipeBox from '../containers/RecipeBox'
+import ShoppingListBox from '../containers/ShoppingListBox'
 import { setTitle } from '../redux/titleSlice'
 
 export default function WatchLivePage() {
@@ -31,7 +32,7 @@ export default function WatchLivePage() {
           <ChatBox />
         </Grid>
         <Grid size={4}>
-          <p>Shopping list</p>
+          <ShoppingListBox />
           <RecipeBox />
         </Grid>
       </Grid>
