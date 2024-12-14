@@ -15,10 +15,11 @@ const testChats: Chat[] = [
 export default function ChatBox() {
   // TODO: replace with Redux hook:
   const [chats, setChats] = React.useState(testChats)
-  const ws: any = React.useContext(WebSocketContext)
+  const ws = React.useContext(WebSocketContext)
 
   React.useEffect(() => {
-    ws.client.on('msg', (e: any) => {
+    if(ws.client==null)return
+    ws.client.on('group-message', (e: any) => {
       console.log('received msg')
       console.log(e)
       setChats(
@@ -32,10 +33,10 @@ export default function ChatBox() {
         ]),
       )
     })
-  })
+  },[ws.client!=null])
 
   const submitChat = (message: string) => {
-    ws.client.sendToGroup('channel name', message, 'msg')
+    ws.client?.sendToGroup('channel1', message, 'text')
   }
 
   return (
