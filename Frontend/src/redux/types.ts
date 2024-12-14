@@ -19,9 +19,18 @@ export type RecipeStep = {
 }
 
 export type ShoppingListEntry = {
-  id:number
-  name:string
-  quantity?:string
+  id: number
+  name: string
+  quantity?: string
+}
+
+export type SocketUrlParams = {
+  userId: string
+  channelId: string
+}
+
+export type SocketUrl = {
+  url: string
 }
 
 export type State = {
