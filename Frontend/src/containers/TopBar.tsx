@@ -31,7 +31,7 @@ export default function TopBar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          <IconButton aria-label="account">
+          <IconButton aria-label="account" color="inherit">
             <AccountCircleIcon />
           </IconButton>
         </Toolbar>
