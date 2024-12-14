@@ -3,6 +3,7 @@ import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import ChatInput from '../components/ChatInput'
 import ChatItem from '../components/ChatItem'
+import { WebSocketContext } from '../context/WebSocket'
 import { Chat } from '../redux/types'
 
 const testChats: Chat[] = [
@@ -14,8 +15,10 @@ const testChats: Chat[] = [
 export default function ChatBox() {
   // TODO: replace with Redux hook:
   const [chats, setChats] = React.useState(testChats)
+  const ws: any = React.useContext(WebSocketContext)
 
   const submitChat = (message: string) => {
+    ws.sendMessage()
     setChats(
       chats.concat([
         { id: Date.now(), username: 'username', message, time: '12:02' },

@@ -7,6 +7,7 @@ import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
+import WebSocketProvider from '../context/WebSocket'
 import { setTitle } from '../redux/titleSlice'
 
 export default function WatchLivePage() {
@@ -24,18 +25,20 @@ export default function WatchLivePage() {
       <CircularProgress />
     </Container>
   ) : (
-    <Container>
-      <Grid container spacing={2}>
-        <Grid size={8}>
-          <Typography>Stream {id}</Typography>
-          <VideoPlayer />
-          <ChatBox />
+    <WebSocketProvider>
+      <Container>
+        <Grid container spacing={2}>
+          <Grid size={8}>
+            <Typography>Stream {id}</Typography>
+            <VideoPlayer />
+            <ChatBox />
+          </Grid>
+          <Grid size={4}>
+            <ShoppingListBox />
+            <RecipeBox />
+          </Grid>
         </Grid>
-        <Grid size={4}>
-          <ShoppingListBox />
-          <RecipeBox />
-        </Grid>
-      </Grid>
-    </Container>
+      </Container>
+    </WebSocketProvider>
   )
 }
