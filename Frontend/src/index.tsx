@@ -1,20 +1,20 @@
 import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import { Provider } from 'react-redux'
-import App from './App'
-import store from './redux/store'
-import CssBaseline from '@mui/material/CssBaseline'
 import { ThemeProvider } from '@mui/material'
-import theme from './theme'
+import CssBaseline from '@mui/material/CssBaseline'
+import ReactDOM from 'react-dom/client'
+import { Provider } from 'react-redux'
+import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import App from './App'
 import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
 import OndemandPage from './pages/OndemandPage'
-import SavedPage from './pages/SavedPage'
 import RecipesPage from './pages/RecipesPage'
+import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
+import store from './redux/store'
+import theme from './theme'
 
 const router = createBrowserRouter(
   [
@@ -63,7 +63,7 @@ const router = createBrowserRouter(
       v7_partialHydration: true,
       v7_skipActionErrorRevalidation: true,
     },
-  }
+  },
 )
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -74,5 +74,5 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         <CssBaseline />
       </React.StrictMode>
     </ThemeProvider>
-  </Provider>
+  </Provider>,
 )

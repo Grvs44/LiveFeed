@@ -1,11 +1,11 @@
 import React from 'react'
-import { useDispatch } from 'react-redux'
-import { setTitle } from '../redux/titleSlice'
-import { useParams } from 'react-router-dom'
 import { CircularProgress, Container, Typography } from '@mui/material'
 import Grid from '@mui/material/Grid2'
+import { useDispatch } from 'react-redux'
+import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
+import { setTitle } from '../redux/titleSlice'
 
 export default function WatchLivePage() {
   const dispatch = useDispatch()

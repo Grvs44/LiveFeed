@@ -3,7 +3,7 @@ export type TitleState = {
 }
 
 export type Chat = {
-  id:number
+  id: number
   username: string
   message: string
   time: string
