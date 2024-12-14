@@ -13,6 +13,11 @@ export type ChatState = {
   chats: Chat[]
 }
 
+export type RecipeStep = {
+  id: number
+  text: string
+}
+
 export type State = {
   title: TitleState
   chat: ChatState
