@@ -1,9 +1,9 @@
 import React from 'react'
-import { Button, List, TextField } from '@mui/material'
 import Box from '@mui/material/Box'
-import { Chat } from '../redux/types'
-import ChatItem from '../components/ChatItem'
+import List from '@mui/material/List'
 import ChatInput from '../components/ChatInput'
+import ChatItem from '../components/ChatItem'
+import { Chat } from '../redux/types'
 
 const testChats: Chat[] = [
   { id: 1, username: 'user1', message: 'Hello', time: '12:00' },
@@ -15,11 +15,11 @@ export default function ChatBox() {
   // TODO: replace with Redux hook:
   const [chats, setChats] = React.useState(testChats)
 
-  const submitChat = (message:string) => {
+  const submitChat = (message: string) => {
     setChats(
       chats.concat([
         { id: Date.now(), username: 'username', message, time: '12:02' },
-      ])
+      ]),
     )
   }
 
@@ -30,7 +30,7 @@ export default function ChatBox() {
           <ChatItem key={chat.id} chat={chat} />
         ))}
       </List>
-      <ChatInput onSubmit={submitChat}/>
+      <ChatInput onSubmit={submitChat} />
     </Box>
   )
 }

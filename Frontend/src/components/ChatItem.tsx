@@ -1,6 +1,6 @@
 import React from 'react'
-import { Chat } from '../redux/types'
 import { ListItem, Typography } from '@mui/material'
+import { Chat } from '../redux/types'
 
 export type ChatItemProps = {
   chat: Chat

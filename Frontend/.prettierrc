@@ -4,9 +4,5 @@
   "singleQuote": true,
   "bracketSpacing": true,
   "plugins": ["@ianvs/prettier-plugin-sort-imports"],
-  "importOrder": [
-    "^(react/(.*)$)|^(react$)",
-    "<THIRD_PARTY_MODULES>",
-    "^[.]"
-  ]
+  "importOrder": ["^(react/(.*)$)|^(react$)", "<THIRD_PARTY_MODULES>", "^[.]"]
 }
