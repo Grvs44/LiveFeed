@@ -16,8 +16,8 @@ service = WebPubSubServiceClient.from_connection_string(connection_string, hub=h
 
 #print(streaming.get_channel('livefeed-443712', 'europe-west2', 'livefeed-test-channel'))
 
-@app.route(route="negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
-def negotiate(req: func.HttpRequest) -> func.HttpResponse:
+@app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Python HTTP trigger function processed a request.')
 
     id = req.params.get('userId')
