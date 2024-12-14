@@ -17,13 +17,25 @@ export default function ChatBox() {
   const [chats, setChats] = React.useState(testChats)
   const ws: any = React.useContext(WebSocketContext)
 
+  React.useEffect(() => {
+    ws.client.on('msg', (e: any) => {
+      console.log('received msg')
+      console.log(e)
+      setChats(
+        chats.concat([
+          {
+            id: Date.now(),
+            username: e.message.fromUserId,
+            message: e.message.data,
+            time: '',
+          },
+        ]),
+      )
+    })
+  })
+
   const submitChat = (message: string) => {
-    ws.sendMessage()
-    setChats(
-      chats.concat([
-        { id: Date.now(), username: 'username', message, time: '12:02' },
-      ]),
-    )
+    ws.client.sendToGroup('channel name', message, 'msg')
   }
 
   return (
