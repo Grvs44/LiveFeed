@@ -11,22 +11,24 @@ export { WebSocketContext }
 
 export default ({ children }: { children: any }) => {
   const dispatch = useDispatch()
-
-  const client = new WebPubSubClient({
-    getClientAccessUrl: async () => {
-      let value = await (
-        await fetch(
-          `${import.meta.env.VITE_API_URL}/chat/negotiate?userid=user2&channelid=channel1`,
-        )
-      ).json()
-      console.log('pubsub URL')
-      console.log(value)
-      return value.url
-    },
-  })
+  const [client, setClient] = React.useState<WebPubSubClient | null>(null)
+  console.log('x')
   React.useEffect(() => {
+    const client = new WebPubSubClient({
+      getClientAccessUrl: async () => {
+        let value = await (
+          await fetch(
+            `${import.meta.env.VITE_API_URL}/chat/negotiate?userId=user2&channelId=channel1`,
+          )
+        ).json()
+        console.log('pubsub URL')
+        console.log(value)
+        return value.url
+      },
+    })
     console.log('starting...')
-    ws.client.start().then(() => {
+    client.start().then(() => {
+      setClient(client)
       dispatch(setClientReady(true))
     })
   }, [])
