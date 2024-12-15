@@ -7,15 +7,13 @@ import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
-import WebSocketProvider, { WebSocketContext } from '../context/WebSocket'
-import { setClientReady } from '../redux/chatSlice'
+import PubSubClientProvider from '../context/PubSubClientProvider'
 import { setTitle } from '../redux/titleSlice'
 import { State } from '../redux/types'
 
 export default function WatchLivePage() {
   const dispatch = useDispatch()
   const { id } = useParams()
-  const ws = React.useContext(WebSocketContext)
   const ready = useSelector((state: State) => state.chat.clientReady)
 
   React.useEffect(() => {
@@ -23,7 +21,7 @@ export default function WatchLivePage() {
   }, [])
 
   return (
-    <WebSocketProvider>
+    <PubSubClientProvider>
       <Container>
         {ready ? (
           <Grid container spacing={2}>
@@ -41,6 +39,6 @@ export default function WatchLivePage() {
           <CircularProgress />
         )}
       </Container>
-    </WebSocketProvider>
+    </PubSubClientProvider>
   )
 }
