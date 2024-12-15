@@ -3,7 +3,7 @@ import Box from '@mui/material/Box'
 import List from '@mui/material/List'
 import ChatInput from '../components/ChatInput'
 import ChatItem from '../components/ChatItem'
-import { WebSocketContext } from '../context/WebSocket'
+import { PubSubClientContext } from '../context/PubSubClientProvider'
 import { Chat } from '../redux/types'
 
 const testChats: Chat[] = [
@@ -15,11 +15,11 @@ const testChats: Chat[] = [
 export default function ChatBox() {
   // TODO: replace with Redux hook:
   const [chats, setChats] = React.useState(testChats)
-  const ws = React.useContext(WebSocketContext)
+  const client = React.useContext(PubSubClientContext)
 
   React.useEffect(() => {
-    if(ws.client==null)return
-    ws.client.on('group-message', (e: any) => {
+    if (client == null) return
+    client.on('group-message', (e: any) => {
       console.log('received msg')
       console.log(e)
       setChats(
@@ -33,10 +33,10 @@ export default function ChatBox() {
         ]),
       )
     })
-  },[ws.client!=null])
+  }, [client != null])
 
   const submitChat = (message: string) => {
-    ws.client?.sendToGroup('channel1', message, 'text')
+    client?.sendToGroup('channel1', message, 'text')
   }
 
   return (
