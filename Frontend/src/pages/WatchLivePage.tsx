@@ -22,25 +22,25 @@ export default function WatchLivePage() {
     dispatch(setTitle('Live'))
   }, [])
 
-  return ready ? (
+  return (
     <WebSocketProvider>
       <Container>
-        <Grid container spacing={2}>
-          <Grid size={8}>
-            <Typography>Stream {id}</Typography>
-            <VideoPlayer />
-            <ChatBox />
+        {ready ? (
+          <Grid container spacing={2}>
+            <Grid size={8}>
+              <Typography>Stream {id}</Typography>
+              <VideoPlayer />
+              <ChatBox />
+            </Grid>
+            <Grid size={4}>
+              <ShoppingListBox />
+              <RecipeBox />
+            </Grid>
           </Grid>
-          <Grid size={4}>
-            <ShoppingListBox />
-            <RecipeBox />
-          </Grid>
-        </Grid>
+        ) : (
+          <CircularProgress />
+        )}
       </Container>
     </WebSocketProvider>
-  ) : (
-    <Container>
-      <CircularProgress />
-    </Container>
   )
 }
