@@ -1,3 +1,5 @@
+import { WebPubSubClient } from '@azure/web-pubsub-client'
+
 export type TitleState = {
   title: string
 }
@@ -22,6 +24,11 @@ export type SocketUrl = {
   url: string
 }
 
+export type PubsubState = {
+  client?: WebPubSubClient
+}
+
 export type State = {
   title: TitleState
+  pubsub: PubsubState
 }

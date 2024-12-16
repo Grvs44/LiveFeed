@@ -3,7 +3,10 @@ import {
   OnGroupDataMessageArgs,
   WebPubSubClient,
 } from '@azure/web-pubsub-client'
+import { useDispatch, useSelector } from 'react-redux'
 import { Chat } from '../context/types'
+import { resetClient, setClient } from '../redux/pubsubSlice'
+import { State } from '../redux/types'
 import { MessageContent, MessageType } from './types'
 
 export type ProviderValue = {
@@ -29,7 +32,9 @@ export const PubSubClientContext = React.createContext<ProviderValue>({
 
 // Adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
 export default function PubSubClientProvider(props: PubSubClientProviderProps) {
-  const [client, setClient] = React.useState<WebPubSubClient | null>(null)
+  const dispatch = useDispatch()
+  //const [client, setClient] = React.useState<WebPubSubClient | null>(null)
+  const client = useSelector((state: State) => state.pubsub.client)
   const [ready, setReady] = React.useState<boolean>(false)
   const [chats, setChats] = React.useState<Chat[]>([])
   const [sending, setSending] = React.useState<boolean>(false)
@@ -72,10 +77,18 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
         console.error(e.message)
       }
     })
-    setClient(client)
+    dispatch(setClient(client))
     client?.start().then(() => {
       setReady(true)
     })
+  }, [])
+
+  // Adapted from https://bobbyhadz.com/blog/react-hook-on-unmount
+  React.useEffect(() => {
+    return () => {
+      console.log('Component - stopping')
+      if (stop) stop()
+    }
   }, [])
 
   const sendMessage: ProviderValue['sendMessage'] = async (message) => {
@@ -92,10 +105,8 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
 
   const stop = () => {
     console.log('Stopping client')
-    console.log(client)
-    client?.stop()
+    dispatch(resetClient())
     console.log('Client stopped')
-    setClient(null)
   }
 
   const value: ProviderValue = {

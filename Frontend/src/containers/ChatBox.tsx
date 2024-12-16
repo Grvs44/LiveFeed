@@ -9,14 +9,6 @@ export default function ChatBox() {
   const { ready, chats, sendMessage, sending, stop } =
     React.useContext(PubSubClientContext)
 
-  // Adapted from https://bobbyhadz.com/blog/react-hook-on-unmount
-  React.useEffect(() => {
-    return () => {
-      console.log('Component - stopping')
-      if (stop) stop()
-    }
-  }, [])
-
   return (
     <Box>
       <List sx={{ overflow: 'auto' }}>
