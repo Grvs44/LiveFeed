@@ -6,7 +6,7 @@ export type Chat = {
   id: number
   username: string
   message: string
-  time: string
+  time: number
 }
 
 export type ChatState = {

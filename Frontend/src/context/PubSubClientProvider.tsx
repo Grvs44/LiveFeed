@@ -6,11 +6,10 @@ import {
 import { Chat } from '../redux/types'
 import { MessageContent, MessageType } from './types'
 
-export type ProviderValueType = {
+export type ProviderValue = {
   ready: boolean
   chats: Chat[]
   sending: boolean
-  start?: () => void
   sendMessage?: (message: string) => Promise<void>
 }
 
@@ -21,7 +20,7 @@ export type PubSubClientProviderProps = {
   groupName: string
 }
 
-export const PubSubClientContext = React.createContext<ProviderValueType>({
+export const PubSubClientContext = React.createContext<ProviderValue>({
   ready: false,
   chats: [],
   sending: false,
@@ -62,7 +61,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
                 id: e.message.sequenceId || Date.now(),
                 username: e.message.fromUserId,
                 message: messageData.message || '',
-                time: messageData.time || 'no-time',
+                time: messageData.time || 0,
               },
             ]),
           )
@@ -78,23 +77,21 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     })
   }, [])
 
-  const start: ProviderValueType['start'] = () => {}
-
-  const sendMessage: ProviderValueType['sendMessage'] = async (message) => {
+  const sendMessage: ProviderValue['sendMessage'] = async (message) => {
     console.log('Sending message: ' + message)
     setSending(true)
-    await client?.sendToGroup(
-      props.groupName,
-      { message, time: new Date().toISOString(), type: MessageType.Message },
-      'json',
-    )
+    const content: MessageContent = {
+      message,
+      time: Date.now(),
+      type: MessageType.Message,
+    }
+    await client?.sendToGroup(props.groupName, content, 'json')
     setSending(false)
   }
 
-  const value: ProviderValueType = {
+  const value: ProviderValue = {
     ready,
     chats,
-    start,
     sending,
     sendMessage,
   }

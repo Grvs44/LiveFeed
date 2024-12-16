@@ -5,6 +5,6 @@ export enum MessageType {
 
 export type MessageContent = {
   message?:string
-  time?:string
+  time?:number
   type:MessageType
 }

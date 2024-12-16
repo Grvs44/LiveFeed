@@ -11,7 +11,12 @@ export default function ChatItem({ chat }: ChatItemProps) {
     <ListItem>
       <Typography>{chat.username}</Typography>
       <Typography>{chat.message}</Typography>
-      <Typography>{chat.time}</Typography>
+      <Typography>{getTime(chat.time)}</Typography>
     </ListItem>
   )
+}
+
+function getTime(time: number) {
+  const date = new Date(time)
+  return `${date.getHours()}:${date.getMinutes()}`
 }
