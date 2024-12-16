@@ -91,7 +91,10 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   }
 
   const stop = () => {
+    console.log('Stopping client')
+    console.log(client)
     client?.stop()
+    console.log('Client stopped')
     setClient(null)
   }
 
