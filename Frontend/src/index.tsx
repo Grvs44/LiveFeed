@@ -69,10 +69,8 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <Provider store={store}>
     <ThemeProvider theme={theme}>
-      <React.StrictMode>
-        <RouterProvider router={router} future={{ v7_startTransition: true }} />
-        <CssBaseline />
-      </React.StrictMode>
+      <RouterProvider router={router} future={{ v7_startTransition: true }} />
+      <CssBaseline />
     </ThemeProvider>
   </Provider>,
 )
