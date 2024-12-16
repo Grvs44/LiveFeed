@@ -2,18 +2,6 @@ export type TitleState = {
   title: string
 }
 
-export type Chat = {
-  id: number
-  username: string
-  message: string
-  time: number
-}
-
-export type ChatState = {
-  chats: Chat[]
-  clientReady:boolean
-}
-
 export type RecipeStep = {
   id: number
   text: string
@@ -36,5 +24,4 @@ export type SocketUrl = {
 
 export type State = {
   title: TitleState
-  chat: ChatState
 }
