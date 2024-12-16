@@ -1,7 +1,7 @@
 import React from 'react'
 import { CircularProgress, Container, Typography } from '@mui/material'
 import Grid from '@mui/material/Grid2'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
@@ -9,19 +9,22 @@ import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import { setTitle } from '../redux/titleSlice'
-import { State } from '../redux/types'
 
 export default function WatchLivePage() {
   const dispatch = useDispatch()
   const { id } = useParams()
-  const ready = useSelector((state: State) => state.chat.clientReady)
+  const ready = true
 
   React.useEffect(() => {
     dispatch(setTitle('Live'))
   }, [])
 
   return (
-    <PubSubClientProvider>
+    <PubSubClientProvider
+      groupName="channel1"
+      userId="user2"
+      channelId="channel1"
+    >
       <Container>
         {ready ? (
           <Grid container spacing={2}>
