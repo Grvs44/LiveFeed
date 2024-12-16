@@ -8,17 +8,15 @@ import { PubSubClientContext } from '../context/PubSubClientProvider'
 export default function ChatBox() {
   const { ready, chats, sendMessage, sending } =
     React.useContext(PubSubClientContext)
-  console.log(chats)
-  return ready ? (
+
+  return (
     <Box>
       <List sx={{ overflow: 'auto' }}>
         {chats.map((chat) => (
           <ChatItem key={chat.id} chat={chat} />
         ))}
       </List>
-      <ChatInput onSubmit={sendMessage} sending={sending} />
+      <ChatInput onSubmit={sendMessage} disabled={sending || !ready} />
     </Box>
-  ) : (
-    <p>Not ready</p>
   )
 }
