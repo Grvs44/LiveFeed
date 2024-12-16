@@ -3,14 +3,15 @@ import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 
 export type ChatInputProps = {
-  onSubmit: (message: string) => void
+  sending: boolean
+  onSubmit?: (message: string) => void
 }
 
 export default function ChatInput(props: ChatInputProps) {
   const [message, setMessage] = React.useState('')
   const onSubmit: React.FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
-    if (message) {
+    if (message && props.onSubmit) {
       props.onSubmit(message)
       setMessage('')
     }
@@ -23,7 +24,7 @@ export default function ChatInput(props: ChatInputProps) {
           setMessage(event.target.value)
         }}
       />
-      <Button variant="contained" type="submit">
+      <Button variant="contained" type="submit" disabled={props.sending}>
         Send
       </Button>
     </form>
