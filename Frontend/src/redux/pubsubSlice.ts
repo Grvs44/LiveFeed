@@ -8,7 +8,7 @@ export const pubsubSlice = createSlice({
   name: 'pubsub',
   initialState,
   reducers: {
-    setClient(state, action) {
+    setClient(state, action: { payload: PubsubState['client'] }) {
       state.client?.stop()
       state.client = action.payload
     },
