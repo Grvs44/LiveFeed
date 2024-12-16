@@ -10,5 +10,10 @@ export default configureStore({
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(apiSlice.middleware),
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: ['pubsub/setClient'],
+        ignoredPaths: ['pubsub.client'],
+      },
+    }).concat(apiSlice.middleware),
 })
