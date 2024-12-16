@@ -11,6 +11,7 @@ export type ProviderValue = {
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
+  stop?: () => void
 }
 
 export type PubSubClientProviderProps = {
@@ -89,11 +90,17 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     setSending(false)
   }
 
+  const stop = () => {
+    client?.stop()
+    setClient(null)
+  }
+
   const value: ProviderValue = {
     ready,
     chats,
     sending,
     sendMessage,
+    stop,
   }
 
   return (
