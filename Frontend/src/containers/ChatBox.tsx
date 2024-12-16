@@ -22,7 +22,7 @@ export default function ChatBox() {
     client.on('group-message', (e: any) => {
       console.log('received msg')
       console.log(e)
-      setChats(
+      setChats((chats) => 
         chats.concat([
           {
             id: Date.now(),
