@@ -31,7 +31,7 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
         logging.info('Missing channel ID')
         return func.HttpResponse("Missing channel ID from chat negotiation", status_code=400)
 
-    token = service.get_client_access_token(user_id=id, groups=[group])
+    token = service.get_client_access_token(user_id=id, groups=[group], roles=["webpubsub.sendToGroup." + group])
     
     response_body = json.dumps({'url': token['url']})
     logging.info('Successful chat negotiation')
