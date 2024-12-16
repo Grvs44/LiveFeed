@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, Typography } from '@mui/material'
+import { ListItem, ListItemText } from '@mui/material'
 import { Chat } from '../context/types'
 
 export type ChatItemProps = {
@@ -9,9 +9,9 @@ export type ChatItemProps = {
 export default function ChatItem({ chat }: ChatItemProps) {
   return (
     <ListItem>
-      <Typography>{chat.username}</Typography>
-      <Typography>{chat.message}</Typography>
-      <Typography>{getTime(chat.time)}</Typography>
+      <ListItemText secondary={chat.username} />
+      <ListItemText primary={chat.message} />
+      <ListItemText secondary={getTime(chat.time)} />
     </ListItem>
   )
 }
