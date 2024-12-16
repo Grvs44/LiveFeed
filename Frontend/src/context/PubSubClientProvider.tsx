@@ -3,7 +3,7 @@ import {
   OnGroupDataMessageArgs,
   WebPubSubClient,
 } from '@azure/web-pubsub-client'
-import { Chat } from '../redux/types'
+import { Chat } from '../context/types'
 import { MessageContent, MessageType } from './types'
 
 export type ProviderValue = {
