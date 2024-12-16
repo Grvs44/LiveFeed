@@ -19,7 +19,7 @@ export default function ChatInput(props: ChatInputProps) {
   return (
     <form onSubmit={onSubmit}>
       <TextField
-        defaultValue={message}
+        value={message}
         onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
           setMessage(event.target.value)
         }}
