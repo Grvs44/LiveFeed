@@ -3,7 +3,7 @@ import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 
 export type ChatInputProps = {
-  sending: boolean
+  disabled: boolean
   onSubmit?: (message: string) => void
 }
 
@@ -24,7 +24,7 @@ export default function ChatInput(props: ChatInputProps) {
           setMessage(event.target.value)
         }}
       />
-      <Button variant="contained" type="submit" disabled={props.sending}>
+      <Button variant="contained" type="submit" disabled={props.disabled}>
         Send
       </Button>
     </form>
