@@ -14,7 +14,6 @@ export type ProviderValue = {
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
-  stop?: () => void
 }
 
 export type PubSubClientProviderProps = {
@@ -33,7 +32,6 @@ export const PubSubClientContext = React.createContext<ProviderValue>({
 // Adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
 export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const dispatch = useDispatch()
-  //const [client, setClient] = React.useState<WebPubSubClient | null>(null)
   const client = useSelector((state: State) => state.pubsub.client)
   const [ready, setReady] = React.useState<boolean>(false)
   const [chats, setChats] = React.useState<Chat[]>([])
@@ -84,12 +82,12 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   }, [])
 
   // Adapted from https://bobbyhadz.com/blog/react-hook-on-unmount
-  React.useEffect(() => {
-    return () => {
-      console.log('Component - stopping')
-      if (stop) stop()
-    }
-  }, [])
+  React.useEffect(
+    () => () => {
+      dispatch(resetClient())
+    },
+    [],
+  )
 
   const sendMessage: ProviderValue['sendMessage'] = async (message) => {
     console.log('Sending message: ' + message)
@@ -103,18 +101,11 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     setSending(false)
   }
 
-  const stop = () => {
-    console.log('Stopping client')
-    dispatch(resetClient())
-    console.log('Client stopped')
-  }
-
   const value: ProviderValue = {
     ready,
     chats,
     sending,
     sendMessage,
-    stop,
   }
 
   return (
