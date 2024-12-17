@@ -1,0 +1,9 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "FUNCTIONS_WORKER_RUNTIME": "python",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+    "AzureWebJobsStorage": "",
+    "WebPubSubConnectionString": "Endpoint=https://livefeed-chat.webpubsub.azure.com;AccessKey=2njjjnNACGZCBwmAGiQ5FGsZTEIz2YLWt8AaqSDX1VFYc1nyiv3DJQQJ99ALACmepeSXJ3w3AAAAAWPS6jVP;Version=1.0;"
+  }
+}
