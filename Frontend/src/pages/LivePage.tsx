@@ -1,5 +1,7 @@
 import React from 'react'
+import { Link } from '@mui/material'
 import { useDispatch } from 'react-redux'
+import { Link as RouteLink } from 'react-router-dom'
 import { setTitle } from '../redux/titleSlice'
 
 export default function LivePage() {
@@ -8,6 +10,10 @@ export default function LivePage() {
   React.useEffect(() => {
     dispatch(setTitle('Live'))
   }, [])
-  
-  return <p>Live page</p>
+
+  return (
+    <Link component={RouteLink} to="1">
+      Stream 1
+    </Link>
+  )
 }
