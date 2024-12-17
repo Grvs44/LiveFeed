@@ -6,7 +6,7 @@ import ChatItem from '../components/ChatItem'
 import { PubSubClientContext } from '../context/PubSubClientProvider'
 
 export default function ChatBox() {
-  const { ready, chats, sendMessage, sending, stop } =
+  const { ready, chats, sendMessage, sending } =
     React.useContext(PubSubClientContext)
 
   return (
