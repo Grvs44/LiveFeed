@@ -1,4 +1,3 @@
-// Adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/redux/titleSlice.ts
 import { createSlice } from '@reduxjs/toolkit'
 import { PubsubState } from './types'
 
