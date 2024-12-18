@@ -6,6 +6,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import { Chat } from '../context/types'
 import { resetClient, setClient } from '../redux/pubsubSlice'
+import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
 import { MessageContent, MessageType } from './types'
 
@@ -42,7 +43,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       getClientAccessUrl: async () => {
         let value = await (
           await fetch(
-            `${import.meta.env.VITE_API_URL}/chat/negotiate?userId=${props.userId}&channelId=${props.channelId}`,
+            `${baseUrl}chat/negotiate?userId=${props.userId}&channelId=${props.channelId}`,
           )
         ).json()
         console.log('pubsub URL')
