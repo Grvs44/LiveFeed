@@ -9,8 +9,8 @@ export type LiveStream = {
   stream: string // Video URL
   channel: string // PubSub channel
   group: string // PubSub group
-  recipe: number // Recipe ID (if recipe in another record)
-  shopping: number // Shopping list ID (if shopping list in another record)
+  recipe: RecipeStep[]
+  shopping: ShoppingListEntry[]
 }
 
 export type RecipeStep = {
