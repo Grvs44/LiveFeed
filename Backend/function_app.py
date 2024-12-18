@@ -36,3 +36,10 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     response_body = json.dumps({'url': token['url']})
     logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
+
+
+# TODO: replace mock with real API
+MOCK_STREAM = json.dumps({'name':'Stream 1', 'channel':'channel1', 'group':'channel1', 'recipe': 1, 'shopping': 1})
+@app.route(route='live/1', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def mock_live(_: func.HttpRequest) -> func.HttpResponse:
+    return func.HttpResponse(MOCK_STREAM, mimetype='application/json')
