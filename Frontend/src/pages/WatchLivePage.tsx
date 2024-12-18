@@ -37,8 +37,8 @@ export default function WatchLivePage() {
               <ChatBox />
             </Grid>
             <Grid size={4}>
-              <ShoppingListBox />
-              <RecipeBox />
+              <ShoppingListBox list={data.shopping} />
+              <RecipeBox steps={data.recipe} />
             </Grid>
           </Grid>
         </PubSubClientProvider>
