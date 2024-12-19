@@ -1,23 +1,23 @@
 {
   "name": "Porridge",
-  "stream": "/",
+  "stream": "/counter.mp4",
   "channel": "porridge",
   "group": "porridge",
   "recipe": [
     {
       "id": 1,
       "text": "Pour 40g of oats into the bowl",
-      "time": 100
+      "time": 200
     },
     {
       "id": 2,
       "text": "Pour in 250ml of milk",
-      "time": 200
+      "time": 400
     },
     {
       "id": 3,
       "text": "Put in the microwave for 5 minutes, stirring halfway through",
-      "time": 300
+      "time": 600
     }
   ],
   "shopping": [
