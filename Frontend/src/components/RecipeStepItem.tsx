@@ -9,10 +9,10 @@ export type RecipeStepProps = {
 
 export default function RecipeStepItem(props: RecipeStepProps) {
   return (
-    <ListItem>
-      <Typography bgcolor={props.current ? 'red' : 'green'}>
-        {props.step.text}
-      </Typography>
+    <ListItem
+      style={{ backgroundColor: props.current ? '#e1e1e1' : 'inherit' }}
+    >
+      <Typography>{props.step.text}</Typography>
     </ListItem>
   )
 }
