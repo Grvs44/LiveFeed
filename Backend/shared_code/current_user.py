@@ -1,32 +1,15 @@
-import msal
+import os
 import requests
 import json
-import os
+import msal
 
-from azure.identity import ClientSecretCredential,EnvironmentCredential
-
-def create_credentials():
-
-    credentials = EnvironmentCredential(
-
-        client_id=os.environ.get("AzureB2CAppID"),
-
-        client_secret="SRR8Q~blYEKS6~bTE3qku-tylIu6b3dwGYJluc.H",
-
-        tenant_id=os.environ.get("AzureB2CTenantID"),
-
-        authority='https://login.microsoftonline.com/'
-
-    )
-
-
-
-    return credentials
-
+client_id = "aae8f9ef-5c79-476b-9101-a68e0b0ed9fb"
+client_secret = "SRR8Q~blYEKS6~bTE3qku-tylIu6b3dwGYJluc.H"
+tenant_id = "2587dbbb-dfc6-4385-9890-6543c146fcab"
 
 app = msal.PublicClientApplication(
-    os.environ.get("AzureB2CAppID"),
-    authority=ClientSecretCredential(create_credentials())
+    client_id=client_id, 
+    authority=f"https://login.microsoftonline.com/{tenant_id}",
     client_credential=None
 )
 

@@ -6,6 +6,7 @@
     "AzureWebJobsStorage": "",
     "WebPubSubConnectionString": "Endpoint=https://livefeed-chat.webpubsub.azure.com;AccessKey=2njjjnNACGZCBwmAGiQ5FGsZTEIz2YLWt8AaqSDX1VFYc1nyiv3DJQQJ99ALACmepeSXJ3w3AAAAAWPS6jVP;Version=1.0;",
     "AzureB2CAppID": "aae8f9ef-5c79-476b-9101-a68e0b0ed9fb",
-    "AzureB2CTenantID": "2587dbbb-dfc6-4385-9890-6543c146fcab"
+    "AzureB2CTenantID": "2587dbbb-dfc6-4385-9890-6543c146fcab",
+    "AzureB2CSecret": "SRR8Q~blYEKS6~bTE3qku-tylIu6b3dwGYJluc.H"
   }
 }
