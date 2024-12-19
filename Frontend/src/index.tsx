@@ -15,6 +15,14 @@ import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
 import store from './redux/store'
 import theme from './theme'
+import { PublicClientApplication } from "@azure/msal-browser";
+import { MsalProvider } from "@azure/msal-react";
+import { msalConfig } from "./auth/authConfig"; 
+
+//Has to be initialised outside of the component tree
+const msalInstance = new PublicClientApplication(msalConfig);
+
+
 
 const router = createBrowserRouter(
   [
@@ -67,10 +75,12 @@ const router = createBrowserRouter(
 )
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
-  <Provider store={store}>
-    <ThemeProvider theme={theme}>
-      <RouterProvider router={router} future={{ v7_startTransition: true }} />
-      <CssBaseline />
-    </ThemeProvider>
-  </Provider>,
+  <MsalProvider instance={msalInstance}>
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <RouterProvider router={router} future={{ v7_startTransition: true }} />
+        <CssBaseline />
+      </ThemeProvider>
+    </Provider>
+  </MsalProvider>,
 )
