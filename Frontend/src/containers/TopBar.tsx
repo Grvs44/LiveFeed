@@ -15,6 +15,7 @@ import { loginRequest, b2cPolicies } from '../auth/authConfig';
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
   const { title } = useSelector(({ title }: State) => title)
+
   const { instance, inProgress } = useMsal();
   let activeAccount;
 
@@ -23,6 +24,7 @@ export default function TopBar() {
   }
   
   const handleLoginRedirect = () => {
+      console.log("Trying to login");
       instance.loginRedirect(loginRequest).catch((error) => console.log(error));
   };
 
@@ -44,9 +46,6 @@ export default function TopBar() {
             {title}
           </Typography>
           <IconButton aria-label="account" color="inherit" onClick={handleLoginRedirect}>
-            <Typography variant="body2" sx={{ marginRight: 1 }}>
-            {activeAccount?.username || "Guest"}
-            </Typography>
             <AccountCircleIcon />
           </IconButton>
         </Toolbar>
