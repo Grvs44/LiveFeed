@@ -6,7 +6,7 @@ import { RecipeStep } from '../redux/types'
 
 export type RecipeBoxProps = {
   steps: RecipeStep[]
-  currentStep: number
+  currentStep?: number
 }
 
 export default function RecipeBox(props: RecipeBoxProps) {
