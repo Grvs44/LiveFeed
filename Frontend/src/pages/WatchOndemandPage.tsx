@@ -23,14 +23,10 @@ export default function WatchOndemandPage() {
   }, [isLoading])
 
   const onTimeUpdate: React.ReactEventHandler<HTMLVideoElement> = (event) => {
-    console.log(
-      `currentTime=${event.currentTarget.currentTime}, currentStep=${currentStep}`,
-    )
     const step = data?.recipe.findLast(
       ({ time }) => time <= event.currentTarget.currentTime,
     )
     if (step) setCurrentStep(step.id)
-    console.log(`next step=${step?.id}`)
   }
 
   return (
