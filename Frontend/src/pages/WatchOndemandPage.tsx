@@ -8,45 +8,29 @@ import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import { useGetOndemandStreamQuery } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import { OndemandStream, TimedRecipeStep } from '../redux/types'
-
-export type RecipeStepElement = TimedRecipeStep & {
-  index: number
-}
 
 export default function WatchOndemandPage() {
   const dispatch = useDispatch()
-  const [currentStep, setCurrentStep] = React.useState<
-    RecipeStepElement | undefined
-  >(undefined)
-  const [nextStep, setNextStep] = React.useState<RecipeStepElement | undefined>(
+  const [currentStep, setCurrentStep] = React.useState<number | undefined>(
     undefined,
   )
   const { id } = useParams()
   const { data, isLoading } = useGetOndemandStreamQuery(id || '')
 
-  const resetCurrentStep = (data: OndemandStream) => {
-    setCurrentStep({ index: 0, ...data.recipe[0] })
-    setNextStep({ index: 1, ...data.recipe[1] })
-  }
-
   React.useEffect(() => {
     dispatch(setTitle(data?.name || 'On-demand'))
-    if (data) resetCurrentStep(data)
+    if (data) setCurrentStep(data.recipe[0].id)
   }, [isLoading])
 
   const onTimeUpdate: React.ReactEventHandler<HTMLVideoElement> = (event) => {
-    console.log(`currentTime=${event.currentTarget.currentTime}`)
-    if (!data) {
-      console.error('No data on time update')
-    } else if (nextStep && nextStep.time <= event.currentTarget.currentTime) {
-      const index = nextStep.index + 1
-      setCurrentStep(nextStep)
-      setNextStep({ index, ...data.recipe[index] })
-      console.log('Updated step')
-    } else if (!currentStep) {
-      resetCurrentStep(data)
-    }
+    console.log(
+      `currentTime=${event.currentTarget.currentTime}, currentStep=${currentStep}`,
+    )
+    const step = data?.recipe.findLast(
+      ({ time }) => time <= event.currentTarget.currentTime,
+    )
+    if (step) setCurrentStep(step.id)
+    console.log(`next step=${step?.id}`)
   }
 
   return (
@@ -65,7 +49,7 @@ export default function WatchOndemandPage() {
           </Grid>
           <Grid size={4}>
             <ShoppingListBox list={data.shopping} />
-            <RecipeBox steps={data.recipe} currentStep={currentStep?.id} />
+            <RecipeBox steps={data.recipe} currentStep={currentStep} />
           </Grid>
         </Grid>
       )}
