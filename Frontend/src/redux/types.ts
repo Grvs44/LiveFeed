@@ -26,7 +26,7 @@ export type RecipeStep = {
 }
 
 export type TimedRecipeStep = RecipeStep & {
-  time: number // Time from start of video in ms
+  time: number // Time from start of video in seconds
 }
 
 export type ShoppingListEntry = {

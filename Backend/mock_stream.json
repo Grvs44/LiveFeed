@@ -7,17 +7,17 @@
     {
       "id": 1,
       "text": "Pour 40g of oats into the bowl",
-      "time": 200
+      "time": 2
     },
     {
       "id": 2,
       "text": "Pour in 250ml of milk",
-      "time": 400
+      "time": 4
     },
     {
       "id": 3,
       "text": "Put in the microwave for 5 minutes, stirring halfway through",
-      "time": 600
+      "time": 6
     }
   ],
   "shopping": [
