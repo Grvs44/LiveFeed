@@ -1,10 +1,13 @@
 import React from 'react'
+import { PublicClientApplication } from '@azure/msal-browser'
+import { MsalProvider } from '@azure/msal-react'
 import { ThemeProvider } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
+import { msalConfig } from './auth/authConfig'
 import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
@@ -13,16 +16,12 @@ import RecipesPage from './pages/RecipesPage'
 import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
+import WatchOndemandPage from './pages/WatchOndemandPage'
 import store from './redux/store'
 import theme from './theme'
-import { PublicClientApplication } from "@azure/msal-browser";
-import { MsalProvider } from "@azure/msal-react";
-import { msalConfig } from "./auth/authConfig"; 
 
 //Has to be initialised outside of the component tree
-const msalInstance = new PublicClientApplication(msalConfig);
-
-
+const msalInstance = new PublicClientApplication(msalConfig)
 
 const router = createBrowserRouter(
   [
@@ -46,6 +45,10 @@ const router = createBrowserRouter(
         {
           path: 'ondemand',
           element: <OndemandPage />,
+        },
+        {
+          path: 'ondemand/:id',
+          element: <WatchOndemandPage />,
         },
         {
           path: 'saved',
