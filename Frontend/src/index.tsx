@@ -1,10 +1,14 @@
 import React from 'react'
+import { PublicClientApplication } from '@azure/msal-browser'
+import { MsalProvider } from '@azure/msal-react'
 import { ThemeProvider } from '@mui/material'
 import CssBaseline from '@mui/material/CssBaseline'
 import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
+import { msalConfig } from './auth/authConfig'
+import LoginProvider from './context/LoginProvider'
 import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
@@ -15,14 +19,9 @@ import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
 import store from './redux/store'
 import theme from './theme'
-import { PublicClientApplication } from "@azure/msal-browser";
-import { MsalProvider } from "@azure/msal-react";
-import { msalConfig } from "./auth/authConfig"; 
 
 //Has to be initialised outside of the component tree
-const msalInstance = new PublicClientApplication(msalConfig);
-
-
+const msalInstance = new PublicClientApplication(msalConfig)
 
 const router = createBrowserRouter(
   [
@@ -77,10 +76,15 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <MsalProvider instance={msalInstance}>
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <RouterProvider router={router} future={{ v7_startTransition: true }} />
-        <CssBaseline />
-      </ThemeProvider>
+      <LoginProvider>
+        <ThemeProvider theme={theme}>
+          <RouterProvider
+            router={router}
+            future={{ v7_startTransition: true }}
+          />
+          <CssBaseline />
+        </ThemeProvider>
+      </LoginProvider>
     </Provider>
   </MsalProvider>,
 )
