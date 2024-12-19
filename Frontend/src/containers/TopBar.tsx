@@ -14,7 +14,7 @@ import { State } from '../redux/types'
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
   const { title } = useSelector(({ title }: State) => title)
-  const { handleLoginRedirect } = React.useContext(LoginContext)
+  const { handleLogin } = React.useContext(LoginContext)
 
   return (
     <>
@@ -36,7 +36,7 @@ export default function TopBar() {
           <IconButton
             aria-label="account"
             color="inherit"
-            onClick={handleLoginRedirect}
+            onClick={handleLogin}
           >
             <AccountCircleIcon />
           </IconButton>
