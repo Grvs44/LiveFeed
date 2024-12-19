@@ -8,7 +8,7 @@ export type RecipeStepProps = {
 }
 
 export default function RecipeStepItem(props: RecipeStepProps) {
-  if(props.current)console.log(`${props.step} is current`)
+  if(props.current)console.log(`${props.step.id} is current`)
   return (
     <ListItem>
       <Typography bgcolor={props.current ? 'red' : 'green'}>
