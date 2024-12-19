@@ -6,16 +6,21 @@
   "recipe": [
     {
       "id": 1,
+      "text": "Place a small/medium sized bowl on the table",
+      "time": 0
+    },
+    {
+      "id": 2,
       "text": "Pour 40g of oats into the bowl",
       "time": 2
     },
     {
-      "id": 2,
+      "id": 3,
       "text": "Pour in 250ml of milk",
       "time": 4
     },
     {
-      "id": 3,
+      "id": 4,
       "text": "Put in the microwave for 5 minutes, stirring halfway through",
       "time": 6
     }
