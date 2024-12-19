@@ -9,24 +9,13 @@ import Typography from '@mui/material/Typography'
 import MenuDrawer from '../components/MenuDrawer'
 import { useSelector } from 'react-redux'
 import { State } from '../redux/types'
-import { AuthenticatedTemplate, UnauthenticatedTemplate, useMsal } from '@azure/msal-react';
-import { loginRequest, b2cPolicies } from '../auth/authConfig';
+import { handleLoginRedirect, handleRedirectResponse} from "../auth/login";
+
 
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
   const { title } = useSelector(({ title }: State) => title)
 
-  const { instance, inProgress } = useMsal();
-  let activeAccount;
-
-  if (instance) {
-      activeAccount = instance.getActiveAccount();
-  }
-  
-  const handleLoginRedirect = () => {
-      console.log("Trying to login");
-      instance.loginRedirect(loginRequest).catch((error) => console.log(error));
-  };
 
   return (
     <>
