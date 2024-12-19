@@ -8,7 +8,6 @@ import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
 import { msalConfig } from './auth/authConfig'
-import LoginProvider from './context/LoginProvider'
 import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
@@ -17,6 +16,7 @@ import RecipesPage from './pages/RecipesPage'
 import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
+import WatchOndemandPage from './pages/WatchOndemandPage'
 import store from './redux/store'
 import theme from './theme'
 
@@ -45,6 +45,10 @@ const router = createBrowserRouter(
         {
           path: 'ondemand',
           element: <OndemandPage />,
+        },
+        {
+          path: 'ondemand/:id',
+          element: <WatchOndemandPage />,
         },
         {
           path: 'saved',
