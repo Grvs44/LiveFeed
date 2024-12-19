@@ -6,6 +6,7 @@ import { RecipeStep } from '../redux/types'
 
 export type RecipeBoxProps = {
   steps: RecipeStep[]
+  currentStep?: number
 }
 
 export default function RecipeBox(props: RecipeBoxProps) {
@@ -13,7 +14,7 @@ export default function RecipeBox(props: RecipeBoxProps) {
     <Box>
       <List sx={{ overflow: 'auto' }}>
         {props.steps.map((step) => (
-          <RecipeStepItem key={step.id} step={step} />
+          <RecipeStepItem key={step.id} step={step} current={props.currentStep == step.id} />
         ))}
       </List>
     </Box>

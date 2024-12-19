@@ -39,13 +39,11 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
 
 
 # TODO: replace mock with real API
-MOCK_STREAM = json.dumps({
-    'name':'Porridge',
-    'stream': '/',
-    'channel':'porridge',
-    'group':'porridge',
-    'recipe': [{'id':1,'text':'Pour 40g of oats into the bowl'},{'id':2,'text':'Pour in 250ml of milk'},{'id':3,'text':'Put in the microwave for 5 minutes, stirring halfway through'}],
-    'shopping': [{'id':1,'name':'Dessert spoon'},{'id':2,'name':'Bowl'},{'id':3,'name':'Oats','quantity':'40g'},{'id':4,'name':'Milk','quantity':'250ml'}]})
+from pathlib import Path
+MOCK_STREAM = lambda: (Path(__file__).parent / 'mock_stream.json').read_text()
 @app.route(route='live/1', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_live(req: func.HttpRequest) -> func.HttpResponse:
-    return func.HttpResponse(MOCK_STREAM, mimetype='application/json')
+    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
+@app.route(route='vod/1', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def mock_vod(req: func.HttpRequest) -> func.HttpResponse:
+    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
