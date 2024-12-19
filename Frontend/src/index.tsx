@@ -80,10 +80,15 @@ const router = createBrowserRouter(
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <MsalProvider instance={msalInstance}>
     <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <RouterProvider router={router} future={{ v7_startTransition: true }} />
-        <CssBaseline />
-      </ThemeProvider>
+      <LoginProvider>
+        <ThemeProvider theme={theme}>
+          <RouterProvider
+            router={router}
+            future={{ v7_startTransition: true }}
+          />
+          <CssBaseline />
+        </ThemeProvider>
+      </LoginProvider>
     </Provider>
   </MsalProvider>,
 )
