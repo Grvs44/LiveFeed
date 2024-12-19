@@ -10,7 +10,6 @@ export type RecipeBoxProps = {
 }
 
 export default function RecipeBox(props: RecipeBoxProps) {
-  console.log(`box:${props.currentStep}`)
   return (
     <Box>
       <List sx={{ overflow: 'auto' }}>
