@@ -40,10 +40,10 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
 
 # TODO: replace mock with real API
 from pathlib import Path
-MOCK_STREAM = (Path(__file__).parent / 'mock_stream.json').read_text()
+MOCK_STREAM = lambda: (Path(__file__).parent / 'mock_stream.json').read_text()
 @app.route(route='live/1', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_live(req: func.HttpRequest) -> func.HttpResponse:
-    return func.HttpResponse(MOCK_STREAM, mimetype='application/json')
+    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
 @app.route(route='vod/1', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_vod(req: func.HttpRequest) -> func.HttpResponse:
-    return func.HttpResponse(MOCK_STREAM, mimetype='application/json')
+    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
