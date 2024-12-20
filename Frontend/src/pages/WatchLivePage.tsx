@@ -5,8 +5,9 @@ import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
-import RecipeBox from '../containers/RecipeBox'
+import LiveRecipeBox from '../containers/LiveRecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
+import TempNextBox from '../containers/TempNextBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import { useGetLiveStreamQuery } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
@@ -29,6 +30,8 @@ export default function WatchLivePage() {
           groupName={data.group}
           userId="user2"
           channelId={data.channel}
+          minStepId={data.recipe[0].id}
+          maxStepId={data.recipe.at(-1)?.id}
         >
           <Grid container spacing={2}>
             <Grid size={8}>
@@ -38,7 +41,8 @@ export default function WatchLivePage() {
             </Grid>
             <Grid size={4}>
               <ShoppingListBox list={data.shopping} />
-              <RecipeBox steps={data.recipe} />
+              <LiveRecipeBox steps={data.recipe} />
+              <TempNextBox />
             </Grid>
           </Grid>
         </PubSubClientProvider>

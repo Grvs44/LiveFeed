@@ -11,7 +11,8 @@ export enum MessageType {
 }
 
 export type MessageContent = {
-  message?:string
-  time?:number
-  type:MessageType
+  message?: string
+  step?: number
+  time?: number
+  type: MessageType
 }

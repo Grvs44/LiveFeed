@@ -15,6 +15,8 @@ export type ProviderValue = {
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
+  currentStep?: number
+  changeStep?: (step: number) => Promise<void>
 }
 
 export type PubSubClientProviderProps = {
@@ -22,6 +24,8 @@ export type PubSubClientProviderProps = {
   userId: string
   channelId: string
   groupName: string
+  minStepId?: number // currentStep cannot be less than this value
+  maxStepId?: number // currentStep cannot be more than this value
 }
 
 export const PubSubClientContext = React.createContext<ProviderValue>({
@@ -37,6 +41,9 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const [ready, setReady] = React.useState<boolean>(false)
   const [chats, setChats] = React.useState<Chat[]>([])
   const [sending, setSending] = React.useState<boolean>(false)
+  const [currentStep, setCurrentStep] = React.useState<number | undefined>(
+    undefined,
+  )
 
   React.useEffect(() => {
     const client = new WebPubSubClient({
@@ -70,6 +77,10 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
               },
             ]),
           )
+        } else if (messageData.type == MessageType.Next) {
+          setCurrentStep(messageData.step)
+        } else {
+          console.error('Unkown message type: ' + messageData.type)
         }
       } else {
         console.error('Unkown message received:')
@@ -102,11 +113,28 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     setSending(false)
   }
 
+  const changeStep: ProviderValue['changeStep'] = async (step) => {
+    if (
+      props.minStepId &&
+      props.maxStepId &&
+      step >= props.minStepId &&
+      step <= props.maxStepId
+    ) {
+      console.log('Changing step to ' + step)
+      const content: MessageContent = { step, type: MessageType.Next }
+      await client?.sendToGroup(props.groupName, content, 'json')
+    } else {
+      console.log(`Step ${step} out of range`)
+    }
+  }
+
   const value: ProviderValue = {
     ready,
     chats,
     sending,
     sendMessage,
+    currentStep,
+    changeStep,
   }
 
   return (
