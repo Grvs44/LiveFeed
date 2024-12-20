@@ -86,10 +86,12 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     ### Authentication ###
     auth_header = req.headers.get("Authorization")
 
-    if not auth_header.startswith("Bearer "):
+    if auth_header is None or not auth_header.startswith("Bearer "):
         return func.HttpResponse("Unauthorized", status_code=401)
+    logging.info('Found Authorization header')
 
     token = auth_header.split(" ")[1]
+    logging.info('Retrieved token')
     
     claim_info = validate_token(token)
     claims = claim_info.get('claims')
