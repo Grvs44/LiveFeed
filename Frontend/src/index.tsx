@@ -18,7 +18,6 @@ import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
 import WatchOndemandPage from './pages/WatchOndemandPage'
-import LoginProvider from './context/LoginProvider'
 import store from './redux/store'
 import theme from './theme'
 
