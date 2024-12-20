@@ -50,7 +50,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       getClientAccessUrl: async () => {
         const userId = props.userId || 'Anonymous'
         const response = await fetch(
-          `${baseUrl}chat/negotiate?userId=${userId}&channelId=${props.channelId}`,
+          `${baseUrl}chat/negotiate?userId=${userId}&recipeId=${props.channelId}`,
         )
         const value = await response.json()
         console.log('pubsub URL')

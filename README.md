@@ -12,5 +12,6 @@
 - `PubSubClientProvider`: code for `@azure/web-pubsub-client` library adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
 - `PubSubClientProvider`: unmount hook adapted from https://bobbyhadz.com/blog/react-hook-on-unmount
 - `apiSlice` adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/redux/apiSlice.ts
+- `apiSlice` `prepareHeaders` adapted from https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests
 - `titleSlice` adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/redux/titleSlice.ts
 - `authConfig` adapted from https://learn.microsoft.com/en-us/azure/active-directory-b2c/enable-authentication-react-spa-app

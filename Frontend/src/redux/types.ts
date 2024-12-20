@@ -39,7 +39,17 @@ export type PubsubState = {
   client?: WebPubSubClient
 }
 
+export type TokenState = {
+  token?: string
+}
+
+export type StartStream = {
+  // stream data
+  id?: string
+}
+
 export type State = {
   title: TitleState
   pubsub: PubsubState
+  token: TokenState
 }
