@@ -1,18 +1,20 @@
 // Adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/containers/TopBar.tsx
 import React from 'react'
-import AppBar from '@mui/material/AppBar'
-import IconButton from '@mui/material/IconButton'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import MenuIcon from '@mui/icons-material/Menu'
+import AppBar from '@mui/material/AppBar'
+import IconButton from '@mui/material/IconButton'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
-import MenuDrawer from '../components/MenuDrawer'
 import { useSelector } from 'react-redux'
+import MenuDrawer from '../components/MenuDrawer'
+import { LoginContext } from '../context/LoginProvider'
 import { State } from '../redux/types'
 
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
   const { title } = useSelector(({ title }: State) => title)
+  const { handleLogin } = React.useContext(LoginContext)
 
   return (
     <>
@@ -31,7 +33,11 @@ export default function TopBar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
-          <IconButton aria-label="account">
+          <IconButton
+            aria-label="account"
+            color="inherit"
+            onClick={handleLogin}
+          >
             <AccountCircleIcon />
           </IconButton>
         </Toolbar>
