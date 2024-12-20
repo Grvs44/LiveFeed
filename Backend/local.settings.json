@@ -4,6 +4,10 @@
     "FUNCTIONS_WORKER_RUNTIME": "python",
     "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
     "AzureWebJobsStorage": "",
-    "WebPubSubConnectionString": "Endpoint=https://livefeed-chat.webpubsub.azure.com;AccessKey=2njjjnNACGZCBwmAGiQ5FGsZTEIz2YLWt8AaqSDX1VFYc1nyiv3DJQQJ99ALACmepeSXJ3w3AAAAAWPS6jVP;Version=1.0;"
+    "WebPubSubConnectionString": "Endpoint=https://livefeed-chat.webpubsub.azure.com;AccessKey=2njjjnNACGZCBwmAGiQ5FGsZTEIz2YLWt8AaqSDX1VFYc1nyiv3DJQQJ99ALACmepeSXJ3w3AAAAAWPS6jVP;Version=1.0;",
+    "AzureB2CAppID": "6c3a6a5e-8437-4e4a-8c34-62ddd7658fb4",
+    "AzureB2CTenantID": "2587dbbb-dfc6-4385-9890-6543c146fcab",
+    "AzureB2CTenantName": "livefeedlog",
+    "AzureB2CPolicyName": "B2C_1_signupsignin1"
   }
 }
