@@ -22,6 +22,14 @@ export const apiSlice = createApi({
       query: (id) => `vod/${id}`,
       providesTags: (_result, _error, id) => [{ type: TagTypes.Ondemand, id }],
     }),
+    startStream: builder.mutation<StartStream, string>({
+      query: (body, accessToken) => ({
+        url: 'stream/start/',
+        method: 'POST',
+        body,
+        headers: {Authorisation: }
+      })
+    }),
   }),
 })
 
