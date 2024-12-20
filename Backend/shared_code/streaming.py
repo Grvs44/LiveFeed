@@ -129,7 +129,6 @@ def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
 
     return response
 
-
 def start_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationResponse:
     """Starts a channel.
     Args:
@@ -162,18 +161,18 @@ def stop_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationRespon
 
     return response
 
-def start_stream(channel_id):
-    try:
-        logging.info(get_channel(channel_id))
-    except google_exceptions.NotFound:
-        logging.info(create_input(channel_id))
-        logging.info(create_channel(channel_id))
+def create_recipe_channel(recipe_id):
+    create_input(recipe_id)
+    create_channel(recipe_id)
 
-    logging.info(start_channel(channel_id))
+    return get_channel(recipe_id)
 
-    return get_channel(channel_id)
+def start_stream(recipe_id):
+    logging.info(start_channel(recipe_id))
 
-def stop_stream(channel_id):
-    logging.info(stop_channel(channel_id))
+    return get_channel(recipe_id)
 
-    return get_channel(channel_id)
+def stop_stream(recipe_id):
+    logging.info(stop_channel(recipe_id))
+
+    return get_channel(recipe_id)

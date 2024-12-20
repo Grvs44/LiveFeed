@@ -24,7 +24,6 @@ POLICY_NAME = os.environ.get("AzureB2CPolicyName")
 ISSUER = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_ID}/v2.0/"
 JWKS_URL = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_NAME}.onmicrosoft.com/discovery/v2.0/keys?p={POLICY_NAME}"
 
-
 def validate_token(token):
     """
     Validates a token and returns its associated claims.
@@ -58,28 +57,55 @@ def validate_token(token):
     
     return claim_info
 
+############################
+#---- Stream Functions ----#
+############################
+
 @app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received chat token negotiation request')
 
-    id = req.params.get('userId')
-    group = req.params.get('channelId')
-
-    if not id:
-        logging.info('Missing user ID')
-        return func.HttpResponse("Missing user ID from chat negotiation", status_code=400)
+    username = None
+    group = req.params.get('recipeId')
 
     if not group:
-        logging.info('Missing channel ID')
-        return func.HttpResponse("Missing channel ID from chat negotiation", status_code=400)
+        logging.info('Missing recipe ID')
+        return func.HttpResponse("Missing recipe ID from chat negotiation", status_code=400)
 
-    token = PUBSUB_SERVICE.get_client_access_token(user_id=id, groups=[group], roles=["webpubsub.sendToGroup." + group])
+    ### Authentication ###
+    auth_header = req.headers.get("Authorization")
+
+    if auth_header is None or not auth_header.startswith("Bearer "):
+        logging.info("No token provided, treating as anonymous user")
+    else:
+        logging.info('Found Authorization header')
+
+        token = auth_header.split(" ")[1]
+        logging.info('Retrieved token')
+        
+        claim_info = validate_token(token)
+        claims = claim_info.get('claims')
+        if (not claims): return claim_info.get('error')
+
+        username = claims.get('name')
+        logging.info(f"Identified username of sender as {username}")
+    ### Authentication ###
+    
+    roles=[]
+
+    if username:
+        roles.append(f"webpubsub.sendToGroup.{group}")
+    else:
+        username = group
+
+    token = PUBSUB_SERVICE.get_client_access_token(user_id=username, groups=[group], roles=roles)
     
     response_body = json.dumps({'url': token['url']})
     logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
 
-@app.route(route="stream/start", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+#TODO: Validate that the user sending start request is also the creator of the recipe
+@app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
@@ -97,10 +123,15 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     claims = claim_info.get('claims')
     if (not claims): return claim_info.get('error')
     ### Authentication ###
+
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
-    recipe_id = req.get_json().get('recipeId')
+    recipe_id = req.route_params.get('recipeId')
+
+    if not recipe_id:
+        logging.info("No recipe ID specified")
+        return func.HttpResponse("Missing recipe ID", status_code=400)
 
     response = streaming.start_stream(recipe_id)
 
@@ -109,7 +140,8 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     else:
         return func.HttpResponse("Livestream successfully started")
     
-@app.route(route="stream/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+#TODO: Validate that user sending end request is also the creator of the recipe
+@app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
@@ -125,10 +157,11 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     claims = claim_info.get('claims')
     if (not claims): return claim_info.get('error')
     ### Authentication ###
+
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
-    recipe_id = req.get_json().get('recipeId')
+    recipe_id = req.route_params.get('recipeId')
 
     response = streaming.stop_stream(recipe_id)
 
@@ -136,6 +169,34 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Livestream successfully ended")
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
+
+############################
+#---- Recipe Functions ----#
+############################
+
+@app.route(route="recipe/create", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Received recipe create request')
+
+    ### Authentication ###
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+    ### Authentication ###
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
+
+    recipe_id = "UNIQUE_ID" # Replace with whatever ID is generated for recipe, probably from cosmos; will be used to start streams
+
+    channel_info = streaming.create_recipe_channel(recipe_id)
 
 # TODO: replace mock with real API
 from pathlib import Path

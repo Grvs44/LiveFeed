@@ -4,7 +4,6 @@ import {
   LiveStream,
   OndemandStream,
   StartStream,
-  StartStreamParams,
   State,
 } from './types'
 
@@ -33,11 +32,10 @@ export const apiSlice = createApi({
       query: (id) => `vod/${id}`,
       providesTags: (_result, _error, id) => [{ type: TagTypes.Ondemand, id }],
     }),
-    startStream: builder.mutation<StartStream, StartStreamParams>({
-      query: (body) => ({
-        url: 'stream/start/',
+    startStream: builder.mutation<StartStream, string>({
+      query: (id) => ({
+        url: `stream/${id}/start/`,
         method: 'POST',
-        body,
       }),
     }),
   }),
