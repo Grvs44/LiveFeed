@@ -10,14 +10,15 @@ Issue: How to call handleRedirectResponse when page is reloaded?
 import React from 'react'
 import { AccountInfo } from '@azure/msal-browser'
 import { useMsal } from '@azure/msal-react'
+import { useDispatch } from 'react-redux'
 import { loginRequest } from '../auth/authConfig'
+import { setToken } from '../redux/tokenSlice'
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
   idToken: string | null
   handleLoginPopup?: () => void
   //handleRedirectResponse?: () => Promise<void>
-  getIDTokenSilently?: () => void
   handleLogin?: () => Promise<void>
 }
 
@@ -31,6 +32,7 @@ export const LoginContext = React.createContext<ProviderValue>({
 })
 
 export default function LoginProvider(props: LoginProviderProps) {
+  const dispatch = useDispatch()
   const { instance } = useMsal()
   const [activeAccount, setActiveAccount] = React.useState(
     instance.getActiveAccount(),
@@ -72,31 +74,38 @@ export default function LoginProvider(props: LoginProviderProps) {
   */
 
   //Get access token from active account
-  const getIDTokenSilently = async () => {
-    try {
-      const account = instance.getActiveAccount()
-      if (!account) {
-        console.error('No active account found.')
-        return null
-      }
-      const response = await instance.acquireTokenSilent({
-        account,
-        scopes: ['openid', 'profile', 'email'],
-      })
-      setIdToken(response.idToken)
-      console.log('ID Token from silent acquisition:', response.idToken)
-    } catch (error) {
-      console.error('Error fetching ID token silently:', error)
+  const getAccessTokenSilently: () => Promise<string | null> = async () => {
+    const tokenRequest = {
+      scopes: ['https://livefeedlog.onmicrosoft.com/livefeed-api/user.read'], // Backend scope
     }
+    try {
+      const response = await instance.acquireTokenSilent(tokenRequest)
+      const token = response.accessToken
+      console.log(response)
+      console.log('Obtained access token: ' + token)
+      dispatch(setToken(token))
+      return token
+    } catch (error: any) {
+      console.error('Token acquisition failed:', error)
+
+      // Fallback to interactive login if silent token acquisition fails
+      if (error.name === 'InteractionRequiredAuthError') {
+        const response = await instance.acquireTokenPopup(tokenRequest)
+        const token = response.accessToken
+        dispatch(setToken(token))
+        return token
+      }
+    }
+    return null
   }
 
-  const handleLogin = async () => {
+  const handleLogin: ProviderValue['handleLogin'] = async () => {
     console.log('Handle login invoked')
     try {
-      await getIDTokenSilently()
-      if (idToken) {
+      const token = await getAccessTokenSilently()
+      if (token) {
         console.log(`Active account is ${activeAccount}`)
-        console.log(`IdToken is ${idToken}`)
+        console.log(`Access token is ${token}`)
       }
       const response = await handleLoginPopup()
       if (response) {
@@ -118,16 +127,18 @@ export default function LoginProvider(props: LoginProviderProps) {
         instance.setActiveAccount(accounts[0])
         setActiveAccount(accounts[0])
         console.log('Restored Active Account from cache:', accounts[0])
+        getAccessTokenSilently()
       } else {
         console.log('No accounts found in cache. User needs to log in.')
       }
     } else {
       setActiveAccount(cachedAccount)
       console.log('Active Account already set:', cachedAccount)
+      getAccessTokenSilently()
     }
   }, [instance])
 
-  const value = {
+  const value: ProviderValue = {
     activeAccount,
     idToken,
     handleLoginPopup,
