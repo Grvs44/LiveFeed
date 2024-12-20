@@ -8,17 +8,17 @@ Access token is accquired using the active account.
 Issue: How to call handleRedirectResponse when page is reloaded?
 */
 import React from 'react'
-import { AccountInfo, AuthenticationResult } from '@azure/msal-browser'
+import { AccountInfo, SilentRequest } from '@azure/msal-browser'
 import { useMsal } from '@azure/msal-react'
+import { useDispatch } from 'react-redux'
 import { loginRequest } from '../auth/authConfig'
-
+import { setToken } from '../redux/tokenSlice'
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
   idToken: string | null
   handleLoginPopup?: () => void
   //handleRedirectResponse?: () => Promise<void>
-  getIDTokenSilently?: () => void
   handleLogin?: () => Promise<void>
 }
 
@@ -32,34 +32,33 @@ export const LoginContext = React.createContext<ProviderValue>({
 })
 
 export default function LoginProvider(props: LoginProviderProps) {
+  const dispatch = useDispatch()
   const { instance } = useMsal()
   const [activeAccount, setActiveAccount] = React.useState(
     instance.getActiveAccount(),
   )
-  const [idToken, setIdToken] = React.useState<string | null>(null);
-
+  const [idToken, setIdToken] = React.useState<string | null>(null)
 
   const handleLoginPopup = async () => {
     try {
-      const response = await instance.loginPopup(loginRequest);
+      const response = await instance.loginPopup(loginRequest)
       if (response) {
-        setActiveAccount(response.account);
-        instance.setActiveAccount(response.account);
-        setIdToken(response.idToken);
-        console.log("Login successful via popup");
+        setActiveAccount(response.account)
+        instance.setActiveAccount(response.account)
+        setIdToken(response.idToken)
+        console.log('Login successful via popup')
       }
       if (activeAccount && activeAccount.idToken) {
-        console.log("ID Token from AccountInfo:", activeAccount.idToken);
+        console.log('ID Token from AccountInfo:', activeAccount.idToken)
       } else {
-        console.log("ID Token is not directly available in AccountInfo.");
+        console.log('ID Token is not directly available in AccountInfo.')
       }
-      return response;
+      return response
     } catch (error) {
-      console.error("Error during popup login:", error);
-      throw error;
+      console.error('Error during popup login:', error)
+      throw error
     }
-  };
-  
+  }
 
   /** 
   //Get response after user logs in (set the active account)
@@ -73,65 +72,75 @@ export default function LoginProvider(props: LoginProviderProps) {
     }
   }
   */
-  
+
   //Get access token from active account
-  const getIDTokenSilently = async () => {
-    try {
-      const account = instance.getActiveAccount();
-      if (!account) {
-        console.error("No active account found.");
-        return null;
-      }
-      const response = await instance.acquireTokenSilent({
-        account, 
-        scopes: ["openid", "profile", "email"],
-      });
-      setIdToken(response.idToken);
-      console.log("ID Token from silent acquisition:", response.idToken);
-    } catch (error) {
-      console.error("Error fetching ID token silently:", error);
+  const getAccessTokenSilently: () => Promise<string | null> = async () => {
+    const tokenRequest: SilentRequest = {
+      scopes: ['https://livefeedlog.onmicrosoft.com/livefeed-api/user.read'], // Backend scope
+      account: activeAccount ? activeAccount : undefined,
     }
-  };
-
-
-  const handleLogin = async () => {
-    console.log("Handle login invoked");
     try {
-      await getIDTokenSilently();
-      if (idToken){
+      await instance.initialize()
+      const response = await instance.acquireTokenSilent(tokenRequest)
+      const token = response.accessToken
+      console.log(response)
+      console.log('Obtained access token: ' + token)
+      dispatch(setToken(token))
+      return token
+    } catch (error: any) {
+      console.error('Token acquisition failed:', error)
+
+      // Fallback to interactive login if silent token acquisition fails
+      if (error.name === 'InteractionRequiredAuthError') {
+        const response = await instance.acquireTokenPopup(tokenRequest)
+        const token = response.accessToken
+        dispatch(setToken(token))
+        return token
+      }
+    }
+    return null
+  }
+
+  const handleLogin: ProviderValue['handleLogin'] = async () => {
+    console.log('Handle login invoked')
+    try {
+      const token = await getAccessTokenSilently()
+      if (token) {
         console.log(`Active account is ${activeAccount}`)
-        console.log(`IdToken is ${idToken}`)
+        console.log(`Access token is ${token}`)
       }
-      const response = await handleLoginPopup();
+      const response = await handleLoginPopup()
       if (response) {
-        console.log("ID Token from popup:", response.idToken);
-        console.log("Account from popup:", response.account)
+        console.log('ID Token from popup:', response.idToken)
+        console.log('Account from popup:', response.account)
       }
-      console.log("User logged in and response handled");
+      console.log('User logged in and response handled')
     } catch (error) {
-      console.error("Error in login flow:", error);
+      console.error('Error in login flow:', error)
     }
-  };
+  }
 
   // Restore active account on load
   React.useEffect(() => {
-    const cachedAccount = instance.getActiveAccount();
+    const cachedAccount = instance.getActiveAccount()
     if (!cachedAccount) {
-      const accounts = instance.getAllAccounts();
+      const accounts = instance.getAllAccounts()
       if (accounts.length > 0) {
-        instance.setActiveAccount(accounts[0]);
-        setActiveAccount(accounts[0]);
-        console.log("Restored Active Account from cache:", accounts[0]);
+        instance.setActiveAccount(accounts[0])
+        setActiveAccount(accounts[0])
+        console.log('Restored Active Account from cache:', accounts[0])
+        getAccessTokenSilently()
       } else {
-        console.log("No accounts found in cache. User needs to log in.");
+        console.log('No accounts found in cache. User needs to log in.')
       }
     } else {
-      setActiveAccount(cachedAccount);
-      console.log("Active Account already set:", cachedAccount);
+      setActiveAccount(cachedAccount)
+      console.log('Active Account already set:', cachedAccount)
+      getAccessTokenSilently()
     }
-  }, [instance]);
+  }, [instance])
 
-  const value = {
+  const value: ProviderValue = {
     activeAccount,
     idToken,
     handleLoginPopup,
