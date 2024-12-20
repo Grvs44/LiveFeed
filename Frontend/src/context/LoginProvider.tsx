@@ -8,7 +8,7 @@ Access token is accquired using the active account.
 Issue: How to call handleRedirectResponse when page is reloaded?
 */
 import React from 'react'
-import { AccountInfo } from '@azure/msal-browser'
+import { AccountInfo, SilentRequest } from '@azure/msal-browser'
 import { useMsal } from '@azure/msal-react'
 import { useDispatch } from 'react-redux'
 import { loginRequest } from '../auth/authConfig'
@@ -75,10 +75,12 @@ export default function LoginProvider(props: LoginProviderProps) {
 
   //Get access token from active account
   const getAccessTokenSilently: () => Promise<string | null> = async () => {
-    const tokenRequest = {
+    const tokenRequest: SilentRequest = {
       scopes: ['https://livefeedlog.onmicrosoft.com/livefeed-api/user.read'], // Backend scope
+      account: activeAccount ? activeAccount : undefined,
     }
     try {
+      await instance.initialize()
       const response = await instance.acquireTokenSilent(tokenRequest)
       const token = response.accessToken
       console.log(response)
