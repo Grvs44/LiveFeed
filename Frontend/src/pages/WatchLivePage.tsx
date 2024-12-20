@@ -30,6 +30,8 @@ export default function WatchLivePage() {
           groupName={data.group}
           userId="user2"
           channelId={data.channel}
+          minStepId={data.recipe[0].id}
+          maxStepId={data.recipe.at(-1)?.id}
         >
           <Grid container spacing={2}>
             <Grid size={8}>

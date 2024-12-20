@@ -24,6 +24,8 @@ export type PubSubClientProviderProps = {
   userId: string
   channelId: string
   groupName: string
+  minStepId?: number // currentStep cannot be less than this value
+  maxStepId?: number // currentStep cannot be more than this value
 }
 
 export const PubSubClientContext = React.createContext<ProviderValue>({
@@ -112,9 +114,18 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   }
 
   const changeStep: ProviderValue['changeStep'] = async (step) => {
-    console.log('Changing step to ' + step)
-    const content: MessageContent = { step, type: MessageType.Next }
-    await client?.sendToGroup(props.groupName, content, 'json')
+    if (
+      props.minStepId &&
+      props.maxStepId &&
+      step >= props.minStepId &&
+      step <= props.maxStepId
+    ) {
+      console.log('Changing step to ' + step)
+      const content: MessageContent = { step, type: MessageType.Next }
+      await client?.sendToGroup(props.groupName, content, 'json')
+    } else {
+      console.log(`Step ${step} out of range`)
+    }
   }
 
   const value: ProviderValue = {
