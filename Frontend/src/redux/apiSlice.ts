@@ -20,7 +20,7 @@ export const apiSlice = createApi({
     // prepareHeaders adapted from https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests
     prepareHeaders(headers, api) {
       const token = (api.getState() as State).token.token
-      if (token) headers.set('Authorisation', `Bearer ${token}`)
+      if (token) headers.set('Authorization', `Bearer ${token}`)
     },
   }),
   tagTypes: Object.values(TagTypes),
