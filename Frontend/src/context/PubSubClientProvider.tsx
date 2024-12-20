@@ -21,7 +21,7 @@ export type ProviderValue = {
 
 export type PubSubClientProviderProps = {
   children: React.ReactNode
-  userId: string
+  userId?: string
   channelId: string
   groupName: string
   minStepId?: number // currentStep cannot be less than this value
@@ -34,7 +34,7 @@ export const PubSubClientContext = React.createContext<ProviderValue>({
   sending: false,
 })
 
-// Adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
+// WebPubSubClient code adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
 export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const dispatch = useDispatch()
   const client = useSelector((state: State) => state.pubsub.client)
@@ -48,11 +48,11 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   React.useEffect(() => {
     const client = new WebPubSubClient({
       getClientAccessUrl: async () => {
-        let value = await (
-          await fetch(
-            `${baseUrl}chat/negotiate?userId=${props.userId}&channelId=${props.channelId}`,
-          )
-        ).json()
+        const userId = props.userId || 'Anonymous'
+        const response = await fetch(
+          `${baseUrl}chat/negotiate?userId=${userId}&channelId=${props.channelId}`,
+        )
+        const value = await response.json()
         console.log('pubsub URL')
         console.log(value)
         return value.url
