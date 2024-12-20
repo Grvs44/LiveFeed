@@ -12,6 +12,7 @@ export default function TempNextBox() {
   }
   return (
     <div>
+      <p>{currentStep}</p>
       <button onClick={onPrevious}>Previous</button>
       <button onClick={onNext}>Next</button>
     </div>
