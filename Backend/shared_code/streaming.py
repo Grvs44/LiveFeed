@@ -3,12 +3,15 @@ from google.cloud.video.live_stream_v1.services.livestream_service import (
     LivestreamServiceClient,
 )
 from google.protobuf import duration_pb2 as duration
+import google.api_core.exceptions as google_exceptions
+import logging
 
 # Adapted from https://cloud.google.com/livestream/docs/quickstarts/quickstart-hls
 
-def create_input(
-    project_id: str, location: str, input_id: str
-) -> live_stream_v1.types.Input:
+project_id = "livefeed-443712"
+location = "europe-west2"
+
+def create_input(channel_id: str) -> live_stream_v1.types.Input:
     """Creates an input.
     Args:
         project_id: The GCP project ID.
@@ -22,16 +25,14 @@ def create_input(
     input = live_stream_v1.types.Input(
         type_="RTMP_PUSH",
     )
-    operation = client.create_input(parent=parent, input=input, input_id=input_id)
+    operation = client.create_input(parent=parent, input=input, input_id=f"input-{channel_id}")
     response = operation.result(900)
     print(f"Input: {response.name}")
 
     return response
 
 
-def create_channel(
-    project_id: str, location: str, channel_id: str, input_id: str, output_uri: str
-) -> live_stream_v1.types.Channel:
+def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
     """Creates a channel.
     Args:
         project_id: The GCP project ID.
@@ -42,7 +43,7 @@ def create_channel(
 
     client = LivestreamServiceClient()
     parent = f"projects/{project_id}/locations/{location}"
-    input = f"projects/{project_id}/locations/{location}/inputs/{input_id}"
+    input = f"projects/{project_id}/locations/{location}/inputs/input-{channel_id}"
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
 
     channel = live_stream_v1.types.Channel(
@@ -54,7 +55,7 @@ def create_channel(
             ),
         ],
         output=live_stream_v1.types.Channel.Output(
-            uri=output_uri,
+            uri=f"gs://livefeed-bucket/outputs/output-{channel_id}",
         ),
         elementary_streams=[
             live_stream_v1.types.ElementaryStream(
@@ -113,9 +114,7 @@ def create_channel(
 
     return response
 
-def get_channel(
-    project_id: str, location: str, channel_id: str
-) -> live_stream_v1.types.Channel:
+def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
     """Gets a channel.
     Args:
         project_id: The GCP project ID.
@@ -131,9 +130,7 @@ def get_channel(
     return response
 
 
-def start_channel(
-    project_id: str, location: str, channel_id: str
-) -> live_stream_v1.types.ChannelOperationResponse:
+def start_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationResponse:
     """Starts a channel.
     Args:
         project_id: The GCP project ID.
@@ -149,9 +146,7 @@ def start_channel(
 
     return response
 
-def stop_channel(
-    project_id: str, location: str, channel_id: str
-) -> live_stream_v1.types.ChannelOperationResponse:
+def stop_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationResponse:
     """Stops a channel.
     Args:
         project_id: The GCP project ID.
@@ -166,3 +161,19 @@ def stop_channel(
     print("Stopped channel")
 
     return response
+
+def start_stream(channel_id):
+    try:
+        logging.info(get_channel(channel_id))
+    except google_exceptions.NotFound:
+        logging.info(create_input(channel_id))
+        logging.info(create_channel(channel_id))
+
+    logging.info(start_channel(channel_id))
+
+    return get_channel(channel_id)
+
+def stop_stream(channel_id):
+    logging.info(stop_channel(channel_id))
+
+    return get_channel(channel_id)

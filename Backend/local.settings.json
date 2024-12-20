@@ -8,6 +8,8 @@
     "AzureB2CAppID": "6c3a6a5e-8437-4e4a-8c34-62ddd7658fb4",
     "AzureB2CTenantID": "2587dbbb-dfc6-4385-9890-6543c146fcab",
     "AzureB2CTenantName": "livefeedlog",
-    "AzureB2CPolicyName": "B2C_1_signupsignin1"
+    "AzureB2CPolicyName": "B2C_1_signupsignin1",
+    "GoogleLiveStreamPID": "livefeed-443712", 
+    "GoogleLiveStreamLocation": "europe-west2"
   }
 }

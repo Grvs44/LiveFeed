@@ -95,9 +95,45 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     claims = claim_info.get('claims')
     if (not claims): return claim_info.get('error')
     ### Authentication ###
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
 
-    logging.info("Identified sender as " + claims.get('sub'))
-    return func.HttpResponse("Great success!")
+    recipe_id = req.get_json().get('recipeId')
+
+    response = streaming.start_stream(recipe_id)
+
+    if (response.get('streaming_state') == "STOPPED"):
+        return func.HttpResponse("Error while starting stream", status_code=500)
+    else:
+        return func.HttpResponse("Livestream successfully started")
+    
+@app.route(route="stream/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+def end_stream(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Received stream start request')
+
+    ### Authentication ###
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+    ### Authentication ###
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
+
+    recipe_id = req.get_json().get('recipeId')
+
+    response = streaming.stop_stream(recipe_id)
+
+    if (response.get('streaming_state') == "STOPPED"):
+        return func.HttpResponse("Livestream successfully ended")
+    else:
+        return func.HttpResponse("Error while ending livestream", status_code=500)
 
 # TODO: replace mock with real API
 from pathlib import Path
