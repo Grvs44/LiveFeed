@@ -48,10 +48,6 @@ export type StartStream = {
   id?: string
 }
 
-export type StartStreamParams = {
-  recipeName: string
-}
-
 export type State = {
   title: TitleState
   pubsub: PubsubState

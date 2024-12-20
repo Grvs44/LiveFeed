@@ -8,7 +8,7 @@ export default function RecipesPage() {
   const dispatch = useDispatch()
   const [startStream] = useStartStreamMutation()
   const handleStart = async () => {
-    const stream = await startStream({ recipeName: 'hello' }).unwrap()
+    const stream = await startStream('hello').unwrap()
     console.log('started stream:')
     console.log(stream)
   }
