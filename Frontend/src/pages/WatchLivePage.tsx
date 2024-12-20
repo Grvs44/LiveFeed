@@ -8,6 +8,7 @@ import ChatBox from '../containers/ChatBox'
 import LiveRecipeBox from '../containers/LiveRecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import TempNextBox from '../containers/TempNextBox'
+import { LoginContext } from '../context/LoginProvider'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import { useGetLiveStreamQuery } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
@@ -16,6 +17,7 @@ export default function WatchLivePage() {
   const dispatch = useDispatch()
   const { id } = useParams()
   const { data, isLoading } = useGetLiveStreamQuery(id || '')
+  const { activeAccount } = React.useContext(LoginContext)
 
   React.useEffect(() => {
     dispatch(setTitle('Live'))
@@ -28,9 +30,9 @@ export default function WatchLivePage() {
       ) : (
         <PubSubClientProvider
           groupName={data.group}
-          userId="user2"
+          userId={activeAccount?.name}
           channelId={data.channel}
-          minStepId={data.recipe[0].id}
+          minStepId={data.recipe[0]?.id}
           maxStepId={data.recipe.at(-1)?.id}
         >
           <Grid container spacing={2}>
