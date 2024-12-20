@@ -1,6 +1,12 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { baseUrl } from './settings'
-import { LiveStream, OndemandStream } from './types'
+import {
+  LiveStream,
+  OndemandStream,
+  StartStream,
+  StartStreamParams,
+  State,
+} from './types'
 
 enum TagTypes {
   Live = 'live',
@@ -11,6 +17,11 @@ enum TagTypes {
 export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl,
+    // prepareHeaders adapted from https://redux-toolkit.js.org/rtk-query/api/fetchBaseQuery#setting-default-headers-on-requests
+    prepareHeaders(headers, api) {
+      const token = (api.getState() as State).token.token
+      if (token) headers.set('Authorisation', `Bearer ${token}`)
+    },
   }),
   tagTypes: Object.values(TagTypes),
   endpoints: (builder) => ({
@@ -22,13 +33,12 @@ export const apiSlice = createApi({
       query: (id) => `vod/${id}`,
       providesTags: (_result, _error, id) => [{ type: TagTypes.Ondemand, id }],
     }),
-    startStream: builder.mutation<StartStream, string>({
-      query: (body, accessToken) => ({
+    startStream: builder.mutation<StartStream, StartStreamParams>({
+      query: (body) => ({
         url: 'stream/start/',
         method: 'POST',
         body,
-        headers: {Authorisation: }
-      })
+      }),
     }),
   }),
 })
@@ -36,4 +46,5 @@ export const apiSlice = createApi({
 export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
+  useStartStreamMutation,
 } = apiSlice
