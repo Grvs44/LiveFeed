@@ -4,6 +4,7 @@ import {
   LiveStream,
   OndemandStream,
   StartStream,
+  EndStream,
   State,
 } from './types'
 
@@ -25,7 +26,7 @@ export const apiSlice = createApi({
   tagTypes: Object.values(TagTypes),
   endpoints: (builder) => ({
     getLiveStream: builder.query<LiveStream, string>({
-      query: (id) => `live/${id}`,
+      query: (id) => `stream/${id}`,
       providesTags: (_result, _error, id) => [{ type: TagTypes.Live, id }],
     }),
     getOndemandStream: builder.query<OndemandStream, string>({
@@ -35,6 +36,12 @@ export const apiSlice = createApi({
     startStream: builder.mutation<StartStream, string>({
       query: (id) => ({
         url: `stream/${id}/start/`,
+        method: 'POST',
+      }),
+    }),
+    endStream: builder.mutation<EndStream, string>({
+      query: (id) => ({
+        url: `stream/${id}/end/`,
         method: 'POST',
       }),
     }),
