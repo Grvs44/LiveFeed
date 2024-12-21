@@ -48,6 +48,11 @@ export type StartStream = {
   id?: string
 }
 
+export type EndStream = {
+  // stream data
+  id?: string
+}
+
 export type State = {
   title: TitleState
   pubsub: PubsubState
