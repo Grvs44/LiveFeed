@@ -8,10 +8,12 @@ import { Chat } from '../context/types'
 import { resetClient, setClient } from '../redux/pubsubSlice'
 import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
+import { LoginContext } from './LoginProvider'
 import { MessageContent, MessageType } from './types'
 
 export type ProviderValue = {
   ready: boolean
+  canSend: boolean // user has permission to send
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
@@ -21,7 +23,6 @@ export type ProviderValue = {
 
 export type PubSubClientProviderProps = {
   children: React.ReactNode
-  userId?: string
   channelId: string
   groupName: string
   minStepId?: number // currentStep cannot be less than this value
@@ -30,6 +31,7 @@ export type PubSubClientProviderProps = {
 
 export const PubSubClientContext = React.createContext<ProviderValue>({
   ready: false,
+  canSend: true, // initialise to true so "signed out" message isn't displayed while loading
   chats: [],
   sending: false,
 })
@@ -38,19 +40,40 @@ export const PubSubClientContext = React.createContext<ProviderValue>({
 export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const dispatch = useDispatch()
   const client = useSelector((state: State) => state.pubsub.client)
+  const accessToken = useSelector((state: State) => state.token.token)
+  const { activeAccount } = React.useContext(LoginContext)
   const [ready, setReady] = React.useState<boolean>(false)
+  const [canSend, setCanSend] = React.useState<boolean>(true)
   const [chats, setChats] = React.useState<Chat[]>([])
   const [sending, setSending] = React.useState<boolean>(false)
   const [currentStep, setCurrentStep] = React.useState<number | undefined>(
     undefined,
   )
+  console.log('ACTIVEACCOUNTHOOK')
+  console.log(activeAccount)
 
   React.useEffect(() => {
+    const headers: HeadersInit = {}
+    console.log(`STATE ${activeAccount !=null} ${accessToken!=undefined}`)
+    if (activeAccount) {
+      if (accessToken) {
+        headers.Authorization = 'Bearer ' + accessToken
+        setCanSend(true)
+        console.warn('Acquired access token')
+      } else {
+        // Wait for accessToken
+        console.warn('Waiting for access token')
+        return
+      }
+    } else {
+      console.warn('Anonymous user')
+      setCanSend(false)
+    }
     const client = new WebPubSubClient({
       getClientAccessUrl: async () => {
-        const userId = props.userId || 'Anonymous'
         const response = await fetch(
-          `${baseUrl}chat/negotiate?userId=${userId}&recipeId=${props.channelId}`,
+          `${baseUrl}chat/negotiate?recipeId=${props.channelId}`,
+          { headers },
         )
         const value = await response.json()
         console.log('pubsub URL')
@@ -88,10 +111,11 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       }
     })
     dispatch(setClient(client))
+    setChats([])
     client?.start().then(() => {
       setReady(true)
     })
-  }, [])
+  }, [accessToken, activeAccount])
 
   // Adapted from https://bobbyhadz.com/blog/react-hook-on-unmount
   React.useEffect(
@@ -130,6 +154,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
 
   const value: ProviderValue = {
     ready,
+    canSend,
     chats,
     sending,
     sendMessage,
