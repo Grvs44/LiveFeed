@@ -49,22 +49,16 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const [currentStep, setCurrentStep] = React.useState<number | undefined>(
     undefined,
   )
-  console.log('ACTIVEACCOUNTHOOK')
-  console.log(activeAccount)
 
   React.useEffect(() => {
     const headers: HeadersInit = {}
-    console.log(`STATE ${activeAccount != null} ${accessToken != undefined}`)
     if (activeAccount && accessToken) {
       headers.Authorization = 'Bearer ' + accessToken
       setCanSend(true)
-      console.warn('Acquired access token')
     } else if (activeAccount || accessToken) {
       // Wait for accessToken
-      console.warn('Waiting for access token')
       return
     } else {
-      console.warn('Anonymous user')
       setCanSend(false)
     }
     const client = new WebPubSubClient({
