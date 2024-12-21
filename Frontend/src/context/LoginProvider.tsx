@@ -46,6 +46,10 @@ export default function LoginProvider(props: LoginProviderProps) {
         setActiveAccount(response.account)
         instance.setActiveAccount(response.account)
         setIdToken(response.idToken)
+        console.log('ACTIVEACCOUNT')
+        console.log(response.account)
+        setActiveAccount(response.account)
+        dispatch(setToken(response.accessToken))
         console.log('Login successful via popup')
       }
       if (activeAccount && activeAccount.idToken) {
