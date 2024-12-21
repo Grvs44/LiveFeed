@@ -54,17 +54,15 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
 
   React.useEffect(() => {
     const headers: HeadersInit = {}
-    console.log(`STATE ${activeAccount !=null} ${accessToken!=undefined}`)
-    if (activeAccount) {
-      if (accessToken) {
-        headers.Authorization = 'Bearer ' + accessToken
-        setCanSend(true)
-        console.warn('Acquired access token')
-      } else {
-        // Wait for accessToken
-        console.warn('Waiting for access token')
-        return
-      }
+    console.log(`STATE ${activeAccount != null} ${accessToken != undefined}`)
+    if (activeAccount && accessToken) {
+      headers.Authorization = 'Bearer ' + accessToken
+      setCanSend(true)
+      console.warn('Acquired access token')
+    } else if (activeAccount || accessToken) {
+      // Wait for accessToken
+      console.warn('Waiting for access token')
+      return
     } else {
       console.warn('Anonymous user')
       setCanSend(false)
