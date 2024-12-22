@@ -20,6 +20,7 @@ export type ProviderValue = {
   activeAccount: AccountInfo | null
   handleLoginPopup?: () => void
   handleLogin?: () => Promise<void>
+  handleLogout?: () => void 
 }
 
 export type LoginProviderProps = {
@@ -142,6 +143,7 @@ export default function LoginProvider(props: LoginProviderProps) {
     activeAccount,
     handleLoginPopup,
     handleLogin,
+    handleLogout,
   }
 
   return (
