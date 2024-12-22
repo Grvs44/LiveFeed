@@ -41,15 +41,15 @@ export default function LoginProvider(props: LoginProviderProps) {
   const handleLogout = async () => {
     console.log('Log out request received')
     try{
-      await instance.logoutPopup()
+      await instance.logoutRedirect()
       console.log('Logout successful via popup')
       setActiveAccount(null)
       dispatch(setToken(''))
     }
     catch (error) {
       console.error('Popup logout failed:', error)
-      console.log('Attempting logout redirect as fallback')
-      await instance.logoutRedirect();
+      //console.log('Attempting logout redirect as fallback')
+      //await instance.logoutRedirect();
     }
   }
 
