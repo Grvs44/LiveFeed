@@ -1,6 +1,8 @@
 /*
 https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-acquire-token?tabs=react
 
+https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-sign-in?tabs=react#sign-out-behavior-on-browsers
+
 The following code handles a login request and listens to a response to update the active account.
 'activeAccount' can be used to retrieve the current user's ID, username and more.
 The access token is accquired using the active account.
@@ -34,6 +36,21 @@ export default function LoginProvider(props: LoginProviderProps) {
   const [activeAccount, setActiveAccount] = React.useState(
     instance.getActiveAccount(),
   )
+
+  const handleLogout = async () => {
+    console.log('Log out request received')
+    try{
+      await instance.logoutPopup()
+      console.log('Logout successful via popup')
+      setActiveAccount(null)
+      dispatch(setToken(''))
+    }
+    catch (error) {
+      console.error('Popup logout failed:', error)
+      console.log('Attempting logout redirect as fallback')
+      await instance.logoutRedirect();
+    }
+  }
 
   //Set new active account and access token after logging in
   const handleLoginPopup = async () => {
