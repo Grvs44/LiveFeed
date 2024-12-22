@@ -14,7 +14,7 @@ import { State } from '../redux/types'
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
   const { title } = useSelector(({ title }: State) => title)
-  const { handleLogin } = React.useContext(LoginContext)
+  const { handleLogin, activeAccount } = React.useContext(LoginContext)
 
   return (
     <>
@@ -33,6 +33,18 @@ export default function TopBar() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
           </Typography>
+          {activeAccount ? (
+            <Typography
+              variant="subtitle1" component="div" sx={{ mr: 2 }}>
+              {activeAccount.name}
+            </Typography>
+            ) : (
+            <Typography variant="subtitle1" component="div" sx={{ mr: 2, cursor: 'pointer' }}
+              onClick={handleLogin}
+            >
+              Log In / Sign Up
+            </Typography>
+            )}
           <IconButton
             aria-label="account"
             color="inherit"
