@@ -1,4 +1,5 @@
 import { WebPubSubClient } from '@azure/web-pubsub-client'
+import store from './store'
 
 export type TitleState = {
   title: string
@@ -53,8 +54,4 @@ export type EndStream = {
   id?: string
 }
 
-export type State = {
-  title: TitleState
-  pubsub: PubsubState
-  token: TokenState
-}
+export type State = ReturnType<typeof store.getState>
