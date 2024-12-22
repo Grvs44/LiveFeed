@@ -1,12 +1,12 @@
 /*
 https://learn.microsoft.com/en-us/entra/identity-platform/scenario-spa-acquire-token?tabs=react
 
-The following code handles a login request and
-listens to a response to update the active account.
-Access token is accquired using the active account.
+The following code handles a login request and listens to a response to update the active account.
+'activeAccount' can be used to retrieve the current user's ID, username and more.
+The access token is accquired using the active account.
 
-Issue: How to call handleRedirectResponse when page is reloaded?
 */
+
 import React from 'react'
 import { AccountInfo, SilentRequest } from '@azure/msal-browser'
 import { useMsal } from '@azure/msal-react'
@@ -16,9 +16,7 @@ import { setToken } from '../redux/tokenSlice'
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
-  idToken: string | null
   handleLoginPopup?: () => void
-  //handleRedirectResponse?: () => Promise<void>
   handleLogin?: () => Promise<void>
 }
 
@@ -27,8 +25,7 @@ export type LoginProviderProps = {
 }
 
 export const LoginContext = React.createContext<ProviderValue>({
-  activeAccount: null,
-  idToken: null,
+  activeAccount: null
 })
 
 export default function LoginProvider(props: LoginProviderProps) {
@@ -37,45 +34,26 @@ export default function LoginProvider(props: LoginProviderProps) {
   const [activeAccount, setActiveAccount] = React.useState(
     instance.getActiveAccount(),
   )
-  const [idToken, setIdToken] = React.useState<string | null>(null)
 
+  //Set new active account and access token after logging in
   const handleLoginPopup = async () => {
     try {
       const response = await instance.loginPopup(loginRequest)
       if (response) {
         setActiveAccount(response.account)
         instance.setActiveAccount(response.account)
-        setIdToken(response.idToken)
-        console.log('ACTIVEACCOUNT')
-        console.log(response.account)
-        setActiveAccount(response.account)
+        console.log('ACTIVE ACCOUNT SET')
+        console.log('Active account:', response.account)
+        //Set access token 
         dispatch(setToken(response.accessToken))
         console.log('Login successful via popup')
       }
-      if (activeAccount && activeAccount.idToken) {
-        console.log('ID Token from AccountInfo:', activeAccount.idToken)
-      } else {
-        console.log('ID Token is not directly available in AccountInfo.')
-      }
       return response
-    } catch (error) {
+    }catch (error) {
       console.error('Error during popup login:', error)
       throw error
     }
   }
-
-  /** 
-  //Get response after user logs in (set the active account)
-  const handleRedirectResponse = async () => {
-    const response = await instance.handleRedirectPromise()
-    if (response) {
-      setActiveAccount(response.account)
-      console.log('Active Account Set:', response.account)
-      setIdToken(response.idToken)
-      console.log('ID Token:', response.idToken);
-    }
-  }
-  */
 
   //Get access token from active account
   const getAccessTokenSilently: () => Promise<string | null> = async () => {
@@ -105,22 +83,21 @@ export default function LoginProvider(props: LoginProviderProps) {
     return null
   }
 
+  //Call login pop-up if not already logged in
   const handleLogin: ProviderValue['handleLogin'] = async () => {
     console.log('Handle login invoked')
     try {
-      const token = await getAccessTokenSilently()
-      if (token) {
-        console.log(`Active account is ${activeAccount}`)
-        console.log(`Access token is ${token}`)
+      if (!activeAccount){
+        console.log("No active account found. Login required.")
+        const response = await handleLoginPopup()
+        if (response) {
+          console.log('Logged in as :', response.account.name)
+        }
+        return
       }
-      const response = await handleLoginPopup()
-      if (response) {
-        console.log('ID Token from popup:', response.idToken)
-        console.log('Account from popup:', response.account)
-      }
-      console.log('User logged in and response handled')
+      console.log(`User already logged in as ${activeAccount.name}`)
     } catch (error) {
-      console.error('Error in login flow:', error)
+      console.error('Error handling login:', error)
     }
   }
 
@@ -146,10 +123,7 @@ export default function LoginProvider(props: LoginProviderProps) {
 
   const value: ProviderValue = {
     activeAccount,
-    idToken,
     handleLoginPopup,
-    //handleRedirectResponse,
-    //getTokenSilently,
     handleLogin,
   }
 
