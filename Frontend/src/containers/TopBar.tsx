@@ -2,14 +2,13 @@
 import React from 'react'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle'
 import MenuIcon from '@mui/icons-material/Menu'
-import AppBar from '@mui/material/AppBar'
-import IconButton from '@mui/material/IconButton'
-import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
+import Search  from '@mui/icons-material/Search'
+import { AppBar, Toolbar, Typography, IconButton, InputBase } from '@mui/material'
 import { useSelector } from 'react-redux'
 import MenuDrawer from '../components/MenuDrawer'
 import { LoginContext } from '../context/LoginProvider'
 import { State } from '../redux/types'
+import logo from '../assets/LogoClear.png'
 
 export default function TopBar() {
   const [open, setOpen] = React.useState(false)
@@ -18,7 +17,7 @@ export default function TopBar() {
 
   return (
     <>
-      <AppBar position="sticky">
+      <AppBar position="sticky" style={{ backgroundColor: '#ff5722' }}>
         <Toolbar>
           <IconButton
             aria-label="Open menu"
@@ -30,9 +29,26 @@ export default function TopBar() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          {/* Logo */}
+          <img src={logo} alt="Live Feed Logo" style={{ width: '100px', marginRight: '10px' }} />
+
+          {/* Removed "Title" */}
+          {/* <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             {title}
-          </Typography>
+          </Typography> */}
+
+          <div style={{ flex: 1, marginLeft: '150px', marginRight: '450px', display: 'flex' }}>
+          <Search style={{ alignSelf: 'center', marginRight: '10px' }} />
+          <InputBase
+            placeholder=" Search"
+            style={{
+              backgroundColor: 'white',
+              padding: '5px 10px',
+              borderRadius: '5px',
+              width: '100%',
+            }}
+          />
+        </div>
           {activeAccount ? (
             <Typography
               variant="subtitle1" component="div" sx={{ mr: 2 }}>
