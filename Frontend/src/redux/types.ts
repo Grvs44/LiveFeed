@@ -62,3 +62,8 @@ export type Item = {
   title: string
   thumbnail: string; // URL to the thumbnail image(?)
 }
+
+export type SectionProps = {
+  title: string
+  items: Item[]
+}
