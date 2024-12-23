@@ -9,6 +9,7 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import UserUpdateForm from '../components/UserUpdateForm';
+import TagsChipArray from '../components/TagsChipArray';
 
 
 export default function SettingsPage() {
@@ -31,16 +32,9 @@ export default function SettingsPage() {
     </Typography>
     <UserUpdateForm/>
     <Divider />
-
-    <Box sx={{ marginTop: '40px', marginBottom: '40px' }}>
-      <Typography variant="h6" sx={{ fontSize: '1.125rem' }} gutterBottom>
-        Tags
-      </Typography>
-      <Box sx={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        {/* Need to add content */}
-      </Box>
-    </Box>
-
+    
+    <TagsChipArray/>
+    
     <Divider />
 
     <Box sx={{ marginTop: '40px' }}>
