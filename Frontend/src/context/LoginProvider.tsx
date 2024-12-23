@@ -20,7 +20,7 @@ export type ProviderValue = {
   activeAccount: AccountInfo | null
   handleLoginPopup?: () => void
   handleLogin?: () => Promise<void>
-  handleLogout?: () => void 
+  handleLogout?: () => void
 }
 
 export type LoginProviderProps = {
@@ -28,7 +28,7 @@ export type LoginProviderProps = {
 }
 
 export const LoginContext = React.createContext<ProviderValue>({
-  activeAccount: null
+  activeAccount: null,
 })
 
 export default function LoginProvider(props: LoginProviderProps) {
@@ -40,13 +40,12 @@ export default function LoginProvider(props: LoginProviderProps) {
 
   const handleLogout = async () => {
     console.log('Log out request received')
-    try{
+    try {
       await instance.logoutRedirect()
       console.log('Logout successful via popup')
       setActiveAccount(null)
       dispatch(setToken(''))
-    }
-    catch (error) {
+    } catch (error) {
       console.error('Popup logout failed:', error)
       //console.log('Attempting logout redirect as fallback')
       //await instance.logoutRedirect();
@@ -62,12 +61,12 @@ export default function LoginProvider(props: LoginProviderProps) {
         instance.setActiveAccount(response.account)
         console.log('ACTIVE ACCOUNT SET')
         console.log('Active account:', response.account)
-        //Set access token 
+        //Set access token
         dispatch(setToken(response.accessToken))
         console.log('Login successful via popup')
       }
       return response
-    }catch (error) {
+    } catch (error) {
       console.error('Error during popup login:', error)
       throw error
     }
@@ -105,8 +104,8 @@ export default function LoginProvider(props: LoginProviderProps) {
   const handleLogin: ProviderValue['handleLogin'] = async () => {
     console.log('Handle login invoked')
     try {
-      if (!activeAccount){
-        console.log("No active account found. Login required.")
+      if (!activeAccount) {
+        console.log('No active account found. Login required.')
         const response = await handleLoginPopup()
         if (response) {
           console.log('Logged in as :', response.account.name)
