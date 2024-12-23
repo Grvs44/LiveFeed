@@ -15,10 +15,21 @@ import OndemandVideoIcon from '@mui/icons-material/OndemandVideo'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
 import BlenderIcon from '@mui/icons-material/Blender'
 import SettingsIcon from '@mui/icons-material/Settings'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import { LoginContext } from '../context/LoginProvider'
 
 export default function MenuDrawer(props: SwipeableDrawerProps) {
+  const { handleLogout } = React.useContext(LoginContext)
+  console.log('handleLogout in MenuDrawer:', handleLogout)
   return (
     <SwipeableDrawer anchor="left" {...props}>
+      <Box
+        display="flex"
+        flexDirection="column"
+        height="100%"
+        justifyContent="space-between"
+      >
       <List onClick={props.onClose}>
         <ListItem>
           <ListItemButtonLink to="">
@@ -70,6 +81,17 @@ export default function MenuDrawer(props: SwipeableDrawerProps) {
           </ListItemButtonLink>
         </ListItem>
       </List>
+      <Box p={2}>
+          <Button
+            variant="contained"
+            color="primary"
+            fullWidth
+            onClick={handleLogout}
+          >
+            Log Out
+          </Button>
+        </Box>
+      </Box>
     </SwipeableDrawer>
   )
 }
