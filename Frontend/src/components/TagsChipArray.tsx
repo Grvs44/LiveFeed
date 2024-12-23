@@ -26,7 +26,7 @@ export default function TagsChipArray(){
         <Box sx={{ marginTop: '40px', marginBottom: '40px' }}>
           <Box sx={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
           <Typography variant="h6" sx={{ fontSize: '1.125rem' }} gutterBottom>
-            Recipe Tags
+            Recipe Preferences
           </Typography>
             <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
               {tags.map((tag, index) => (
