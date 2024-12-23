@@ -16,3 +16,9 @@ export type MessageContent = {
   time?: number
   type: MessageType
 }
+
+export type UserInfo = {
+  name?: string
+  given_name?: string
+  family_name?: string
+}
