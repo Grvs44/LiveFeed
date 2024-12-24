@@ -45,19 +45,21 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="recipe/upload", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def upload_recipe(req: func.HttpRequest) -> func.HttpResponse:
     info = req.get_json()
+    user_id = info.get('userId')
     title = info.get('title')
     steps = info.get('steps')
     shoppingList = info.get('shoppingList')
     date = info.get('scheduledDate')
     
     recipes = {
+        "id": user_id,
         "title": title,
         "steps": steps,
         "shoppingList": shoppingList,
         "date": date
     }
     
-    container.create_item(body=recipes, enable_automatic_id_generation=True)
+    container.create_item(body=recipes, enable_automatic_id_generation=False)
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
 
