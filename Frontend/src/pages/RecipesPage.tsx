@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { setTitle } from '../redux/titleSlice'
-import { BlobServiceClient } from '@azure/storage-blob';
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -32,8 +31,6 @@ function RecipeUploads() {
   const [steps, setSteps] = useState<{ stepNum: number; stepDesc: string }[]>([]);
   const [shoppingList, setShoppingList] = useState<{ item: string; amount: number; unit: string }[]>([]);
   const [scheduledDate, setScheduledDate] = useState<string>('');
-  const [image, setImage] = useState<File | null>(null);
-
 
   const addStep = () => {
     setSteps([...steps, { stepNum: steps.length + 1, stepDesc: '' }]);
