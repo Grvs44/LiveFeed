@@ -1,4 +1,31 @@
 # COMP3207 Coursework 2
+## Running the Application Locally
+### Backend
+1. Enter the command:
+```bash
+cd Backend
+```
+2. Install all the required Python libraries by entering:
+```bash
+pip install -r requirements.txt
+```
+3. Start the Backend of the application:
+```bash
+func start
+```
+### Frontend
+1. Enter the command:
+```bash
+cd Frontend
+```
+2. Install all the required npm packages:
+```bash
+npm i
+```
+3. Start the Frontend of the application:
+```bash
+npm run
+```
 ## Sources
 ### Backend
 - Livestream management adapted from https://cloud.google.com/livestream/docs/quickstarts/quickstart-hls
