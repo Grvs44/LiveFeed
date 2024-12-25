@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider} from '@mui/material';
+import { AccessTime, FormatListNumbered, ShoppingCart } from '@mui/icons-material';
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -15,6 +17,8 @@ export default function RecipesPage() {
   React.useEffect(() => {
     dispatch(setTitle('Recipes'))
   }, [])
+
+  
   
   const [currerntTab, setCurrentTab] = useState<'uploads' | 'manager'>('uploads');
 
@@ -172,10 +176,115 @@ function RecipeUploads() {
 }
 
 
-function RecipeManagement() {
+function RecipeManagement () {
+ 
+  
+  interface Recipe {
+    title: string;
+    date: string;
+    steps: { stepNum: number; stepDesc: string }[];
+    shoppingList: { item: string; amount: number; unit: string }[];
+  }
+
+  const [recipeList, setRecipeList] = useState<Recipe | null>(null);
+
+  React.useEffect(() => {
+    fetchRecipes();
+  }, []);
+  const params = new URLSearchParams({
+
+  });
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await fetch(`/api/recipe/get?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      setRecipeList(data);
+    } catch (error) {
+      console.error("Error getting recipe list:", error);
+    }
+  };
+
+  const formatDate = (dateStr: string | number | Date) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleString();
+  };
+  if (!recipeList) {
+    return (
+      <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography>Loading recipe details...</Typography>
+        </Paper>
+      </Box>
+    );
+  }
+ 
   return (
-    <div>
-      <p>Recipe Manage</p>
-    </div>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Typography variant="h4" gutterBottom>{recipeList.title}</Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
+            <AccessTime sx={{ mr: 1 }} />
+            <Typography variant="body2">{formatDate(recipeList.date)}</Typography>
+          </Box>
+        </CardContent>
+      </Card>
+ 
+      <Grid container spacing={3}>
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <FormatListNumbered sx={{ mr: 1 }} />
+                <Typography variant="h6">Recipe Steps</Typography>
+              </Box>
+              <List>
+                {recipeList.steps?.map((step) => (
+                  <ListItem key={step.stepNum}>
+                    <ListItemText
+                      primary={
+                        <Typography>
+                          <strong>{step.stepNum}.</strong> {step.stepDesc}
+                        </Typography>
+                      }
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+ 
+        <Grid item xs={12} md={6}>
+          <Card>
+            <CardContent>
+              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                <ShoppingCart sx={{ mr: 1 }} />
+                <Typography variant="h6">Shopping List</Typography>
+              </Box>
+              <List>
+                {recipeList.shoppingList?.map((item, index) => (
+                  <React.Fragment key={index}>
+                    <ListItem>
+                      <ListItemText
+                        primary={item.item}
+                        secondary={`${item.amount} ${item.unit}`}
+                      />
+                    </ListItem>
+                    {index < recipeList.shoppingList.length - 1 && <Divider />}
+                  </React.Fragment>
+                ))}
+              </List>
+            </CardContent>
+          </Card>
+        </Grid>
+      </Grid>
+    </Box>
   );
-}
+ };
