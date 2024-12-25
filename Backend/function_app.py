@@ -203,6 +203,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = "UNIQUE_ID" # Replace with whatever ID is generated for recipe, probably from cosmos; will be used to start streams
 
     channel_info = streaming.create_recipe_channel(recipe_id)
+    
 @app.route(route="recipe/upload", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def upload_recipe(req: func.HttpRequest) -> func.HttpResponse:
     info = req.get_json()
@@ -222,6 +223,74 @@ def upload_recipe(req: func.HttpRequest) -> func.HttpResponse:
     
     container.create_item(body=recipes, enable_automatic_id_generation=False)
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
+
+@app.route(route="recipe/get", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Get Recipe')
+
+    id = req.params.get('id')
+    
+    try:
+    
+        query = f"SELECT * FROM c WHERE c.id = '{id}'"
+        
+        items = list(container.query_items(
+            query=query,
+            enable_cross_partition_query=True
+        ))
+        
+        if not items:
+            return func.HttpResponse(
+                "Recipe not found",
+                status_code=404
+            )
+            
+        response_body = json.dumps(items[0])
+        logging.info('Successful recipe retrieval')
+        return func.HttpResponse(response_body, status_code=200)
+        
+    except Exception as e:
+        logging.error(f'Error retrieving recipe: {str(e)}')
+        
+   
+   
+    return func.HttpResponse(response_body, status_code=200)
+
+@app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
+def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
+   try:
+       info = req.get_json()
+       user_id = info.get('userId')
+       title = info.get('title')
+       steps = info.get('steps') 
+       shoppingList = info.get('shoppingList')
+       date = info.get('scheduledDate')
+
+       # Check if recipe exists
+       query = f"SELECT * FROM c WHERE c.id = '{user_id}'"
+       items = list(container.query_items(query=query, enable_cross_partition_query=True))
+       
+       if not items:
+           return func.HttpResponse("Recipe not found", status_code=404)
+
+       # Update recipe
+       recipes = {
+           "id": user_id,
+           "title": title, 
+           "steps": steps,
+           "shoppingList": shoppingList,
+           "date": date
+       }
+
+       container.replace_item(item=user_id, body=recipes)
+       return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
+
+   except Exception as e:
+       logging.error(f'Error updating recipe: {str(e)}')
+   
+   return func.HttpResponse("Error updating recipe", status_code=500)
+
+
 
 
 # TODO: replace mock with real API
