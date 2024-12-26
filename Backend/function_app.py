@@ -256,6 +256,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     stream_url = channel_info.get('output').get('uri')
     stream_dict = {
         "recipe_id": recipe_id,
+        "user_id": user_id,
         "stream_url": stream_url,
         "step_timings": []
     }
