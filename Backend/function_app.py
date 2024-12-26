@@ -6,25 +6,59 @@ import datetime
 import json
 import jwt
 from shared_code import streaming
+import requests
 from azure.messaging.webpubsubservice import (
     WebPubSubServiceClient
 )
 from jwt import PyJWKClient
+from msal import ConfidentialClientApplication
 
 app = func.FunctionApp()
 
-HUB_NAME = 'livefeed'
+client = CosmosClient("https://livefeed-storage.documents.azure.com:443/", "RMcJvdRXCSCk60vX8ga7uAdnfl2yKW1nGBDf0EKcHc8NtdwKs72NAq2mDtUk8hW6NWwN3RnXMUFxACDbWLE70A==")
+database = client.get_database_client('Recipes')
+recipe_container = database.get_container_client('UploadedRecipes')
+stream_container = database.get_container_client('Streams')
+
+NOTIFY_HUB_NAME = 'livefeed-notify'
+CHAT_HUB_NAME = 'livefeed-chat'
 PUBSUB_CONNECTION_STRING = os.environ.get('WebPubSubConnectionString')
-PUBSUB_SERVICE = WebPubSubServiceClient.from_connection_string(PUBSUB_CONNECTION_STRING, hub=HUB_NAME)
+CHAT_PUBSUB_SERVICE = WebPubSubServiceClient.from_connection_string(PUBSUB_CONNECTION_STRING, hub=CHAT_HUB_NAME)
 
 CLIENT_ID = os.environ.get("AzureB2CAppID")
 TENANT_ID = os.environ.get("AzureB2CTenantID")
 TENANT_NAME = os.environ.get("AzureB2CTenantName")
 POLICY_NAME = os.environ.get("AzureB2CPolicyName")
+SECRET = os.environ.get("AzureB2CAppSecret")
 
 ISSUER = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_ID}/v2.0/"
 JWKS_URL = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_NAME}.onmicrosoft.com/discovery/v2.0/keys?p={POLICY_NAME}"
 
+msal_client = ConfidentialClientApplication(
+    client_id=CLIENT_ID,
+    client_credential=SECRET,
+    authority=f"https://login.microsoftonline.com/{TENANT_ID}"
+)
+
+def get_web_access_token():
+    result = msal_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        raise Exception("Access token not acquired")
+
+def get_display_name(object_id):
+    token = get_web_access_token()
+    headers = {"Authorization": f"Bearer {token}"}
+    url = f"https://graph.microsoft.com/v1.0/users/{object_id}"
+
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        user_data = response.json()
+        return user_data.get("displayName")
+    else:
+        raise Exception(f"Couldn't get user: {response.status_code}, {response.text}")
+    
 def validate_token(token):
     """
     Validates a token and returns its associated claims.
@@ -61,11 +95,6 @@ def validate_token(token):
 ############################
 #---- Stream Functions ----#
 ############################
-client = CosmosClient("https://livefeed-storage.documents.azure.com:443/", "RMcJvdRXCSCk60vX8ga7uAdnfl2yKW1nGBDf0EKcHc8NtdwKs72NAq2mDtUk8hW6NWwN3RnXMUFxACDbWLE70A==")
-database= client.get_database_client('Recipes')
-container = database.get_container_client('UploadedRecipes')
-
-#print(streaming.get_channel('livefeed-443712', 'europe-west2', 'livefeed-test-channel'))
 
 @app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
@@ -95,8 +124,12 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
 
         username = claims.get('name')
         logging.info(f"Identified username of sender as {username}")
+
+        
     ### Authentication ###
-    
+
+    logging.info(get_user_by_object_id(claims.get('sub')))
+
     roles=[]
 
     if username:
@@ -104,7 +137,7 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     else:
         username = group
 
-    token = PUBSUB_SERVICE.get_client_access_token(user_id=username, groups=[group], roles=roles)
+    token = CHAT_PUBSUB_SERVICE.get_client_access_token(user_id=username, groups=[group], roles=roles)
     
     response_body = json.dumps({'url': token['url']})
     logging.info('Successful chat negotiation')
@@ -206,7 +239,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     shoppingList = info.get('shoppingList')
     date = info.get('scheduledDate')
     
-    recipes = {
+    recipe_dict = {
         "user_id": user_id,
         "title": title,
         "steps": steps,
@@ -214,11 +247,21 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
         "date": date
     }
     
-    container.create_item(body=recipes, enable_automatic_id_generation=True)
-    # recipe_id = "UNIQUE_ID" # Replace with whatever ID is generated for recipe, probably from cosmos; will be used to start streams
-    recipe_id = recipes.get('id')
+    cosmos_dict = recipe_container.create_item(body=recipe_dict, enable_automatic_id_generation=True)
+    recipe_id = cosmos_dict.get('id')
+
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
+
     channel_info = streaming.create_recipe_channel(recipe_id)
+    stream_url = channel_info.get('output').get('uri')
+    stream_dict = {
+        "recipe_id": recipe_id,
+        "stream_url": stream_url,
+        "step_timings": []
+    }
+
+    stream_container.create_item(body=stream_dict, enable_automatic_id_generation=True)
+
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
 
@@ -228,7 +271,19 @@ MOCK_STREAM = lambda: (Path(__file__).parent / 'mock_stream.json').read_text()
 
 @app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_live(req: func.HttpRequest) -> func.HttpResponse:
+    recipe_id = req.route_params.get('recipeId')
+
     return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
+
+    if (recipe_id == 1):
+        return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
+    else:
+        stream_data = stream_container.read_item(item={}, partition_key=recipe_id)
+        stream_dict = {
+            "name": "",
+            "stream": stream_data.get("stream_url"),
+            "channel": ""
+        }
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_vod(req: func.HttpRequest) -> func.HttpResponse:
