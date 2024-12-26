@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Typography, Card, CardMedia, CardContent, IconButton } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Item, SectionProps } from '../redux/types';
+import { Link as RouterLink } from 'react-router-dom';
+
 
 export default function Section({ title, items }: SectionProps) {
   const [startIndex, setStartIndex] = useState(0); // Index of the first visible item
@@ -64,11 +66,14 @@ export default function Section({ title, items }: SectionProps) {
           {visibleItems.map((item) => (
             <Card
               key={item.id}
+              component={RouterLink} // Use RouterLink for navigation
+              to={item.link} // Navigate to the item's link (e.g., "/live/1" or "/ondemand/1")
               style={{
                 width: '300px',
                 height: '250px',
                 boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                 borderRadius: '10px',
+                textDecoration: 'none', // Remove default link styling
               }}
             >
               <CardMedia
