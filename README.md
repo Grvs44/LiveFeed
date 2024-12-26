@@ -1,7 +1,7 @@
 # COMP3207 Coursework 2
 ## Running the Application Locally
 ### Backend
-1. Enter the command:
+1. Enter the `Backend` directory:
 ```bash
 cd Backend
 ```
@@ -14,7 +14,7 @@ pip install -r requirements.txt
 func start
 ```
 ### Frontend
-1. Enter the command:
+1. Enter the `Frontend` directory:
 ```bash
 cd Frontend
 ```
@@ -24,7 +24,7 @@ npm i
 ```
 3. Start the Frontend of the application:
 ```bash
-npm run
+npm start
 ```
 ## Sources
 ### Backend
