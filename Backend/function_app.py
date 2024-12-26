@@ -199,28 +199,26 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
-
-    recipe_id = "UNIQUE_ID" # Replace with whatever ID is generated for recipe, probably from cosmos; will be used to start streams
-
-    channel_info = streaming.create_recipe_channel(recipe_id)
-@app.route(route="recipe/upload", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
-def upload_recipe(req: func.HttpRequest) -> func.HttpResponse:
+    
     info = req.get_json()
-    user_id = info.get('userId')
     title = info.get('title')
     steps = info.get('steps')
     shoppingList = info.get('shoppingList')
     date = info.get('scheduledDate')
     
     recipes = {
-        "id": user_id,
+        "user_id": user_id,
         "title": title,
         "steps": steps,
         "shoppingList": shoppingList,
         "date": date
     }
     
-    container.create_item(body=recipes, enable_automatic_id_generation=False)
+    container.create_item(body=recipes, enable_automatic_id_generation=True)
+    # recipe_id = "UNIQUE_ID" # Replace with whatever ID is generated for recipe, probably from cosmos; will be used to start streams
+    recipe_id = recipes.get('id')
+    logging.info(f"Auto-generated recipe ID: {recipe_id}")
+    channel_info = streaming.create_recipe_channel(recipe_id)
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
 
