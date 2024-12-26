@@ -68,3 +68,13 @@ export type SectionProps = {
   title: string
   items: Item[]
 }
+
+export type Recipe = {
+  user_id : string,
+  id: string,
+  title: string;
+  date: string;
+  steps: { stepNum: number; stepDesc: string }[];
+  shoppingList: { item: string; amount: number; unit: string }[];
+}
+

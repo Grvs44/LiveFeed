@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import { useCreateRecipeMutation } from '../redux/apiSlice';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit} from '@mui/icons-material';
+import {Recipe} from '../redux/types'
+import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation } from '../redux/apiSlice';
+
 
 
 export default function RecipesPage() {
@@ -17,6 +21,8 @@ export default function RecipesPage() {
   React.useEffect(() => {
     dispatch(setTitle('Recipes'))
   }, [])
+
+  
   
   const [currerntTab, setCurrentTab] = useState<'uploads' | 'manager'>('uploads');
 
@@ -162,10 +168,223 @@ function RecipeUploads() {
 }
 
 
-function RecipeManagement() {
+function RecipeManagement () {
+ 
+  
+  const [getRecipe] = useGetRecipeMutation();
+  const [updateRecipe] = useUpdateRecipeMutation();
+  const [recipeList, setRecipeList] = useState<Recipe[]>([]);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+
+  React.useEffect(() => {
+    fetchRecipes();
+  }, []);
+  const params = new URLSearchParams({
+
+  });
+
+  const fetchRecipes = async () => {
+    try {
+      const response = await getRecipe("").unwrap();
+      console.log(response)
+      setRecipeList(response);
+    } catch (error) {
+      console.error("Error getting recipe list:", error);
+    }
+  };
+
+
+  const handleEditClick = (recipe : Recipe) => {
+    setEditingRecipe({ ...recipe });
+    setEditDialog(true);
+  };
+
+  const handleEditClose = () => {
+    setEditDialog(false);
+    setEditingRecipe(null);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      await updateRecipe(editingRecipe).unwrap();
+      handleEditClose();
+      fetchRecipes();
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+    }
+  };
+
+  const updateStep = (stepNum : number, newDesc : string) => {
+    setEditingRecipe(prev => prev ? ({
+      ...prev,
+      steps: prev.steps.map(step => 
+        step.stepNum === stepNum ? { ...step, stepDesc: newDesc } : step
+      )
+    }) : prev);
+  };
+
+  const updateShoppingItem = (index: number, field: string, value: string | number) => {
+    setEditingRecipe(prev => prev ? ({
+      ...prev,
+      shoppingList: prev.shoppingList.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }) : null);
+  };
+
+
+  const formatDate = (dateStr: string | number | Date) => {
+    if (!dateStr) return '';
+    return new Date(dateStr).toLocaleString();
+  };
+  if (!recipeList) {
+    return (
+      <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography>Loading recipe details...</Typography>
+        </Paper>
+      </Box>
+    );
+  }
+ 
   return (
-    <div>
-      <p>Recipe Manage</p>
-    </div>
+
+    <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+      {recipeList.map((recipe) => (
+        <Card sx={{ mb: 3 }} key={recipe.id}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
+              <Button
+                startIcon={<Edit />}
+                variant="contained"
+                color="primary"
+                onClick={() => handleEditClick(recipe)}
+              >
+                Edit Recipe
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mb: 2 }}>
+              <AccessTime sx={{ mr: 1 }} />
+              <Typography variant="body2">{formatDate(recipe.date)}</Typography>
+            </Box>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <FormatListNumbered sx={{ mr: 1 }} />
+                    <Typography variant="h6">Recipe Steps</Typography>
+                  </Box>
+                  <List>
+                    {recipe.steps?.map((step) => (
+                      <ListItem key={step.stepNum}>
+                        <ListItemText
+                          primary={
+                            <Typography>
+                              <strong>{step.stepNum}.</strong> {step.stepDesc}
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <ShoppingCart sx={{ mr: 1 }} />
+                    <Typography variant="h6">Shopping List</Typography>
+                  </Box>
+                  <List>
+                    {recipe.shoppingList?.map((item, index) => (
+                      <React.Fragment key={index}>
+                        <ListItem>
+                          <ListItemText
+                            primary={item.item}
+                            secondary={`${item.amount} ${item.unit}`}
+                          />
+                        </ListItem>
+                        {index < recipe.shoppingList.length - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+       <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Recipe</DialogTitle>
+        <DialogContent>
+          {editingRecipe && (
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                fullWidth
+                label="Recipe Title"
+                value={editingRecipe.title}
+                onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, title: e.target.value } : null)}
+                margin="normal"
+              />
+              
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Steps</Typography>
+              {editingRecipe.steps.map((step) => (
+                <TextField
+                  key={step.stepNum}
+                  fullWidth
+                  label={`Step ${step.stepNum}`}
+                  value={step.stepDesc}
+                  onChange={(e) => updateStep(step.stepNum, e.target.value)}
+                  margin="normal"
+                />
+              ))}
+
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Shopping List</Typography>
+              {editingRecipe.shoppingList.map((item, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    label="Item"
+                    value={item.item}
+                    onChange={(e) => updateShoppingItem(index, 'item', e.target.value)}
+                  />
+                  <TextField
+                    label="Amount"
+                    type="number"
+                    value={item.amount}
+                    onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))}
+                  />
+                  <TextField
+                    label="Unit"
+                    value={item.unit}
+                    onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)}
+                  />
+                </Box>
+              ))}
+
+              <TextField
+                fullWidth
+                label="Scheduled Date"
+                type="datetime-local"
+                value={editingRecipe.date?.slice(0, 16) || ''}
+                onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, date: e.target.value } : null)}
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose}>Cancel</Button>
+          <Button onClick={handleSaveChanges} variant="contained" color="primary">
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </Box>
+    
   );
-}
+ };
