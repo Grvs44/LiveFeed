@@ -75,7 +75,7 @@ export type Recipe = {
   id: string,
   title: string;
   date: string;
-  steps: { stepNum: number; stepDesc: string }[];
-  shoppingList: { item: string; amount: number; unit: string }[];
+  steps: RecipeStep[];
+  shopping: { item: string; quantity: number; unit: string }[];
 }
 

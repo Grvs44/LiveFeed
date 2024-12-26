@@ -223,11 +223,11 @@ function RecipeManagement () {
     }
   };
 
-  const updateStep = (stepNum : number, newDesc : string) => {
+  const updateStep = (id : number, newDesc : string) => {
     setEditingRecipe(prev => prev ? ({
       ...prev,
       steps: prev.steps.map(step => 
-        step.stepNum === stepNum ? { ...step, stepDesc: newDesc } : step
+        step.id === id ? { ...step, text: newDesc } : step
       )
     }) : prev);
   };
@@ -235,7 +235,7 @@ function RecipeManagement () {
   const updateShoppingItem = (index: number, field: string, value: string | number) => {
     setEditingRecipe(prev => prev ? ({
       ...prev,
-      shoppingList: prev.shoppingList.map((item, i) => 
+      shopping: prev.shopping.map((item, i) => 
         i === index ? { ...item, [field]: value } : item
       )
     }) : null);
@@ -245,32 +245,32 @@ const addStep = () => {
   setEditingRecipe(prev => prev ? ({
     ...prev,
     steps: [...prev.steps, { 
-      stepNum: prev.steps.length + 1, 
-      stepDesc: '' 
+      id: prev.steps.length + 1, 
+      text: '' 
     }]
   }) : prev);
 };
 
-const deleteStep = (stepNum: number) => {
+const deleteStep = (id: number) => {
   setEditingRecipe(prev => prev ? ({
     ...prev,
     steps: prev.steps
-      .filter(step => step.stepNum !== stepNum)
-      .map((step, idx) => ({ ...step, stepNum: idx + 1 }))
+      .filter(step => step.id !== id)
+      .map((step, idx) => ({ ...step, id: idx + 1 }))
   }) : prev);
 };
 
 const addShoppingItem = () => {
   setEditingRecipe(prev => prev ? ({
     ...prev,
-    shoppingList: [...prev.shoppingList, { item: '', amount: 0, unit: '' }]
+    shopping: [...prev.shopping, { item: '', quantity: 0, unit: '' }]
   }) : prev);
 };
 
 const deleteShoppingItem = (index: number) => {
   setEditingRecipe(prev => prev ? ({
     ...prev,
-    shoppingList: prev.shoppingList.filter((_, i) => i !== index)
+    shopping: prev.shopping.filter((_, i) => i !== index)
   }) : prev);
 };
 
@@ -331,11 +331,11 @@ const deleteShoppingItem = (index: number) => {
                   </Box>
                   <List>
                     {recipe.steps?.map((step) => (
-                      <ListItem key={step.stepNum}>
+                      <ListItem key={step.id}>
                         <ListItemText
                           primary={
                             <Typography>
-                              <strong>{step.stepNum}.</strong> {step.stepDesc}
+                              <strong>{step.id}.</strong> {step.text}
                             </Typography>
                           }
                         />
@@ -352,15 +352,15 @@ const deleteShoppingItem = (index: number) => {
                     <Typography variant="h6">Shopping List</Typography>
                   </Box>
                   <List>
-                    {recipe.shoppingList?.map((item, index) => (
+                    {recipe.shopping?.map((item, index) => (
                       <React.Fragment key={index}>
                         <ListItem>
                           <ListItemText
                             primary={item.item}
-                            secondary={`${item.amount} ${item.unit}`}
+                            secondary={`${item.quantity} ${item.unit}`}
                           />
                         </ListItem>
-                        {index < recipe.shoppingList.length - 1 && <Divider />}
+                        {index < recipe.shopping.length - 1 && <Divider />}
                       </React.Fragment>
                     ))}
                   </List>
@@ -388,15 +388,15 @@ const deleteShoppingItem = (index: number) => {
               <Button startIcon={<Add />} onClick={addStep}>Add Step</Button>
             </Box>
             {editingRecipe.steps.map((step) => (
-              <Box key={step.stepNum} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
+              <Box key={step.id} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <TextField
                   fullWidth
-                  label={`Step ${step.stepNum}`}
-                  value={step.stepDesc}
-                  onChange={(e) => updateStep(step.stepNum, e.target.value)}
+                  label={`Step ${step.id}`}
+                  value={step.text}
+                  onChange={(e) => updateStep(step.id, e.target.value)}
                   margin="normal"
                 />
-                <IconButton onClick={() => deleteStep(step.stepNum)}>
+                <IconButton onClick={() => deleteStep(step.id)}>
                   <Delete />
                 </IconButton>
               </Box>
@@ -406,7 +406,7 @@ const deleteShoppingItem = (index: number) => {
               <Typography variant="h6">Shopping List</Typography>
               <Button startIcon={<Add />} onClick={addShoppingItem}>Add Item</Button>
             </Box>
-            {editingRecipe.shoppingList.map((item, index) => (
+            {editingRecipe.shopping.map((item, index) => (
               <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
                 <TextField
                   label="Item"
@@ -414,10 +414,10 @@ const deleteShoppingItem = (index: number) => {
                   onChange={(e) => updateShoppingItem(index, 'item', e.target.value)}
                 />
                 <TextField
-                  label="Amount"
+                  label="quantity"
                   type="number"
-                  value={item.amount}
-                  onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))}
+                  value={item.quantity}
+                  onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))}
                 />
                 <TextField
                   label="Unit"
