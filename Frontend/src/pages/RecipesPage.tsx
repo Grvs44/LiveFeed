@@ -42,21 +42,21 @@ export default function RecipesPage() {
 
 function RecipeUploads() {
   const [createRecipe] = useCreateRecipeMutation();
-  const [recipes, setRecipes] = useState<{title: string; steps: { stepNum: number; stepDesc: string }[]; shoppingList: { item: string; amount: number; unit: string }[]; scheduledDate: string }[]>([]);
+  const [recipes, setRecipes] = useState<{title: string; steps: { id: number; text: string }[]; shopping: { item: string; quantity: number; unit: string }[]; scheduledDate: string }[]>([]);
   const [title, setTitle] = useState<string>('');
-  const [steps, setSteps] = useState<{ stepNum: number; stepDesc: string }[]>([]);
-  const [shoppingList, setShoppingList] = useState<{ item: string; amount: number; unit: string }[]>([]);
+  const [steps, setSteps] = useState<{ id: number; text: string }[]>([]);
+  const [shopping, setShopping] = useState<{ item: string; quantity: number; unit: string }[]>([]);
   const [scheduledDate, setScheduledDate] = useState<string>('');
 
   const addStep = () => {
-    setSteps([...steps, { stepNum: steps.length + 1, stepDesc: '' }]);
+    setSteps([...steps, { id: steps.length + 1, text: '' }]);
   };
 
-  const addStepDesc = (stepCount: number, stepSentence: string) => {
+  const addText = (stepCount: number, stepSentence: string) => {
     const updatedSteps = [...steps]; 
     for (let i = 0; i < updatedSteps.length; i++) {
-      if (updatedSteps[i].stepNum === stepCount) {
-        updatedSteps[i] = { ...updatedSteps[i], stepDesc: stepSentence };
+      if (updatedSteps[i].id === stepCount) {
+        updatedSteps[i] = { ...updatedSteps[i], text: stepSentence };
         break;
       }
     }
@@ -64,30 +64,30 @@ function RecipeUploads() {
   };
 
   const addShoppingItem = () => {
-    setShoppingList([...shoppingList, { item: '', amount: 0, unit: '' }]);
+    setShopping([...shopping, { item: '', quantity: 0, unit: '' }]);
   }
   
-  const updateShoppingItem = (index: number, item: 'item' | 'amount' | 'unit', value: string | number) => {
-    const updatedItemList = [...shoppingList];
+  const updateShoppingItem = (index: number, item: 'item' | 'quantity' | 'unit', value: string | number) => {
+    const updatedItemList = [...shopping];
     for (let i = 0; i < updatedItemList.length; i++) {
       if (i === index) {
         updatedItemList[i] = { ...updatedItemList[i], [item]: value };
         break;
       }
     }
-    setShoppingList(updatedItemList);
+    setShopping(updatedItemList);
   };
 
   const uploadRecipe = async () => {
-    if (title && steps.length > 0 && shoppingList.length > 0 && scheduledDate) {
-      const newRecipe = { title, steps, shoppingList, scheduledDate };
+    if (title && steps.length > 0 && shopping.length > 0 && scheduledDate) {
+      const newRecipe = { title, steps, shopping, scheduledDate };
       try {
         const response = await createRecipe(newRecipe).unwrap();
         alert("Recipe uploaded successfully");
         setRecipes([...recipes, newRecipe]);
         setTitle('');
         setSteps([]);
-        setShoppingList([]);
+        setShopping([]);
         setScheduledDate('');
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
@@ -111,8 +111,8 @@ function RecipeUploads() {
       <div>
         <label>Steps:</label>
         {steps.map((step) => (
-          <div key={step.stepNum}>
-            <input type="text" placeholder={`Step ${step.stepNum}`} value={step.stepDesc} onChange={(e) => addStepDesc(step.stepNum, e.target.value)} />
+          <div key={step.id}>
+            <input type="text" placeholder={`Step ${step.id}`} value={step.text} onChange={(e) => addText(step.id, e.target.value)} />
           </div>
         ))}
         <button onClick={addStep}>Add Step</button>
@@ -120,10 +120,10 @@ function RecipeUploads() {
 
       <div>
         <label>Shopping List:</label>
-        {shoppingList.map((item, index) => (
+        {shopping.map((item, index) => (
           <div key={index} style={{ display: 'flex', gap: '10px' }}>
             <input type="text" placeholder="Item" value={item.item} onChange={(e) => updateShoppingItem(index, 'item', e.target.value)} />
-            <input type="number" placeholder="Amount" value={item.amount} onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))} />
+            <input type="number" placeholder="quantity" value={item.quantity} onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))} />
             <input type="text" placeholder="Unit (e.g., kg, g, ml)" value={item.unit} onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)} />
           </div>
         ))}
@@ -146,14 +146,14 @@ function RecipeUploads() {
               <p>Steps:</p>
               <ol>
                 {recipe.steps.map((step) => (
-                  <li key={step.stepNum}>{step.stepDesc}</li>
+                  <li key={step.id}>{step.text}</li>
                 ))}
               </ol>
               <p>Shopping List:</p>
               <ul>
-                {recipe.shoppingList.map((item, i) => (
+                {recipe.shopping.map((item, i) => (
                   <li key={i}>
-                    {item.amount} {item.unit} of {item.item}
+                    {item.quantity} {item.unit} of {item.item}
                   </li>
                 ))}
               </ul>
