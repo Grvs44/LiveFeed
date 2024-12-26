@@ -6,17 +6,16 @@ import { Item } from '../redux/types'
 
 // Dummy data
 const liveStreams: Item[] = [
-  { id: 1, title: 'Cooking Show', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 2, title: 'Gaming Live', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 3, title: 'Art Stream', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 4, title: 'Just Chatting', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250' }
+  { id: 1, title: 'Cooking Show', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
+  { id: 2, title: 'Gaming Live', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
+  { id: 3, title: 'Art Stream', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
+  { id: 4, title: 'Just Chatting', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
 ];
 
 const onDemandStreams: Item[] = [
-  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 6, title: 'Gaming Highlights', thumbnail: 'https://via.placeholder.com/300x250' },
-  { id: 7, title: 'Music Replay', thumbnail: 'https://via.placeholder.com/300x250' },
+  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
+  { id: 6, title: 'Gaming Highlights', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
+  { id: 7, title: 'Music Replay', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
 ];
 
 export default function HomePage() {
