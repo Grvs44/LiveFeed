@@ -10,6 +10,7 @@ const liveStreams: Item[] = [
   { id: 2, title: 'Gaming Live', thumbnail: 'https://via.placeholder.com/300x250' },
   { id: 3, title: 'Art Stream', thumbnail: 'https://via.placeholder.com/300x250' },
   { id: 4, title: 'Just Chatting', thumbnail: 'https://via.placeholder.com/300x250' },
+  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250' }
 ];
 
 const onDemandStreams: Item[] = [
@@ -20,12 +21,11 @@ const onDemandStreams: Item[] = [
 
 export default function HomePage() {
 
-  // Might use image instead (LogoClear.png)
-  /* const dispatch = useDispatch()
+  const dispatch = useDispatch()
 
   React.useEffect(() => {
     dispatch(setTitle('LiveFeed'))
-  }, []) */
+  }, [])
 
   return (
     <div
