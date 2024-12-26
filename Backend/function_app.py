@@ -128,8 +128,6 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
         
     ### Authentication ###
 
-    logging.info(get_user_by_object_id(claims.get('sub')))
-
     roles=[]
 
     if username:
@@ -236,14 +234,14 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     info = req.get_json()
     title = info.get('title')
     steps = info.get('steps')
-    shoppingList = info.get('shoppingList')
+    shopping = info.get('shopping')
     date = info.get('scheduledDate')
     
     recipe_dict = {
         "user_id": user_id,
         "title": title,
         "steps": steps,
-        "shoppingList": shoppingList,
+        "shopping": shopping,
         "date": date
     }
     
@@ -253,15 +251,15 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
     channel_info = streaming.create_recipe_channel(recipe_id)
-    stream_url = channel_info.get('output').get('uri')
+    stream_url = channel_info.output.uri
     stream_dict = {
-        "recipe_id": recipe_id,
+        "id": recipe_id,
         "user_id": user_id,
         "stream_url": stream_url,
-        "step_timings": []
+        "step_timings": {}
     }
 
-    stream_container.create_item(body=stream_dict, enable_automatic_id_generation=True)
+    stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
@@ -271,20 +269,26 @@ from pathlib import Path
 MOCK_STREAM = lambda: (Path(__file__).parent / 'mock_stream.json').read_text()
 
 @app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
-def mock_live(req: func.HttpRequest) -> func.HttpResponse:
+def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
 
-    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
+    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
+    streamer_id = stream_data.get('user_id')
+    recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
+    step_timings = stream_data.get('step_timings')
 
-    if (recipe_id == 1):
-        return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
-    else:
-        stream_data = stream_container.read_item(item={}, partition_key=recipe_id)
-        stream_dict = {
-            "name": "",
-            "stream": stream_data.get("stream_url"),
-            "channel": ""
-        }
+    timed_steps = [{"id": step.get('id'), "text": step.get('text'), "time": step_timings.get(step.get('id'))} for step in recipe_data.get('steps')]
+
+    stream_dict = {
+        "name": recipe_data.get('title'),
+        "stream": stream_data.get("stream_url"),
+        "streamer": get_display_name(streamer_id),
+        "group": recipe_id,
+        "recipe": timed_steps,
+        "shopping": recipe_data.get('shopping')
+    }
+
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def mock_vod(req: func.HttpRequest) -> func.HttpResponse:
