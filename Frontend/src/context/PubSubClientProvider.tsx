@@ -23,7 +23,6 @@ export type ProviderValue = {
 
 export type PubSubClientProviderProps = {
   children: React.ReactNode
-  channelId: string
   groupName: string
   minStepId?: number // currentStep cannot be less than this value
   maxStepId?: number // currentStep cannot be more than this value
@@ -64,7 +63,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     const client = new WebPubSubClient({
       getClientAccessUrl: async () => {
         const response = await fetch(
-          `${baseUrl}chat/negotiate?recipeId=${props.channelId}`,
+          `${baseUrl}chat/negotiate?recipeId=${props.groupName}`,
           { headers },
         )
         const value = await response.json()

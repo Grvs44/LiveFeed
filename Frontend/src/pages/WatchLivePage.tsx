@@ -28,13 +28,13 @@ export default function WatchLivePage() {
       ) : (
         <PubSubClientProvider
           groupName={data.group}
-          channelId={data.channel}
           minStepId={data.recipe[0]?.id}
           maxStepId={data.recipe.at(-1)?.id}
         >
           <Grid container spacing={2}>
             <Grid size={8}>
               <Typography>{data?.name}</Typography>
+              <Typography>{data?.streamer}</Typography>
               <VideoPlayer autoPlay={true} src={data?.stream} />
               <ChatBox />
             </Grid>
