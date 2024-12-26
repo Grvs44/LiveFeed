@@ -66,7 +66,18 @@ export const apiSlice = createApi({
         body: recipe,
    
       }),
+      
+    }),
+    deleteRecipe: builder.mutation<any, any>({
+      query: (recipe) => ({
+        url: '/recipe/delete',
+        method: 'POST',
+        body: recipe,
+   
+      }),
+      
     })
+
   }),
 })
 
@@ -77,4 +88,5 @@ export const {
   useCreateRecipeMutation,
   useGetRecipeMutation,
   useUpdateRecipeMutation,
+  useDeleteRecipeMutation
 } = apiSlice
