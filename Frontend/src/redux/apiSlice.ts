@@ -52,6 +52,21 @@ export const apiSlice = createApi({
         body: recipe,
       }),
     }),
+    getRecipe: builder.mutation<any, any>({
+      query: () => ({
+        url: '/recipe/get',
+        method: 'GET',
+   
+      }),
+    }),
+    updateRecipe: builder.mutation<any, any>({
+      query: (recipe) => ({
+        url: '/recipe/update',
+        method: 'PUT',
+        body: recipe,
+   
+      }),
+    })
   }),
 })
 
@@ -60,4 +75,6 @@ export const {
   useGetOndemandStreamQuery,
   useStartStreamMutation,
   useCreateRecipeMutation,
+  useGetRecipeMutation,
+  useUpdateRecipeMutation,
 } = apiSlice

@@ -225,11 +225,26 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get Recipe')
 
-    id = req.params.get('id')
+    # id = req.params.get('id')
+    logging.info('Received stream start request')
+
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
     
     try:
     
-        query = f"SELECT * FROM c WHERE c.id = '{id}'"
+        query = f"SELECT * FROM c WHERE c.user_id = '{ user_id}'"
         
         items = list(container.query_items(
             query=query,
@@ -242,8 +257,9 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
                 status_code=404
             )
             
-        response_body = json.dumps(items[0])
-        logging.info('Successful recipe retrieval')
+        response_body = json.dumps(items)
+        logging.info('Successful recipe retrieval }')
+        logging.info(items)
         return func.HttpResponse(response_body, status_code=200)
         
     except Exception as e:
@@ -255,37 +271,42 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
 def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
-   try:
-       info = req.get_json()
-       user_id = info.get('userId')
-       title = info.get('title')
-       steps = info.get('steps') 
-       shoppingList = info.get('shoppingList')
-       date = info.get('scheduledDate')
+    logging.info('Update Recipe')
+    
+    try:
+        info = req.get_json()
+        logging.info(info)
+        user_id = info.get('user_id')
+        id = info.get('id')
+        title = info.get('title')
+        steps = info.get('steps') 
+        shoppingList = info.get('shoppingList')
+        date = info.get('date')
 
-       # Check if recipe exists
-       query = f"SELECT * FROM c WHERE c.id = '{user_id}'"
-       items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        query = f"SELECT * FROM c WHERE c.id = '{id}'"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        logging.info(items)
+        
+        if not items:
+            return func.HttpResponse("Recipe not found", status_code=404)
+
        
-       if not items:
-           return func.HttpResponse("Recipe not found", status_code=404)
+        recipes = {
+            "user_id": user_id,
+            "id" : id,
+            "title": title, 
+            "steps": steps,
+            "shoppingList": shoppingList,
+            "date": date
+        }
 
-       # Update recipe
-       recipes = {
-           "id": user_id,
-           "title": title, 
-           "steps": steps,
-           "shoppingList": shoppingList,
-           "date": date
-       }
+        container.replace_item(item=id, body=recipes)
+        return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
-       container.replace_item(item=user_id, body=recipes)
-       return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
-
-   except Exception as e:
-       logging.error(f'Error updating recipe: {str(e)}')
+    except Exception as e:
+        logging.error(f'Error updating recipe: {str(e)}')
    
-   return func.HttpResponse("Error updating recipe", status_code=500)
+    return func.HttpResponse("Error updating recipe", status_code=500)
 
 
 

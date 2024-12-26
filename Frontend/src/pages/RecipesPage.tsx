@@ -5,7 +5,8 @@ import { setTitle } from '../redux/titleSlice'
 import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
-import { useCreateRecipeMutation } from '../redux/apiSlice';
+import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation } from '../redux/apiSlice';
+
 
 
 export default function RecipesPage() {
@@ -170,14 +171,9 @@ function RecipeUploads() {
 function RecipeManagement () {
  
   
-  // interface Recipe {
-  //   title: string;
-  //   date: string;
-  //   steps: { stepNum: number; stepDesc: string }[];
-  //   shoppingList: { item: string; amount: number; unit: string }[];
-  // }
-
-  const [recipeList, setRecipeList] = useState<Recipe | null>(null);
+  const [getRecipe] = useGetRecipeMutation();
+  const [updateRecipe] = useUpdateRecipeMutation();
+  const [recipeList, setRecipeList] = useState<Recipe[]>([]);
   const [editDialog, setEditDialog] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
 
@@ -188,35 +184,17 @@ function RecipeManagement () {
 
   });
 
-  // const fetchRecipes = async () => {
-  //   try {
-  //     const response = await fetch(`/api/recipe/get?${params.toString()}`, {
-  //       method: 'GET',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //     });
-  //     const data = await response.json();
-  //     setRecipeList(data);
-  //   } catch (error) {
-  //     console.error("Error getting recipe list:", error);
-  //   }
-  // };
-
   const fetchRecipes = async () => {
     try {
-      const response = await fetch(`/api/recipe/get?id=3c3e2104-2a56-4878-a4c4-3620b09b281c`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-      const data = await response.json();
-      setRecipeList(data);
+      const response = await getRecipe("").unwrap();
+      console.log(response)
+      setRecipeList(response);
     } catch (error) {
       console.error("Error getting recipe list:", error);
     }
   };
+
+
   const handleEditClick = (recipe : Recipe) => {
     setEditingRecipe({ ...recipe });
     setEditDialog(true);
@@ -229,20 +207,9 @@ function RecipeManagement () {
 
   const handleSaveChanges = async () => {
     try {
-      const response = await fetch('/api/recipe/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(editingRecipe),
-      });
-
-      if (response.ok) {
-        fetchRecipes();
-        handleEditClose();
-      } else {
-        console.error("Failed to update recipe");
-      }
+      await updateRecipe(editingRecipe).unwrap();
+      handleEditClose();
+      fetchRecipes();
     } catch (error) {
       console.error("Error updating recipe:", error);
     }
@@ -282,78 +249,76 @@ function RecipeManagement () {
   }
  
   return (
-    <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
 
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Typography variant="h4" gutterBottom>{recipeList.title}</Typography>
-            <Button
-              startIcon={<Edit />}
-              variant="contained"
-              color="primary"
-              onClick={() => handleEditClick(recipeList)}
-            >
-              Edit Recipe
-            </Button>
-          </Box>
-          <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
-            <AccessTime sx={{ mr: 1 }} />
-            <Typography variant="body2">{formatDate(recipeList.date)}</Typography>
-          </Box>
-        </CardContent>
-      </Card>
- 
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <FormatListNumbered sx={{ mr: 1 }} />
-                <Typography variant="h6">Recipe Steps</Typography>
-              </Box>
-              <List>
-                {recipeList.steps?.map((step) => (
-                  <ListItem key={step.stepNum}>
-                    <ListItemText
-                      primary={
-                        <Typography>
-                          <strong>{step.stepNum}.</strong> {step.stepDesc}
-                        </Typography>
-                      }
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
- 
-        <Grid item xs={12} md={6}>
-          <Card>
-            <CardContent>
-              <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                <ShoppingCart sx={{ mr: 1 }} />
-                <Typography variant="h6">Shopping List</Typography>
-              </Box>
-              <List>
-                {recipeList.shoppingList?.map((item, index) => (
-                  <React.Fragment key={index}>
-                    <ListItem>
-                      <ListItemText
-                        primary={item.item}
-                        secondary={`${item.amount} ${item.unit}`}
-                      />
-                    </ListItem>
-                    {index < recipeList.shoppingList.length - 1 && <Divider />}
-                  </React.Fragment>
-                ))}
-              </List>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-      <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
+    <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+      {recipeList.map((recipe) => (
+        <Card sx={{ mb: 3 }} key={recipe.id}>
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
+              <Button
+                startIcon={<Edit />}
+                variant="contained"
+                color="primary"
+                onClick={() => handleEditClick(recipe)}
+              >
+                Edit Recipe
+              </Button>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mb: 2 }}>
+              <AccessTime sx={{ mr: 1 }} />
+              <Typography variant="body2">{formatDate(recipe.date)}</Typography>
+            </Box>
+
+            <Grid container spacing={3}>
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <FormatListNumbered sx={{ mr: 1 }} />
+                    <Typography variant="h6">Recipe Steps</Typography>
+                  </Box>
+                  <List>
+                    {recipe.steps?.map((step) => (
+                      <ListItem key={step.stepNum}>
+                        <ListItemText
+                          primary={
+                            <Typography>
+                              <strong>{step.stepNum}.</strong> {step.stepDesc}
+                            </Typography>
+                          }
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Box>
+              </Grid>
+
+              <Grid item xs={12} md={6}>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                    <ShoppingCart sx={{ mr: 1 }} />
+                    <Typography variant="h6">Shopping List</Typography>
+                  </Box>
+                  <List>
+                    {recipe.shoppingList?.map((item, index) => (
+                      <React.Fragment key={index}>
+                        <ListItem>
+                          <ListItemText
+                            primary={item.item}
+                            secondary={`${item.amount} ${item.unit}`}
+                          />
+                        </ListItem>
+                        {index < recipe.shoppingList.length - 1 && <Divider />}
+                      </React.Fragment>
+                    ))}
+                  </List>
+                </Box>
+              </Grid>
+            </Grid>
+          </CardContent>
+        </Card>
+      ))}
+       <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Recipe</DialogTitle>
         <DialogContent>
           {editingRecipe && (
