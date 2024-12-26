@@ -2,6 +2,7 @@ from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
     LivestreamServiceClient,
 )
+from google.cloud import storage
 from google.protobuf import duration_pb2 as duration
 import google.api_core.exceptions as google_exceptions
 import logging
@@ -176,3 +177,10 @@ def stop_stream(recipe_id):
     logging.info(stop_channel(recipe_id))
 
     return get_channel(recipe_id)
+
+def save_vod(recipe_id):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket('livefeed-bucket')
+    vod_name = f'vods/vod-{recipe_id}'
+
+    return bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url

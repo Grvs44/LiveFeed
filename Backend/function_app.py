@@ -21,7 +21,7 @@ recipe_container = database.get_container_client('UploadedRecipes')
 stream_container = database.get_container_client('Streams')
 
 NOTIFY_HUB_NAME = 'livefeed-notify'
-CHAT_HUB_NAME = 'livefeed-chat'
+CHAT_HUB_NAME = 'livefeed'
 PUBSUB_CONNECTION_STRING = os.environ.get('WebPubSubConnectionString')
 CHAT_PUBSUB_SERVICE = WebPubSubServiceClient.from_connection_string(PUBSUB_CONNECTION_STRING, hub=CHAT_HUB_NAME)
 
@@ -172,7 +172,7 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
 
     response = streaming.start_stream(recipe_id)
 
-    if (response.get('streaming_state') == "STOPPED"):
+    if (response.streaming_state == "STOPPED"):
         return func.HttpResponse("Error while starting stream", status_code=500)
     else:
         return func.HttpResponse("Livestream successfully started")
@@ -200,9 +200,14 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
 
     recipe_id = req.route_params.get('recipeId')
 
+    vod_url = streaming.save_vod(recipe_id)
     response = streaming.stop_stream(recipe_id)
 
-    if (response.get('streaming_state') == "STOPPED"):
+    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
+    stream_data['stream_url'] = vod_url
+    stream_container.upsert_item(stream_data)
+
+    if (response.streaming_state == "STOPPED"):
         return func.HttpResponse("Livestream successfully ended")
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
@@ -263,15 +268,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
-
-# TODO: replace mock with real API
-from pathlib import Path
-MOCK_STREAM = lambda: (Path(__file__).parent / 'mock_stream.json').read_text()
-
-@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
-def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
-    recipe_id = req.route_params.get('recipeId')
-
+def get_stream_from_db(recipe_id):
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
     streamer_id = stream_data.get('user_id')
     recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
@@ -288,8 +285,18 @@ def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
         "shopping": recipe_data.get('shopping')
     }
 
+    return stream_dict
+
+@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
+    recipe_id = req.route_params.get('recipeId')
+    stream_dict = get_stream_from_db(recipe_id)
+
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
-def mock_vod(req: func.HttpRequest) -> func.HttpResponse:
-    return func.HttpResponse(MOCK_STREAM(), mimetype='application/json')
+def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
+    recipe_id = req.route_params.get('recipeId')
+    stream_dict = get_stream_from_db(recipe_id)
+
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')

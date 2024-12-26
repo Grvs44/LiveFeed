@@ -8,7 +8,7 @@ export type TitleState = {
 export type LiveStream = {
   name: string // Stream/recipe name
   stream: string // Video URL
-  channel: string // PubSub channel
+  streamer: string // PubSub channel
   group: string // PubSub group
   recipe: RecipeStep[]
   shopping: ShoppingListEntry[]
@@ -17,6 +17,7 @@ export type LiveStream = {
 export type OndemandStream = {
   name: string
   stream: string
+  streamer: string
   recipe: TimedRecipeStep[]
   shopping: ShoppingListEntry[]
 }
