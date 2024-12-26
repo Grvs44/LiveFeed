@@ -59,5 +59,6 @@ export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
   useStartStreamMutation,
+  useEndStreamMutation,
   useCreateRecipeMutation,
 } = apiSlice
