@@ -283,8 +283,8 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
         shoppingList = info.get('shoppingList')
         date = info.get('date')
 
-        query = f"SELECT * FROM c WHERE c.id = '{id}'"
-        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        query = f"SELECT * FROM c "
+        items = list(container.query_items(query=query, partition_key=user_id))
         logging.info(items)
         
         if not items:
