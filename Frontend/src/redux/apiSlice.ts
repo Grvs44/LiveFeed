@@ -85,6 +85,7 @@ export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
   useStartStreamMutation,
+  useEndStreamMutation,
   useCreateRecipeMutation,
   useGetRecipeMutation,
   useUpdateRecipeMutation,

@@ -37,6 +37,7 @@ export default function WatchOndemandPage() {
         <Grid container spacing={2}>
           <Grid size={8}>
             <Typography>{data?.name}</Typography>
+            <Typography>{data?.streamer}</Typography>
             <VideoPlayer
               autoPlay={true}
               src={data?.stream}
