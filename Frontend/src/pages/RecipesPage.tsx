@@ -73,7 +73,7 @@ function RecipeUploads() {
     if (title && steps.length > 0 && shoppingList.length > 0 && scheduledDate) {
       const newRecipe = { title, steps, shoppingList, scheduledDate };
       try {
-        const response = await fetch('/api/recipe/upload', {
+        const response = await fetch('/api/recipe/create', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
