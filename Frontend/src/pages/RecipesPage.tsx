@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
-import { AccessTime, FormatListNumbered, ShoppingCart , Edit} from '@mui/icons-material';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton} from '@mui/material';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
-import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation } from '../redux/apiSlice';
+import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 
 
 
@@ -170,7 +170,7 @@ function RecipeUploads() {
 
 function RecipeManagement () {
  
-  
+  const [deleteRecipe] = useDeleteRecipeMutation();
   const [getRecipe] = useGetRecipeMutation();
   const [updateRecipe] = useUpdateRecipeMutation();
   const [recipeList, setRecipeList] = useState<Recipe[]>([]);
@@ -194,6 +194,14 @@ function RecipeManagement () {
     }
   };
 
+  const handleDeleteRecipe = async (recipe : Recipe) => {
+  try {
+    await deleteRecipe(recipe).unwrap();
+    fetchRecipes();
+  } catch (error) {
+    console.error("Error deleting recipe:", error);
+  }
+};
 
   const handleEditClick = (recipe : Recipe) => {
     setEditingRecipe({ ...recipe });
@@ -233,6 +241,39 @@ function RecipeManagement () {
     }) : null);
   };
 
+const addStep = () => {
+  setEditingRecipe(prev => prev ? ({
+    ...prev,
+    steps: [...prev.steps, { 
+      stepNum: prev.steps.length + 1, 
+      stepDesc: '' 
+    }]
+  }) : prev);
+};
+
+const deleteStep = (stepNum: number) => {
+  setEditingRecipe(prev => prev ? ({
+    ...prev,
+    steps: prev.steps
+      .filter(step => step.stepNum !== stepNum)
+      .map((step, idx) => ({ ...step, stepNum: idx + 1 }))
+  }) : prev);
+};
+
+const addShoppingItem = () => {
+  setEditingRecipe(prev => prev ? ({
+    ...prev,
+    shoppingList: [...prev.shoppingList, { item: '', amount: 0, unit: '' }]
+  }) : prev);
+};
+
+const deleteShoppingItem = (index: number) => {
+  setEditingRecipe(prev => prev ? ({
+    ...prev,
+    shoppingList: prev.shoppingList.filter((_, i) => i !== index)
+  }) : prev);
+};
+
 
   const formatDate = (dateStr: string | number | Date) => {
     if (!dateStr) return '';
@@ -254,17 +295,28 @@ function RecipeManagement () {
       {recipeList.map((recipe) => (
         <Card sx={{ mb: 3 }} key={recipe.id}>
           <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
-              <Button
-                startIcon={<Edit />}
-                variant="contained"
-                color="primary"
-                onClick={() => handleEditClick(recipe)}
-              >
-                Edit Recipe
-              </Button>
-            </Box>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
+          <Box>
+            <Button
+              startIcon={<Edit />}
+              variant="contained"
+              color="primary"
+              onClick={() => handleEditClick(recipe)}
+              sx={{ mr: 1 }}
+            >
+              Edit Recipe
+            </Button>
+            <Button
+              startIcon={<Delete />}
+              variant="outlined"
+              color="error"
+              onClick={() => handleDeleteRecipe(recipe)}
+            >
+              Delete
+            </Button>
+          </Box>
+        </Box>
             <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mb: 2 }}>
               <AccessTime sx={{ mr: 1 }} />
               <Typography variant="body2">{formatDate(recipe.date)}</Typography>
@@ -275,7 +327,7 @@ function RecipeManagement () {
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
                     <FormatListNumbered sx={{ mr: 1 }} />
-                    <Typography variant="h6">Recipe Steps</Typography>
+                    <Typography variant="h6">Steps</Typography>
                   </Box>
                   <List>
                     {recipe.steps?.map((step) => (
@@ -331,40 +383,52 @@ function RecipeManagement () {
                 margin="normal"
               />
               
-              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Steps</Typography>
-              {editingRecipe.steps.map((step) => (
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+              <Typography variant="h6">Steps</Typography>
+              <Button startIcon={<Add />} onClick={addStep}>Add Step</Button>
+            </Box>
+            {editingRecipe.steps.map((step) => (
+              <Box key={step.stepNum} sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
                 <TextField
-                  key={step.stepNum}
                   fullWidth
                   label={`Step ${step.stepNum}`}
                   value={step.stepDesc}
                   onChange={(e) => updateStep(step.stepNum, e.target.value)}
                   margin="normal"
                 />
-              ))}
+                <IconButton onClick={() => deleteStep(step.stepNum)}>
+                  <Delete />
+                </IconButton>
+              </Box>
+            ))}
 
-              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Shopping List</Typography>
-              {editingRecipe.shoppingList.map((item, index) => (
-                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
-                  <TextField
-                    label="Item"
-                    value={item.item}
-                    onChange={(e) => updateShoppingItem(index, 'item', e.target.value)}
-                  />
-                  <TextField
-                    label="Amount"
-                    type="number"
-                    value={item.amount}
-                    onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))}
-                  />
-                  <TextField
-                    label="Unit"
-                    value={item.unit}
-                    onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)}
-                  />
-                </Box>
-              ))}
-
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
+              <Typography variant="h6">Shopping List</Typography>
+              <Button startIcon={<Add />} onClick={addShoppingItem}>Add Item</Button>
+            </Box>
+            {editingRecipe.shoppingList.map((item, index) => (
+              <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2, alignItems: 'center' }}>
+                <TextField
+                  label="Item"
+                  value={item.item}
+                  onChange={(e) => updateShoppingItem(index, 'item', e.target.value)}
+                />
+                <TextField
+                  label="Amount"
+                  type="number"
+                  value={item.amount}
+                  onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))}
+                />
+                <TextField
+                  label="Unit"
+                  value={item.unit}
+                  onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)}
+                />
+                <IconButton onClick={() => deleteShoppingItem(index)}>
+                  <Delete />
+                </IconButton>
+              </Box>
+            ))}
               <TextField
                 fullWidth
                 label="Scheduled Date"
@@ -372,7 +436,9 @@ function RecipeManagement () {
                 value={editingRecipe.date?.slice(0, 16) || ''}
                 onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, date: e.target.value } : null)}
                 margin="normal"
-                InputLabelProps={{ shrink: true }}
+                inputProps={{
+                  min: new Date().toISOString().slice(0, 16)
+                }}
               />
             </Box>
           )}

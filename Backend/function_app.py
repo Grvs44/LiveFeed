@@ -308,6 +308,29 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
+@app.route(route="recipe/delete", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Delete Recipe')
+    
+    try:
+        info = req.get_json()
+        logging.info(info)
+        user_id = info.get('user_id')
+        id = info.get('id')
+
+
+        query = f"SELECT * FROM c WHERE c.id = '{id}'"
+        items = list(container.query_items(query=query, enable_cross_partition_query=True))
+        logging.info(items)
+        
+
+        container.delete_item(item=id,partition_key=user_id)
+        return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
+
+    except Exception as e:
+        logging.error(f'Error updating recipe: {str(e)}')
+   
+    return func.HttpResponse("Error updating recipe", status_code=500)
 
 
 
