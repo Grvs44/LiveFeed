@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider} from '@mui/material';
-import { AccessTime, FormatListNumbered, ShoppingCart } from '@mui/icons-material';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField} from '@mui/material';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit} from '@mui/icons-material';
+import {Recipe} from '../redux/types'
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -179,14 +180,16 @@ function RecipeUploads() {
 function RecipeManagement () {
  
   
-  interface Recipe {
-    title: string;
-    date: string;
-    steps: { stepNum: number; stepDesc: string }[];
-    shoppingList: { item: string; amount: number; unit: string }[];
-  }
+  // interface Recipe {
+  //   title: string;
+  //   date: string;
+  //   steps: { stepNum: number; stepDesc: string }[];
+  //   shoppingList: { item: string; amount: number; unit: string }[];
+  // }
 
   const [recipeList, setRecipeList] = useState<Recipe | null>(null);
+  const [editDialog, setEditDialog] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
 
   React.useEffect(() => {
     fetchRecipes();
@@ -195,9 +198,24 @@ function RecipeManagement () {
 
   });
 
+  // const fetchRecipes = async () => {
+  //   try {
+  //     const response = await fetch(`/api/recipe/get?${params.toString()}`, {
+  //       method: 'GET',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //     });
+  //     const data = await response.json();
+  //     setRecipeList(data);
+  //   } catch (error) {
+  //     console.error("Error getting recipe list:", error);
+  //   }
+  // };
+
   const fetchRecipes = async () => {
     try {
-      const response = await fetch(`/api/recipe/get?${params.toString()}`, {
+      const response = await fetch(`/api/recipe/get?id=3c3e2104-2a56-4878-a4c4-3620b09b281c`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -209,6 +227,55 @@ function RecipeManagement () {
       console.error("Error getting recipe list:", error);
     }
   };
+  const handleEditClick = (recipe : Recipe) => {
+    setEditingRecipe({ ...recipe });
+    setEditDialog(true);
+  };
+
+  const handleEditClose = () => {
+    setEditDialog(false);
+    setEditingRecipe(null);
+  };
+
+  const handleSaveChanges = async () => {
+    try {
+      const response = await fetch('/api/recipe/update', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(editingRecipe),
+      });
+
+      if (response.ok) {
+        fetchRecipes();
+        handleEditClose();
+      } else {
+        console.error("Failed to update recipe");
+      }
+    } catch (error) {
+      console.error("Error updating recipe:", error);
+    }
+  };
+
+  const updateStep = (stepNum : number, newDesc : string) => {
+    setEditingRecipe(prev => prev ? ({
+      ...prev,
+      steps: prev.steps.map(step => 
+        step.stepNum === stepNum ? { ...step, stepDesc: newDesc } : step
+      )
+    }) : prev);
+  };
+
+  const updateShoppingItem = (index: number, field: string, value: string | number) => {
+    setEditingRecipe(prev => prev ? ({
+      ...prev,
+      shoppingList: prev.shoppingList.map((item, i) => 
+        i === index ? { ...item, [field]: value } : item
+      )
+    }) : null);
+  };
+
 
   const formatDate = (dateStr: string | number | Date) => {
     if (!dateStr) return '';
@@ -226,9 +293,20 @@ function RecipeManagement () {
  
   return (
     <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
+
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography variant="h4" gutterBottom>{recipeList.title}</Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Typography variant="h4" gutterBottom>{recipeList.title}</Typography>
+            <Button
+              startIcon={<Edit />}
+              variant="contained"
+              color="primary"
+              onClick={() => handleEditClick(recipeList)}
+            >
+              Edit Recipe
+            </Button>
+          </Box>
           <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary' }}>
             <AccessTime sx={{ mr: 1 }} />
             <Typography variant="body2">{formatDate(recipeList.date)}</Typography>
@@ -285,6 +363,73 @@ function RecipeManagement () {
           </Card>
         </Grid>
       </Grid>
+      <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
+        <DialogTitle>Edit Recipe</DialogTitle>
+        <DialogContent>
+          {editingRecipe && (
+            <Box sx={{ pt: 2 }}>
+              <TextField
+                fullWidth
+                label="Recipe Title"
+                value={editingRecipe.title}
+                onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, title: e.target.value } : null)}
+                margin="normal"
+              />
+              
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Steps</Typography>
+              {editingRecipe.steps.map((step) => (
+                <TextField
+                  key={step.stepNum}
+                  fullWidth
+                  label={`Step ${step.stepNum}`}
+                  value={step.stepDesc}
+                  onChange={(e) => updateStep(step.stepNum, e.target.value)}
+                  margin="normal"
+                />
+              ))}
+
+              <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>Shopping List</Typography>
+              {editingRecipe.shoppingList.map((item, index) => (
+                <Box key={index} sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                  <TextField
+                    label="Item"
+                    value={item.item}
+                    onChange={(e) => updateShoppingItem(index, 'item', e.target.value)}
+                  />
+                  <TextField
+                    label="Amount"
+                    type="number"
+                    value={item.amount}
+                    onChange={(e) => updateShoppingItem(index, 'amount', parseFloat(e.target.value))}
+                  />
+                  <TextField
+                    label="Unit"
+                    value={item.unit}
+                    onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)}
+                  />
+                </Box>
+              ))}
+
+              <TextField
+                fullWidth
+                label="Scheduled Date"
+                type="datetime-local"
+                value={editingRecipe.date?.slice(0, 16) || ''}
+                onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, date: e.target.value } : null)}
+                margin="normal"
+                InputLabelProps={{ shrink: true }}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose}>Cancel</Button>
+          <Button onClick={handleSaveChanges} variant="contained" color="primary">
+            Save Changes
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
+    
   );
  };
