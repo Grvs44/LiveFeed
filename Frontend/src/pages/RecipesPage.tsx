@@ -36,21 +36,21 @@ export default function RecipesPage() {
 
 function RecipeUploads() {
   const [createRecipe] = useCreateRecipeMutation();
-  const [recipes, setRecipes] = useState<{title: string; steps: { stepNum: number; stepDesc: string }[]; shoppingList: { item: string; amount: number; unit: string }[]; scheduledDate: string }[]>([]);
+  const [recipes, setRecipes] = useState<{title: string; steps: { id: number; text: string }[]; shoppingList: { item: string; amount: number; unit: string }[]; scheduledDate: string }[]>([]);
   const [title, setTitle] = useState<string>('');
-  const [steps, setSteps] = useState<{ stepNum: number; stepDesc: string }[]>([]);
+  const [steps, setSteps] = useState<{ id: number; text: string }[]>([]);
   const [shoppingList, setShoppingList] = useState<{ item: string; amount: number; unit: string }[]>([]);
   const [scheduledDate, setScheduledDate] = useState<string>('');
 
   const addStep = () => {
-    setSteps([...steps, { stepNum: steps.length + 1, stepDesc: '' }]);
+    setSteps([...steps, { id: steps.length + 1, text: '' }]);
   };
 
-  const addStepDesc = (stepCount: number, stepSentence: string) => {
+  const addText = (stepCount: number, stepSentence: string) => {
     const updatedSteps = [...steps]; 
     for (let i = 0; i < updatedSteps.length; i++) {
-      if (updatedSteps[i].stepNum === stepCount) {
-        updatedSteps[i] = { ...updatedSteps[i], stepDesc: stepSentence };
+      if (updatedSteps[i].id === stepCount) {
+        updatedSteps[i] = { ...updatedSteps[i], text: stepSentence };
         break;
       }
     }
@@ -105,8 +105,8 @@ function RecipeUploads() {
       <div>
         <label>Steps:</label>
         {steps.map((step) => (
-          <div key={step.stepNum}>
-            <input type="text" placeholder={`Step ${step.stepNum}`} value={step.stepDesc} onChange={(e) => addStepDesc(step.stepNum, e.target.value)} />
+          <div key={step.id}>
+            <input type="text" placeholder={`Step ${step.id}`} value={step.text} onChange={(e) => addText(step.id, e.target.value)} />
           </div>
         ))}
         <button onClick={addStep}>Add Step</button>
@@ -140,7 +140,7 @@ function RecipeUploads() {
               <p>Steps:</p>
               <ol>
                 {recipe.steps.map((step) => (
-                  <li key={step.stepNum}>{step.stepDesc}</li>
+                  <li key={step.id}>{step.text}</li>
                 ))}
               </ol>
               <p>Shopping List:</p>
