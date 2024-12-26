@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
+import { useCreateRecipeMutation } from '../redux/apiSlice';
+
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -33,6 +35,7 @@ export default function RecipesPage() {
 }
 
 function RecipeUploads() {
+  const [createRecipe] = useCreateRecipeMutation();
   const [recipes, setRecipes] = useState<{title: string; steps: { stepNum: number; stepDesc: string }[]; shoppingList: { item: string; amount: number; unit: string }[]; scheduledDate: string }[]>([]);
   const [title, setTitle] = useState<string>('');
   const [steps, setSteps] = useState<{ stepNum: number; stepDesc: string }[]>([]);
@@ -73,26 +76,13 @@ function RecipeUploads() {
     if (title && steps.length > 0 && shoppingList.length > 0 && scheduledDate) {
       const newRecipe = { title, steps, shoppingList, scheduledDate };
       try {
-        const response = await fetch('/api/recipe/create', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(newRecipe),
-        });
-  
-        if (response.ok) {
-          const data = await response.json();
-          alert("Recipe uploaded successfully");
-          setRecipes([...recipes, newRecipe]);
-          setTitle('');
-          setSteps([]);
-          setShoppingList([]);
-          setScheduledDate('');
-        } else {
-          console.error("Failed to upload recipe:", response.statusText);
-          alert("Failed to upload recipe.");
-        }
+        const response = await createRecipe(newRecipe).unwrap();
+        alert("Recipe uploaded successfully");
+        setRecipes([...recipes, newRecipe]);
+        setTitle('');
+        setSteps([]);
+        setShoppingList([]);
+        setScheduledDate('');
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
         alert("Error uploading recipe to DB");
