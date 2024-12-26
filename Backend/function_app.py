@@ -141,7 +141,6 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
 
-#TODO: Validate that the user sending start request is also the creator of the recipe
 @app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
@@ -164,6 +163,12 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
+    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
+
+    if (stream_data.get('user_id') != user_id):
+        logging.info("Sender is not the creator of the recipe")
+        return func.HttpResponse("Unauthorized", status_code=401)
+
     recipe_id = req.route_params.get('recipeId')
 
     if not recipe_id:
@@ -176,8 +181,7 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Error while starting stream", status_code=500)
     else:
         return func.HttpResponse("Livestream successfully started")
-    
-#TODO: Validate that user sending end request is also the creator of the recipe
+
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
@@ -198,12 +202,17 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
+    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
+
+    if (stream_data.get('user_id') != user_id):
+        logging.info("Sender is not the creator of the recipe")
+        return func.HttpResponse("Unauthorized", status_code=401)
+
     recipe_id = req.route_params.get('recipeId')
 
     vod_url = streaming.save_vod(recipe_id)
     response = streaming.stop_stream(recipe_id)
 
-    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
     stream_data['stream_url'] = vod_url
     stream_container.upsert_item(stream_data)
 
