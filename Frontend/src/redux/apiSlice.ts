@@ -45,6 +45,13 @@ export const apiSlice = createApi({
         method: 'POST',
       }),
     }),
+    createRecipe: builder.mutation<any, any>({
+      query: (recipe) => ({
+        url: '/recipe/create',
+        method: 'POST',
+        body: recipe,
+      }),
+    }),
   }),
 })
 
@@ -52,4 +59,5 @@ export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
   useStartStreamMutation,
+  useCreateRecipeMutation,
 } = apiSlice
