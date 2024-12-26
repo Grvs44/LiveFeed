@@ -70,6 +70,8 @@ export type SectionProps = {
 }
 
 export type Recipe = {
+  user_id : string,
+  id: string,
   title: string;
   date: string;
   steps: { stepNum: number; stepDesc: string }[];
