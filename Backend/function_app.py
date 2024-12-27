@@ -380,6 +380,8 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
         
 
         recipe_container.delete_item(item=id,partition_key=user_id)
+        streaming.delete_vod(id)
+        stream_container.delete_item(id, partition_key=id)
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
