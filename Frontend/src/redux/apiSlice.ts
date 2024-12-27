@@ -48,7 +48,7 @@ export const apiSlice = createApi({
     }),
     changeStep: builder.mutation<string, RecipeStepChange>({
       query: ({ recipeId, stepId, time }) => ({
-        url: `stream/${recipeId}/next/`,
+        url: `stream/${recipeId}/steps/next/`,
         method: 'POST',
         body: { stepId, time },
       }),
