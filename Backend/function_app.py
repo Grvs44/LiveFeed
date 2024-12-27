@@ -265,12 +265,14 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
     channel_info = streaming.create_recipe_channel(recipe_id)
-    stream_url = channel_info.output.uri
+    stream_url = channel_info.get('output_url')
+    input_url = channel_info.get('input_url')
     stream_dict = {
         "id": recipe_id,
         "user_id": user_id,
         "stream_url": stream_url,
-        "step_timings": {}
+        "step_timings": {},
+        "input_url": input_url
     }
 
     stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
