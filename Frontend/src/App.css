@@ -1,0 +1,79 @@
+.container {
+    max-width: 700px;
+    padding: 25px;
+    margin: 50px auto;
+    background-color: #fdfdfd;
+    border: 3px solid #212121;
+    border-radius: 5px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+}
+  
+.section {
+    margin-bottom: 5px;
+}
+
+.h2 {
+    font-weight: 900px;
+}
+
+.header {
+    margin-bottom: 20px;
+    text-align: center;
+    color: #000000;
+}
+
+.label {
+    display: block;
+    margin-bottom: 2px;
+    font-weight: bold;
+    color: #000000;
+    font-size: 20px;
+}
+
+.shoppingRow {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    border: 2px solid #212121;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.inpu2 {
+    width: 50%;
+    box-sizing: border-box;
+    margin-right: 2px;
+    margin-left: 2px;
+    padding: 10px 10px;
+    margin-bottom: 10px;
+    border-radius: 3px;
+    border: 2px solid #212121;
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.addButton {
+    padding: 10px 15px;
+    background-color: #fab700;
+    color: #000000;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 15px;
+}
+
+.addButton:hover {
+    background-color: #ffce48;
+    transform: scale(1.01);
+}
