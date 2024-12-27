@@ -26,11 +26,11 @@ export default function WatchLivePage() {
   )
 
   const onStepUpdate = ({ id, time }: StepUpdate) =>
-    setRecipe((recipe) => {
-      const step = recipe?.find((step) => step.id === id)
-      if (step) step.time = time
-      return recipe
-    })
+    setRecipe((recipe) =>
+      recipe?.map((recipe) =>
+        recipe.id === id ? { time, ...recipe } : recipe,
+      ),
+    )
 
   const onTimeUpdate: React.ReactEventHandler<HTMLVideoElement> = (event) => {
     const step = data?.recipe.findLast(
