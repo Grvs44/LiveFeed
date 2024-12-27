@@ -1,10 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { baseUrl } from './settings'
 import {
+  EndStream,
   LiveStream,
   OndemandStream,
+  RecipeStepChange,
   StartStream,
-  EndStream,
   State,
 } from './types'
 
@@ -45,6 +46,13 @@ export const apiSlice = createApi({
         method: 'POST',
       }),
     }),
+    changeStep: builder.mutation<string, RecipeStepChange>({
+      query: ({ recipeId, stepId, time }) => ({
+        url: `stream/${recipeId}/next/`,
+        method: 'POST',
+        body: { stepId, time },
+      }),
+    }),
     createRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
         url: '/recipe/create',
@@ -56,7 +64,6 @@ export const apiSlice = createApi({
       query: () => ({
         url: '/recipe/get',
         method: 'GET',
-   
       }),
     }),
     updateRecipe: builder.mutation<any, any>({
@@ -64,20 +71,15 @@ export const apiSlice = createApi({
         url: '/recipe/update',
         method: 'PUT',
         body: recipe,
-   
       }),
-      
     }),
     deleteRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
         url: '/recipe/delete',
         method: 'POST',
         body: recipe,
-   
       }),
-      
-    })
-
+    }),
   }),
 })
 
@@ -86,8 +88,9 @@ export const {
   useGetOndemandStreamQuery,
   useStartStreamMutation,
   useEndStreamMutation,
+  useChangeStepMutation,
   useCreateRecipeMutation,
   useGetRecipeMutation,
   useUpdateRecipeMutation,
-  useDeleteRecipeMutation
+  useDeleteRecipeMutation,
 } = apiSlice
