@@ -7,7 +7,7 @@ export type Chat = {
 
 export enum MessageType {
   Message,
-  Next,
+  Step,
 }
 
 export type MessageContent = {
