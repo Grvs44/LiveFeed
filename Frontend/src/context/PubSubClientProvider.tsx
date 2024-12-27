@@ -4,7 +4,7 @@ import {
   WebPubSubClient,
 } from '@azure/web-pubsub-client'
 import { useDispatch, useSelector } from 'react-redux'
-import { Chat } from '../context/types'
+import { Chat, StepUpdate } from '../context/types'
 import { useChangeStepMutation } from '../redux/apiSlice'
 import { resetClient, setClient } from '../redux/pubsubSlice'
 import { baseUrl } from '../redux/settings'
@@ -18,7 +18,6 @@ export type ProviderValue = {
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
-  currentStep?: number
   changeStep?: (step: number) => Promise<void>
 }
 
@@ -27,6 +26,7 @@ export type PubSubClientProviderProps = {
   groupName: string
   minStepId?: number // currentStep cannot be less than this value
   maxStepId?: number // currentStep cannot be more than this value
+  onStepUpdate?: (stepUpdate: StepUpdate) => void
 }
 
 export const PubSubClientContext = React.createContext<ProviderValue>({
@@ -47,9 +47,6 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const [canSend, setCanSend] = React.useState<boolean>(true)
   const [chats, setChats] = React.useState<Chat[]>([])
   const [sending, setSending] = React.useState<boolean>(false)
-  const [currentStep, setCurrentStep] = React.useState<number | undefined>(
-    undefined,
-  )
 
   React.useEffect(() => {
     const headers: HeadersInit = {}
@@ -94,8 +91,13 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
             ]),
           )
         } else if (messageData.type == MessageType.Step) {
-          // TODO: @Grvs44 update timestamp instead of setting current step
-          setCurrentStep(messageData.step)
+          const content = messageData.content
+          if (content && props.onStepUpdate) {
+            console.log('Step update')
+            props.onStepUpdate(content)
+          } else {
+            console.warn('Unhandled step update')
+          }
         } else {
           console.error('Unkown message type: ' + messageData.type)
         }
@@ -156,7 +158,6 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     chats,
     sending,
     sendMessage,
-    currentStep,
     changeStep,
   }
 
