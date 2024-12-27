@@ -185,3 +185,14 @@ def save_vod(recipe_id):
     vod_name = f'vods/vod-{recipe_id}'
 
     return bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url
+
+def delete_vod(recipe_id):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket('livefeed-bucket')
+    vod_name = f'vods/vod-{recipe_id}'
+    
+    try:
+        bucket.delete_blob(vod_name)
+        logging.info("Deleted recipe VOD")
+    except google_exceptions.NotFound:
+        logging.info("Recipe had no VOD")
