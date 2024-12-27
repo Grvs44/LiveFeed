@@ -5,6 +5,7 @@ import {
 } from '@azure/web-pubsub-client'
 import { useDispatch, useSelector } from 'react-redux'
 import { Chat } from '../context/types'
+import { useChangeStepMutation } from '../redux/apiSlice'
 import { resetClient, setClient } from '../redux/pubsubSlice'
 import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
@@ -40,6 +41,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const dispatch = useDispatch()
   const client = useSelector((state: State) => state.pubsub.client)
   const accessToken = useSelector((state: State) => state.token.token)
+  const [changeRecipeStep] = useChangeStepMutation()
   const { activeAccount } = React.useContext(LoginContext)
   const [ready, setReady] = React.useState<boolean>(false)
   const [canSend, setCanSend] = React.useState<boolean>(true)
@@ -129,6 +131,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   }
 
   const changeStep: ProviderValue['changeStep'] = async (step) => {
+    // TODO: @Grvs44 maybe move this to middleware?
     if (
       props.minStepId &&
       props.maxStepId &&
@@ -136,8 +139,11 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       step <= props.maxStepId
     ) {
       console.log('Changing step to ' + step)
-      const content: MessageContent = { step, type: MessageType.Step }
-      await client?.sendToGroup(props.groupName, content, 'json')
+      changeRecipeStep({
+        recipeId: props.groupName,
+        stepId: step,
+        time: getSeconds(),
+      })
     } else {
       console.log(`Step ${step} out of range`)
     }
@@ -159,3 +165,5 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     </PubSubClientContext.Provider>
   )
 }
+
+const getSeconds = () => Math.floor(Date.now() / 1000)
