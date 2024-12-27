@@ -6,7 +6,7 @@ import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Di
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
-
+import "../App.css";
 
 
 export default function RecipesPage() {
@@ -101,41 +101,41 @@ function RecipeUploads() {
   
 
   return (
-    <div>
-      <p>Recipe Uploads</p>
+    <div className="container">
+      <h2 className="header">Upload Recipe</h2>
 
-      <div>
-        <label>Title:</label>
-        <input type="text" placeholder="Recipe Title" value={title} onChange={(e) => setTitle(e.target.value)} />
+      <div className='section'>
+        <label className='label'>Title:</label>
+        <input className='input' type="text" placeholder="Recipe Title" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
-      <div>
-        <label>Steps:</label>
+      <div className='section'>
+        <label className='label'>Steps:</label>
         {steps.map((step) => (
           <div key={step.id}>
-            <input type="text" placeholder={`Step ${step.id}`} value={step.text} onChange={(e) => addText(step.id, e.target.value)} />
+            <input className='input' type="text" placeholder={`Step ${step.id}`} value={step.text} onChange={(e) => addText(step.id, e.target.value)} />
           </div>
         ))}
-        <button onClick={addStep}>Add Step</button>
+        <button className='addButton' onClick={addStep}>Add Step</button>
       </div>
 
       <div>
-        <label>Shopping List:</label>
+        <label className='label'>Shopping List:</label>
         {shopping.map((item, index) => (
-          <div key={index} style={{ display: 'flex', gap: '10px' }}>
-            <input type="text" placeholder="Item" value={item.item} onChange={(e) => updateShoppingItem(index, 'item', e.target.value)} />
-            <input type="number" placeholder="quantity" value={item.quantity} onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))} />
-            <input type="text" placeholder="Unit (e.g., kg, g, ml)" value={item.unit} onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)} />
+          <div key={index} className='shoppingRow'>
+            <input className='input' type="text" placeholder="Item" value={item.item} onChange={(e) => updateShoppingItem(index, 'item', e.target.value)} />
+            <input className='inpu2' type="number" placeholder="quantity" value={item.quantity} onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))} />
+            <input className='input' type="text" placeholder="Unit (e.g., kg, g, ml)" value={item.unit} onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)} />
           </div>
         ))}
-        <button onClick={addShoppingItem}>Add Shopping Item</button>
+        <button className='addButton' onClick={addShoppingItem}>Add Shopping Item</button>
       </div>
 
       <div>
-        <label>Schedule Stream Date:</label>
-        <input type="datetime-local" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)} />
+        <label className='label'>Schedule Stream Date:</label>
+        <input className='input' type="datetime-local" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)}  min={new Date().toISOString().slice(0, 16)}/>
       </div>
 
-      <button onClick={uploadRecipe}>Upload Recipe</button>
+      <button className='addButton' onClick={uploadRecipe}>Upload Recipe</button>
 
       <div>
         <h4>Uploaded Recipes</h4>
