@@ -94,6 +94,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
             ]),
           )
         } else if (messageData.type == MessageType.Step) {
+          // TODO: @Grvs44 update timestamp instead of setting current step
           setCurrentStep(messageData.step)
         } else {
           console.error('Unkown message type: ' + messageData.type)

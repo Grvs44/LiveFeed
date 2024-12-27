@@ -5,8 +5,7 @@ import logging
 import datetime
 import json
 import jwt
-from shared_code import streaming
-from shared_code.messages import MessageType
+from shared_code import messages, streaming
 import requests
 from azure.messaging.webpubsubservice import (
     WebPubSubServiceClient
@@ -257,9 +256,9 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     stream_data['step_timings'][step_id] = time
     stream_container.upsert_item(stream_data)
 
-    step_json = json.dumps({"type": MessageType.STEP, "content": {"id": step_id, "time": time}})
+    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": time}}
 
-    CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_json, content_type="application/json")
+    CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
 
     return func.HttpResponse("Successfully stepped", status_code=201)
 
