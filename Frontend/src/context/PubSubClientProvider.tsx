@@ -18,6 +18,7 @@ export type ProviderValue = {
   chats: Chat[]
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
+  currentStep?: number
   changeStep?: (step: number) => Promise<void>
 }
 
@@ -47,6 +48,9 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const [canSend, setCanSend] = React.useState<boolean>(true)
   const [chats, setChats] = React.useState<Chat[]>([])
   const [sending, setSending] = React.useState<boolean>(false)
+  const [currentStep, setCurrentStep] = React.useState<number | undefined>(
+    undefined,
+  )
 
   React.useEffect(() => {
     const headers: HeadersInit = {}
@@ -94,6 +98,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
           const content = messageData.content
           if (content && props.onStepUpdate) {
             console.log('Step update')
+            setCurrentStep(content.id)
             props.onStepUpdate(content)
           } else {
             console.warn('Unhandled step update')
@@ -158,6 +163,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     chats,
     sending,
     sendMessage,
+    currentStep,
     changeStep,
   }
 
