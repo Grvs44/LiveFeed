@@ -63,6 +63,12 @@ function RecipeUploads() {
     setSteps(updatedSteps);
   };
 
+  const deleteLatestStep = () => {
+    if (steps.length > 0) {
+      setSteps(steps.slice(0, -1));
+    }
+  };
+
   const addShoppingItem = () => {
     setShopping([...shopping, { item: '', quantity: 0, unit: '' }]);
   }
@@ -77,6 +83,13 @@ function RecipeUploads() {
     }
     setShopping(updatedItemList);
   };
+
+  const deleteLatestShopping = () => {
+    if (shopping.length > 0) {
+      setShopping(shopping.slice(0, -1));
+    }
+  };
+
 
   const uploadRecipe = async () => {
     if (title && steps.length > 0 && shopping.length > 0 && scheduledDate) {
@@ -116,6 +129,7 @@ function RecipeUploads() {
           </div>
         ))}
         <button className='addButton' onClick={addStep}>Add Step</button>
+        {steps.length > 0 && ( <button className='deleteButton' onClick={deleteLatestStep}>Remove Latest Step</button>)}
       </div>
 
       <div>
@@ -128,6 +142,7 @@ function RecipeUploads() {
           </div>
         ))}
         <button className='addButton' onClick={addShoppingItem}>Add Shopping Item</button>
+        {shopping.length > 0 && (<button className='deleteButton' onClick={deleteLatestShopping}>Remove Latest Item</button>)}
       </div>
 
       <div>
