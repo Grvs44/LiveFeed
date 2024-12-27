@@ -91,7 +91,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
               },
             ]),
           )
-        } else if (messageData.type == MessageType.Next) {
+        } else if (messageData.type == MessageType.Step) {
           setCurrentStep(messageData.step)
         } else {
           console.error('Unkown message type: ' + messageData.type)
@@ -136,7 +136,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       step <= props.maxStepId
     ) {
       console.log('Changing step to ' + step)
-      const content: MessageContent = { step, type: MessageType.Next }
+      const content: MessageContent = { step, type: MessageType.Step }
       await client?.sendToGroup(props.groupName, content, 'json')
     } else {
       console.log(`Step ${step} out of range`)
