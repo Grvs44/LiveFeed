@@ -25,6 +25,7 @@ export type OndemandStream = {
 export type RecipeStep = {
   id: number
   text: string
+  time?: number
 }
 
 export type TimedRecipeStep = RecipeStep & {
