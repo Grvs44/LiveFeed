@@ -55,6 +55,12 @@ export type EndStream = {
   id?: string
 }
 
+export type RecipeStepChange = {
+  recipeId: string
+  stepId: number
+  time: number
+}
+
 export type State = ReturnType<typeof store.getState>
 
 // Newly added *might need checking*
