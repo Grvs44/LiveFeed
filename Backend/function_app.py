@@ -229,7 +229,7 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     ### Authentication ###
     auth_header = req.headers.get("Authorization")
 
-    if not auth_header.startswith("Bearer "):
+    if auth_header is None or not auth_header.startswith("Bearer "):
         return func.HttpResponse("Unauthorized", status_code=401)
 
     token = auth_header.split(" ")[1]
