@@ -95,3 +95,21 @@
     background-color: #ffce48;
     transform: scale(1.01);
 }
+
+.backButton {
+    padding: 10px 15px;
+    background-color: #ffffff;
+    color: #000000;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 15px;
+    margin-left: 10px;
+}
+
+.backButton:hover {
+    background-color: #ccc;
+    transform: scale(1.01);
+}
