@@ -7,7 +7,7 @@ import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add} from '
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 import "../App.css";
-
+import AddBoxIcon from '@mui/icons-material/AddBox';
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -21,26 +21,28 @@ export default function RecipesPage() {
   React.useEffect(() => {
     dispatch(setTitle('Recipes'))
   }, [])
-
   
-  
-  const [currerntTab, setCurrentTab] = useState<'uploads' | 'manager'>('uploads');
-
+  const [currentTab, setCurrentTab] = useState<'uploads' | 'manager'>('manager');
   return (
     <div>
-        <p>Recipe Management</p>
-        <div style={{ display: 'flex', gap: '10px'}}>
-          <button onClick={() => setCurrentTab('uploads')}> Recipe Uploads </button>
-          <button onClick={() => setCurrentTab('manager')}> Recipe Manager </button>
-        </div>
-
-        {currerntTab === 'uploads' && <RecipeUploads />}
-        {currerntTab === 'manager' && <RecipeManagement />}
+      <Box display="flex" mb={2} mt={0} justifyContent="space-between" alignItems="center">
+        <Box display="flex" alignItems="center">
+          <Typography variant="h6" style={{marginRight: 10, marginLeft: 10}}>Recipe Management</Typography>
+          {currentTab === 'manager' && (
+            <IconButton title="Upload Recipe" onClick={() => setCurrentTab('uploads')}>
+              <AddBoxIcon />
+            </IconButton>
+          )}
+        </Box>
+      </Box>
+      {currentTab === 'uploads' && <RecipeUploads closeTab={() => setCurrentTab('manager')} />}
+      {currentTab === 'manager' && <RecipeManagement />}
     </div>
-  )
+  );
+  
 }
 
-function RecipeUploads() {
+function RecipeUploads({ closeTab }: { closeTab: () => void }) {
   const [createRecipe] = useCreateRecipeMutation();
   const [recipes, setRecipes] = useState<{title: string; steps: { id: number; text: string }[]; shopping: { item: string; quantity: number; unit: string }[]; scheduledDate: string }[]>([]);
   const [title, setTitle] = useState<string>('');
@@ -114,9 +116,8 @@ function RecipeUploads() {
   
 
   return (
-    <div className="container">
-      <h2 className="header">Upload Recipe</h2>
-
+    <div className='container'>
+      <h2 className='header'>Upload Recipe</h2>
       <div className='section'>
         <label className='label'>Title:</label>
         <input className='input' type="text" placeholder="Recipe Title" value={title} onChange={(e) => setTitle(e.target.value)} />
@@ -151,6 +152,7 @@ function RecipeUploads() {
       </div>
 
       <button className='addButton' onClick={uploadRecipe}>Upload Recipe</button>
+      <button className='backButton' onClick={closeTab}> Back to Manager </button>
 
       <div>
         <h4>Uploaded Recipes</h4>
