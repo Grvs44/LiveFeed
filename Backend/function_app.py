@@ -250,13 +250,23 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     steps = info.get('steps')
     shopping = info.get('shopping')
     date = info.get('scheduledDate')
+    image = info.get('imageUrl')
+    cookTime = info.get('cookTime')
+    tags = info.get('tags')
+    servings = info.get('servings')
     
     recipe_dict = {
         "user_id": user_id,
         "title": title,
         "steps": steps,
         "shopping": shopping,
-        "date": date
+        "date": date,
+        "image": image,
+        "cookTime" : cookTime,
+        "tags": tags,
+        "servings": servings
+        
+        
     }
     
     cosmos_dict = recipe_container.create_item(body=recipe_dict, enable_automatic_id_generation=True)
@@ -331,12 +341,8 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
     try:
         info = req.get_json()
         logging.info(info)
-        user_id = info.get('user_id')
         id = info.get('id')
-        title = info.get('title')
-        steps = info.get('steps') 
-        shoppingList = info.get('shopping')
-        date = info.get('date')
+      
 
         query = f"SELECT * FROM c WHERE c.id = '{id}'"
         items = list(recipe_container.query_items(query=query, enable_cross_partition_query=True))
@@ -345,17 +351,8 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
         if not items:
             return func.HttpResponse("Recipe not found", status_code=404)
 
-       
-        recipes = {
-            "user_id": user_id,
-            "id" : id,
-            "title": title, 
-            "steps": steps,
-            "shopping": shoppingList,
-            "date": date
-        }
 
-        recipe_container.replace_item(item=id, body=recipes)
+        recipe_container.replace_item(item=id, body=req.get_json())
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:

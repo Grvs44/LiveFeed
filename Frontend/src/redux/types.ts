@@ -77,5 +77,9 @@ export type Recipe = {
   date: string;
   steps: RecipeStep[];
   shopping: { item: string; quantity: number; unit: string }[];
+  image: string;
+  cookTime: number;
+  servings: number;
+  tags: string[];
 }
 
