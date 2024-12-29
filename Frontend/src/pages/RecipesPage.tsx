@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
 import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton} from '@mui/material';
-import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add} from '@mui/icons-material';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu, Tag,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 import "../App.css";
@@ -44,11 +44,26 @@ export default function RecipesPage() {
 
 function RecipeUploads({ closeTab }: { closeTab: () => void }) {
   const [createRecipe] = useCreateRecipeMutation();
-  const [recipes, setRecipes] = useState<{title: string; steps: { id: number; text: string }[]; shopping: { item: string; quantity: number; unit: string }[]; scheduledDate: string }[]>([]);
+  const [recipes, setRecipes] = useState<{
+    title: string;
+    imageUrl: string;
+    steps: { id: number; text: string }[];
+    shopping: { item: string; quantity: number; unit: string }[];
+    scheduledDate: string;
+    cookTime: number;
+    tags: string[];
+    servings: number;
+  }[]>([]);
+  
   const [title, setTitle] = useState<string>('');
+  const [imageUrl, setImageUrl] = useState<string>('');
   const [steps, setSteps] = useState<{ id: number; text: string }[]>([]);
   const [shopping, setShopping] = useState<{ item: string; quantity: number; unit: string }[]>([]);
   const [scheduledDate, setScheduledDate] = useState<string>('');
+  const [cookTime, setCookTime] = useState<number>(0);
+  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState<string>('');
+  const [servings, setServings] = useState<number>(1);
 
   const addStep = () => {
     setSteps([...steps, { id: steps.length + 1, text: '' }]);
@@ -92,28 +107,50 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     }
   };
 
+  const handleAddTag = () => {
+    if (tagInput.trim() && !tags.includes(tagInput.trim())) {
+      setTags([...tags, tagInput.trim()]);
+      setTagInput('');
+    }
+  };
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove));
+  };
 
   const uploadRecipe = async () => {
-    if (title && steps.length > 0 && shopping.length > 0 && scheduledDate) {
-      const newRecipe = { title, steps, shopping, scheduledDate };
+    if (title && steps.length > 0 && shopping.length > 0 && scheduledDate && cookTime > 0 && servings > 0) {
+      const newRecipe = { 
+        title, 
+        imageUrl, 
+        steps, 
+        shopping, 
+        scheduledDate,
+        cookTime,
+        tags,
+        servings
+      };
       try {
         const response = await createRecipe(newRecipe).unwrap();
         alert("Recipe uploaded successfully");
         setRecipes([...recipes, newRecipe]);
         setTitle('');
+        setImageUrl('');
         setSteps([]);
         setShopping([]);
         setScheduledDate('');
+        setCookTime(0);
+        setTags([]);
+        setServings(1);
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
         alert("Error uploading recipe to DB");
       }
     }
-    else{
-      console.error("Please fill in all the information before uploading")
+    else {
+      console.error("Please fill in all the required information before uploading")
     }
   };
-  
 
   return (
     <div className='container'>
@@ -122,6 +159,76 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         <label className='label'>Title:</label>
         <input className='input' type="text" placeholder="Recipe Title" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
+      
+      <div className='section'>
+        <label className='label'>Image URL:</label>
+        <input 
+          className='input' 
+          type="url" 
+          placeholder="Enter image URL" 
+          value={imageUrl} 
+          onChange={(e) => setImageUrl(e.target.value)} 
+        />
+        {imageUrl && (
+          <div className='preview'>
+            <img 
+              src={imageUrl} 
+              alt="Recipe preview" 
+              style={{ maxWidth: '200px', marginTop: '10px' }} 
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                alert('Invalid image URL');
+              }}
+            />
+          </div>
+        )}
+      </div>
+
+      <div className='section'>
+        <label className='label'>Cook Time (minutes):</label>
+        <input
+          className='input'
+          type="number"
+          min="0"
+          value={cookTime}
+          onChange={(e) => setCookTime(Math.max(0, parseInt(e.target.value)))}
+        />
+      </div>
+
+      <div className='section'>
+        <label className='label'>Servings:</label>
+        <input
+          className='input'
+          type="number"
+          min="1"
+          value={servings}
+          onChange={(e) => setServings(Math.max(1, parseInt(e.target.value)))}
+        />
+      </div>
+
+      <div className='section'>
+        <label className='label'>Tags:</label>
+        <div className='tagInput'>
+          <input
+            className='input'
+            type="text"
+            placeholder="Add tags"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
+          />
+          <button className='addButton' onClick={handleAddTag}>Add Tag</button>
+        </div>
+        <div className='tagContainer'>
+          {tags.map((tag, index) => (
+            <span key={index} className='tag'>
+              {tag}
+              <button className='removeTag' onClick={() => removeTag(tag)}>×</button>
+            </span>
+          ))}
+        </div>
+      </div>
+
       <div className='section'>
         <label className='label'>Steps:</label>
         {steps.map((step) => (
@@ -133,12 +240,12 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         {steps.length > 0 && ( <button className='deleteButton' onClick={deleteLatestStep}>Remove Latest Step</button>)}
       </div>
 
-      <div>
+      <div className='section'>
         <label className='label'>Shopping List:</label>
         {shopping.map((item, index) => (
           <div key={index} className='shoppingRow'>
             <input className='input' type="text" placeholder="Item" value={item.item} onChange={(e) => updateShoppingItem(index, 'item', e.target.value)} />
-            <input className='inpu2' type="number" placeholder="quantity" value={item.quantity} onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))} />
+            <input className='input' type="number" placeholder="quantity" value={item.quantity} onChange={(e) => updateShoppingItem(index, 'quantity', parseFloat(e.target.value))} />
             <input className='input' type="text" placeholder="Unit (e.g., kg, g, ml)" value={item.unit} onChange={(e) => updateShoppingItem(index, 'unit', e.target.value)} />
           </div>
         ))}
@@ -146,7 +253,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         {shopping.length > 0 && (<button className='deleteButton' onClick={deleteLatestShopping}>Remove Latest Item</button>)}
       </div>
 
-      <div>
+      <div className='section'>
         <label className='label'>Schedule Stream Date:</label>
         <input className='input' type="datetime-local" value={scheduledDate} onChange={(e) => setScheduledDate(e.target.value)}  min={new Date().toISOString().slice(0, 16)}/>
       </div>
@@ -160,6 +267,18 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
           {recipes.map((recipe, i) => (
             <li key={i}>
               <strong>{recipe.title}</strong>
+              {recipe.imageUrl && (
+                <img 
+                  src={recipe.imageUrl} 
+                  alt={recipe.title} 
+                  style={{ maxWidth: '200px', display: 'block', margin: '10px 0' }} 
+                />
+              )}
+              <p>Cook Time: {recipe.cookTime} minutes</p>
+              <p>Servings: {recipe.servings}</p>
+              {recipe.tags.length > 0 && (
+                <p>Tags: {recipe.tags.join(', ')}</p>
+              )}
               <p>Steps:</p>
               <ol>
                 {recipe.steps.map((step) => (
@@ -179,12 +298,9 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
           ))}
         </ul>
       </div>
-      
     </div>
   );
 }
-
-
 function RecipeManagement () {
  
   const [deleteRecipe] = useDeleteRecipeMutation();
@@ -193,6 +309,7 @@ function RecipeManagement () {
   const [recipeList, setRecipeList] = useState<Recipe[]>([]);
   const [editDialog, setEditDialog] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  
 
   React.useEffect(() => {
     fetchRecipes();
@@ -200,6 +317,20 @@ function RecipeManagement () {
   const params = new URLSearchParams({
 
   });
+  const currDate = (dateStr: string | number | Date) => {
+    if (!dateStr) return false;
+    const recipeDate = new Date(dateStr);
+    const today = new Date();
+    return (
+      recipeDate.getDate() === today.getDate() &&
+      recipeDate.getMonth() === today.getMonth() &&
+      recipeDate.getFullYear() === today.getFullYear()
+    );
+  };
+
+  const handleStartRecipe = (recipe: Recipe) => {
+    console.log('Starting recipe:', recipe.title);
+  };
 
   const fetchRecipes = async () => {
     try {
@@ -307,13 +438,153 @@ const deleteShoppingItem = (index: number) => {
   }
  
   return (
-
     <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
-      {recipeList.map((recipe) => (
-        <Card sx={{ mb: 3 }} key={recipe.id}>
-          <CardContent>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
+    {recipeList.map((recipe) => (
+      <Card sx={{ mb: 3 }} key={recipe.id}>
+        <CardContent>
+            <Grid item xs={12}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <Box>
+                  <Typography variant="h4" gutterBottom>{recipe.title}</Typography>
+                </Box>
+              </Box>
+              <Box sx={{ display: 'flex', gap: 4, mb: 2 }}>
+              <Box sx={{ flex: 1 }}>
+                <Box
+                  sx={{
+                    width: '100%',
+                    height: '300px',
+                    backgroundColor: '#f5f5f5',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    borderRadius: 1,
+                    overflow: 'hidden'
+                  }}
+                >
+                  {recipe.image ? (
+                    <img
+                      src={recipe.image}
+                      alt={recipe.title}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <RestaurantMenu sx={{ fontSize: 60, color: '#bdbdbd' }} />
+                  )}
+                </Box>
+              </Box>
+
+              <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 7 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <AccessTime sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1">
+                    <strong>Date:</strong> {formatDate(recipe.date)}
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Timer sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1">
+                    <strong>Cook Time:</strong> {recipe.cookTime || '30'} minutes
+                  </Typography>
+                </Box>
+
+                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                  <Group sx={{ mr: 1, color: 'text.secondary' }} />
+                  <Typography variant="body1">
+                    <strong>Servings:</strong> {recipe.servings || '4'} people
+                  </Typography>
+                </Box>
+                <Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <LocalOffer sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography variant="body1">
+                      <strong>Tags:</strong> {recipe.tags || 'None'} 
+                    </Typography>
+                  </Box>
+    
+                </Box>
+              </Box>
+            </Box>
+
+            <Grid item xs={12}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <FormatListNumbered sx={{ mr: 1 }} />
+                      <Typography variant="h6">Steps</Typography>
+                    </Box>
+                    <List>
+                      {recipe.steps?.map((step) => (
+                        <ListItem key={step.id}>
+                          <ListItemText
+                            primary={
+                              <Typography>
+                                <strong>{step.id}.</strong> {step.text}
+                              </Typography>
+                            }
+                          />
+                        </ListItem>
+                      ))}
+                    </List>
+                  </Box>
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <ShoppingCart sx={{ mr: 1 }} />
+                      <Typography variant="h6">Shopping List</Typography>
+                    </Box>
+                    <List>
+                      {recipe.shopping?.map((item, index) => (
+                        <React.Fragment key={index}>
+                          <ListItem>
+                            <ListItemText
+                              primary={item.item}
+                              secondary={`${item.quantity} ${item.unit}`}
+                            />
+                          </ListItem>
+                          {index < recipe.shopping.length - 1 && <Divider />}
+                        </React.Fragment>
+                      ))}
+                    </List>
+                  </Box>
+                </Grid>
+              </Grid>
+            </Grid>
+          </Grid>
+
+          {/* Action Buttons */}
+          <Box sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center',
+          mt: 2 
+        }}>
+          <Box>
+            {currDate(recipe.date) && (
+              <Button
+                startIcon={<PlayArrow />}
+                variant="contained"
+                sx={{ 
+                  backgroundColor: '#32CD32',
+                  '&:hover': {
+                    backgroundColor: '#2E6F40'
+                  }
+                }}
+                onClick={() => handleStartRecipe(recipe)}
+              >
+                Start Streaming
+              </Button>
+            )}
+          </Box>
+          
           <Box>
             <Button
               startIcon={<Edit />}
@@ -334,59 +605,10 @@ const deleteShoppingItem = (index: number) => {
             </Button>
           </Box>
         </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', color: 'text.secondary', mb: 2 }}>
-              <AccessTime sx={{ mr: 1 }} />
-              <Typography variant="body2">{formatDate(recipe.date)}</Typography>
-            </Box>
-
-            <Grid container spacing={3}>
-              <Grid item xs={12} md={6}>
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <FormatListNumbered sx={{ mr: 1 }} />
-                    <Typography variant="h6">Steps</Typography>
-                  </Box>
-                  <List>
-                    {recipe.steps?.map((step) => (
-                      <ListItem key={step.id}>
-                        <ListItemText
-                          primary={
-                            <Typography>
-                              <strong>{step.id}.</strong> {step.text}
-                            </Typography>
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
-                </Box>
-              </Grid>
-
-              <Grid item xs={12} md={6}>
-                <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                    <ShoppingCart sx={{ mr: 1 }} />
-                    <Typography variant="h6">Shopping List</Typography>
-                  </Box>
-                  <List>
-                    {recipe.shopping?.map((item, index) => (
-                      <React.Fragment key={index}>
-                        <ListItem>
-                          <ListItemText
-                            primary={item.item}
-                            secondary={`${item.quantity} ${item.unit}`}
-                          />
-                        </ListItem>
-                        {index < recipe.shopping.length - 1 && <Divider />}
-                      </React.Fragment>
-                    ))}
-                  </List>
-                </Box>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      ))}
+        </CardContent>
+      </Card>
+    ))}
+    
        <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Recipe</DialogTitle>
         <DialogContent>
