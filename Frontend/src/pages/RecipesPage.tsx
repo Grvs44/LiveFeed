@@ -8,6 +8,7 @@ import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 import "../App.css";
 import AddBoxIcon from '@mui/icons-material/AddBox';
+import { BlobServiceClient } from "@azure/storage-blob";
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
@@ -64,6 +65,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
   const [tags, setTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState<string>('');
   const [servings, setServings] = useState<number>(1);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const addStep = () => {
     setSteps([...steps, { id: steps.length + 1, text: '' }]);
@@ -118,11 +120,35 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
 
+  const uploadImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let file = null;
+    if (e.target.files && e.target.files.length > 0) {
+      file = e.target.files[0];
+    }
+    setImageFile(file);
+  };
+
   const uploadRecipe = async () => {
     if (title && steps.length > 0 && shopping.length > 0 && scheduledDate && cookTime > 0 && servings > 0) {
+      let uploadedImageUrl = '';
+
+      if (imageFile) {
+        const sasUrl = "https://livefeedstorage.blob.core.windows.net/recipe-thumbnails?sp=racwdli&st=2024-12-29T05:41:51Z&se=2025-04-01T13:41:51Z&spr=https&sv=2022-11-02&sr=c&sig=nv09TRDE3MO16fuwmkJlpwKTL0cEoNPlOBe6bhCKkus%3D";
+        const containerName = "recipe-thumbnails";
+        const blobServiceClient = new BlobServiceClient(sasUrl);
+        const containerClient = blobServiceClient.getContainerClient(containerName);
+        const randomString = Math.random().toString(36).substring(2, 15);
+        const blobName = `images/${randomString}-${imageFile.name}`;
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+        await blockBlobClient.uploadBrowserData(imageFile);
+        uploadedImageUrl = blockBlobClient.url;
+      }
+      const finalImageUrl = uploadedImageUrl || imageUrl;
+
       const newRecipe = { 
         title, 
-        imageUrl, 
+        imageUrl: finalImageUrl, 
         steps, 
         shopping, 
         scheduledDate,
@@ -159,29 +185,9 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         <label className='label'>Title:</label>
         <input className='input' type="text" placeholder="Recipe Title" value={title} onChange={(e) => setTitle(e.target.value)} />
       </div>
-      
-      <div className='section'>
-        <label className='label'>Image URL:</label>
-        <input 
-          className='input' 
-          type="url" 
-          placeholder="Enter image URL" 
-          value={imageUrl} 
-          onChange={(e) => setImageUrl(e.target.value)} 
-        />
-        {imageUrl && (
-          <div className='preview'>
-            <img 
-              src={imageUrl} 
-              alt="Recipe preview" 
-              style={{ maxWidth: '200px', marginTop: '10px' }} 
-              onError={(e) => {
-                e.currentTarget.style.display = 'none';
-                alert('Invalid image URL');
-              }}
-            />
-          </div>
-        )}
+      <div>
+        <h3>Select Image for Recipe</h3>
+        <input type="file" accept="image/*" onChange={uploadImage} />
       </div>
 
       <div className='section'>
