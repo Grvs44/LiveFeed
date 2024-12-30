@@ -16,6 +16,7 @@ import OndemandPage from './pages/OndemandPage'
 import RecipesPage from './pages/RecipesPage'
 import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
+import StartStreamPage from './pages/StartStreamPage'
 import WatchLivePage from './pages/WatchLivePage'
 import WatchOndemandPage from './pages/WatchOndemandPage'
 import store from './redux/store'
@@ -42,6 +43,10 @@ const router = createBrowserRouter(
         {
           path: 'live/:id',
           element: <WatchLivePage />,
+        },
+        {
+          path: 'live/:id/start',
+          element: <StartStreamPage />,
         },
         {
           path: 'ondemand',
