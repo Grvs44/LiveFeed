@@ -15,7 +15,7 @@ export default function StartStreamPage() {
     dispatch(setTitle('Start stream'))
   }, [])
 
-  const onPlay: React.ReactEventHandler<HTMLVideoElement> = (event) => {
+  const onStreamStart: React.ReactEventHandler<HTMLVideoElement> = (event) => {
     console.log(
       `Video time: ${event.currentTarget.currentTime}s, epoch time: ${Math.floor(Date.now() / 1000)}s`,
     )
@@ -28,7 +28,7 @@ export default function StartStreamPage() {
           <Typography>Stream {id}</Typography>
         </Grid>
         <Grid size={8}>
-          <VideoPlayer src={'/' + id} autoPlay={true} onPlay={onPlay} />
+          <VideoPlayer src={'/' + id} onLoadedData={onStreamStart} />
         </Grid>
       </Grid>
     </Container>
