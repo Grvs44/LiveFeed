@@ -291,13 +291,23 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     steps = info.get('steps')
     shopping = info.get('shopping')
     date = info.get('scheduledDate')
+    image = info.get('imageUrl')
+    cookTime = info.get('cookTime')
+    tags = info.get('tags')
+    servings = info.get('servings')
     
     recipe_dict = {
         "user_id": user_id,
         "title": title,
         "steps": steps,
         "shopping": shopping,
-        "date": date
+        "date": date,
+        "image": image,
+        "cookTime" : cookTime,
+        "tags": tags,
+        "servings": servings
+        
+        
     }
     
     cosmos_dict = recipe_container.create_item(body=recipe_dict, enable_automatic_id_generation=True)
@@ -306,12 +316,14 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
     channel_info = streaming.create_recipe_channel(recipe_id)
-    stream_url = channel_info.output.uri
+    stream_url = channel_info.get('output_url')
+    input_url = channel_info.get('input_url')
     stream_dict = {
         "id": recipe_id,
         "user_id": user_id,
         "stream_url": stream_url,
-        "step_timings": {}
+        "step_timings": {},
+        "input_url": input_url
     }
 
     stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
@@ -370,12 +382,8 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
     try:
         info = req.get_json()
         logging.info(info)
-        user_id = info.get('user_id')
         id = info.get('id')
-        title = info.get('title')
-        steps = info.get('steps') 
-        shoppingList = info.get('shopping')
-        date = info.get('date')
+      
 
         query = f"SELECT * FROM c WHERE c.id = '{id}'"
         items = list(recipe_container.query_items(query=query, enable_cross_partition_query=True))
@@ -384,17 +392,8 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
         if not items:
             return func.HttpResponse("Recipe not found", status_code=404)
 
-       
-        recipes = {
-            "user_id": user_id,
-            "id" : id,
-            "title": title, 
-            "steps": steps,
-            "shopping": shoppingList,
-            "date": date
-        }
 
-        recipe_container.replace_item(item=id, body=recipes)
+        recipe_container.replace_item(item=id, body=req.get_json())
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
@@ -419,6 +418,8 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
         
 
         recipe_container.delete_item(item=id,partition_key=user_id)
+        streaming.delete_vod(id)
+        stream_container.delete_item(id, partition_key=id)
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
