@@ -5,7 +5,7 @@ import logging
 import datetime
 import json
 import jwt
-from shared_code import streaming
+from shared_code import messages, streaming
 import requests
 from azure.messaging.webpubsubservice import (
     WebPubSubServiceClient
@@ -163,13 +163,13 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
+    recipe_id = req.route_params.get('recipeId')
+
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
 
     if (stream_data.get('user_id') != user_id):
         logging.info("Sender is not the creator of the recipe")
         return func.HttpResponse("Unauthorized", status_code=401)
-
-    recipe_id = req.route_params.get('recipeId')
 
     if not recipe_id:
         logging.info("No recipe ID specified")
@@ -202,13 +202,13 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
 
+    recipe_id = req.route_params.get('recipeId')
+
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
 
     if (stream_data.get('user_id') != user_id):
         logging.info("Sender is not the creator of the recipe")
         return func.HttpResponse("Unauthorized", status_code=401)
-
-    recipe_id = req.route_params.get('recipeId')
 
     vod_url = streaming.save_vod(recipe_id)
     response = streaming.stop_stream(recipe_id)
@@ -220,6 +220,47 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Livestream successfully ended")
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
+    
+@app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+def next_step(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Received stream start request')
+
+    ### Authentication ###
+    auth_header = req.headers.get("Authorization")
+
+    if auth_header is None or not auth_header.startswith("Bearer "):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+    ### Authentication ###
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
+
+    recipe_id = req.route_params.get('recipeId')
+
+    stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
+
+    if (stream_data.get('user_id') != user_id):
+        logging.info("Sender is not the creator of the recipe")
+        return func.HttpResponse("Unauthorized", status_code=401)
+    
+    body = req.get_json()
+    step_id = body.get('id')
+    time = body.get('time')
+
+    stream_data['step_timings'][step_id] = time
+    stream_container.upsert_item(stream_data)
+
+    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": time}}
+
+    CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
+
+    return func.HttpResponse("Successfully stepped", status_code=201)
 
 ############################
 #---- Recipe Functions ----#

@@ -4,7 +4,8 @@ import {
   WebPubSubClient,
 } from '@azure/web-pubsub-client'
 import { useDispatch, useSelector } from 'react-redux'
-import { Chat } from '../context/types'
+import { Chat, StepUpdate } from '../context/types'
+import { useChangeStepMutation } from '../redux/apiSlice'
 import { resetClient, setClient } from '../redux/pubsubSlice'
 import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
@@ -26,6 +27,7 @@ export type PubSubClientProviderProps = {
   groupName: string
   minStepId?: number // currentStep cannot be less than this value
   maxStepId?: number // currentStep cannot be more than this value
+  onStepUpdate?: (stepUpdate: StepUpdate) => void
 }
 
 export const PubSubClientContext = React.createContext<ProviderValue>({
@@ -40,6 +42,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const dispatch = useDispatch()
   const client = useSelector((state: State) => state.pubsub.client)
   const accessToken = useSelector((state: State) => state.token.token)
+  const [changeRecipeStep] = useChangeStepMutation()
   const { activeAccount } = React.useContext(LoginContext)
   const [ready, setReady] = React.useState<boolean>(false)
   const [canSend, setCanSend] = React.useState<boolean>(true)
@@ -91,8 +94,15 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
               },
             ]),
           )
-        } else if (messageData.type == MessageType.Next) {
-          setCurrentStep(messageData.step)
+        } else if (messageData.type == MessageType.Step) {
+          const content = messageData.content
+          if (content && props.onStepUpdate) {
+            console.log('Step update')
+            setCurrentStep(content.id)
+            props.onStepUpdate(content)
+          } else {
+            console.warn('Unhandled step update')
+          }
         } else {
           console.error('Unkown message type: ' + messageData.type)
         }
@@ -129,6 +139,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   }
 
   const changeStep: ProviderValue['changeStep'] = async (step) => {
+    // TODO: @Grvs44 maybe move this to middleware?
     if (
       props.minStepId &&
       props.maxStepId &&
@@ -136,8 +147,11 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       step <= props.maxStepId
     ) {
       console.log('Changing step to ' + step)
-      const content: MessageContent = { step, type: MessageType.Next }
-      await client?.sendToGroup(props.groupName, content, 'json')
+      changeRecipeStep({
+        recipeId: props.groupName,
+        stepId: step,
+        time: getSeconds(),
+      })
     } else {
       console.log(`Step ${step} out of range`)
     }
@@ -159,3 +173,5 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     </PubSubClientContext.Provider>
   )
 }
+
+const getSeconds = () => Math.floor(Date.now() / 1000)
