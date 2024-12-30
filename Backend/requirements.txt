@@ -14,7 +14,11 @@ filelock==3.16.1
 fsspec==2024.10.0
 google-api-core==2.23.0
 google-auth==2.36.0
+google-cloud-core==2.4.1
+google-cloud-storage==2.19.0
 google-cloud-video-live-stream==1.9.1
+google-crc32c==1.6.0
+google-resumable-media==2.7.2
 googleapis-common-protos==1.66.0
 grpcio==1.68.1
 grpcio-status==1.68.1

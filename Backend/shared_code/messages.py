@@ -1,0 +1,2 @@
+MESSAGE = 0
+STEP = 1

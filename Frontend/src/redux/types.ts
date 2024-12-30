@@ -25,6 +25,7 @@ export type OndemandStream = {
 export type RecipeStep = {
   id: number
   text: string
+  time?: number
 }
 
 export type TimedRecipeStep = RecipeStep & {
@@ -53,6 +54,12 @@ export type StartStream = {
 export type EndStream = {
   // stream data
   id?: string
+}
+
+export type RecipeStepChange = {
+  recipeId: string
+  stepId: number
+  time: number
 }
 
 export type State = ReturnType<typeof store.getState>

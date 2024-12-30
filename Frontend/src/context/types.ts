@@ -7,13 +7,14 @@ export type Chat = {
 
 export enum MessageType {
   Message,
-  Next,
+  Step,
 }
 
 export type MessageContent = {
   message?: string
   step?: number
   time?: number
+  content?: StepUpdate
   type: MessageType
 }
 
@@ -21,4 +22,9 @@ export type UserInfo = {
   name?: string
   given_name?: string
   family_name?: string
+}
+
+export type StepUpdate = {
+  id: number
+  time: number
 }
