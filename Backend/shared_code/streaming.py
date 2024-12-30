@@ -9,6 +9,10 @@ import logging
 
 # Adapted from https://cloud.google.com/livestream/docs/quickstarts/quickstart-hls
 
+AWAITING_LIVE = 0
+LIVE = 1
+VOD = 2
+
 project_id = "livefeed-443712"
 location = "europe-west2"
 
