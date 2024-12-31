@@ -51,6 +51,11 @@ export type StartStream = {
   id?: string
 }
 
+export type StreamStartTime = {
+  id: string
+  time: number
+}
+
 export type EndStream = {
   // stream data
   id?: string

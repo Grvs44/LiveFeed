@@ -7,6 +7,7 @@ import {
   RecipeStepChange,
   StartStream,
   State,
+  StreamStartTime,
 } from './types'
 
 enum TagTypes {
@@ -38,6 +39,13 @@ export const apiSlice = createApi({
       query: (id) => ({
         url: `stream/${id}/start/`,
         method: 'POST',
+      }),
+    }),
+    sendStreamStartTime: builder.mutation<string, StreamStartTime>({
+      query: ({ id, time }) => ({
+        url: `stream/${id}/time/`,
+        method: 'POST',
+        body: { time },
       }),
     }),
     endStream: builder.mutation<EndStream, string>({
@@ -87,6 +95,7 @@ export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
   useStartStreamMutation,
+  useSendStreamStartTimeMutation,
   useEndStreamMutation,
   useChangeStepMutation,
   useCreateRecipeMutation,
