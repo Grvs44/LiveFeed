@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton} from '@mui/material';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip} from '@mui/material';
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu, Tag,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
@@ -500,11 +500,19 @@ const deleteShoppingItem = (index: number) => {
                   </Typography>
                 </Box>
                 <Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                    <LocalOffer sx={{ mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body1">
-                      <strong>Tags:</strong> {recipe.tags || 'None'} 
-                    </Typography>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                  <LocalOffer className="mr-2 text-gray-500" />
+                 
+                  <Typography className="mr-2" ><strong>Tags:</strong></Typography>
+                    <Stack direction="row" spacing={1} className="flex-wrap">
+                      {recipe.tags && recipe.tags.length > 0 ? (
+                        recipe.tags.map((tag, index) => (
+                          <Chip key={index} label={tag} variant="outlined" size="small" />
+                        ))
+                      ) : (
+                          <Typography>None</Typography>
+                        )}
+                    </Stack>
                   </Box>
     
                 </Box>
@@ -609,18 +617,77 @@ const deleteShoppingItem = (index: number) => {
       </Card>
     ))}
     
-       <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
+      <Dialog open={editDialog} onClose={handleEditClose} maxWidth="md" fullWidth>
         <DialogTitle>Edit Recipe</DialogTitle>
         <DialogContent>
-          {editingRecipe && (
-            <Box sx={{ pt: 2 }}>
-              <TextField
-                fullWidth
-                label="Recipe Title"
-                value={editingRecipe.title}
-                onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, title: e.target.value } : null)}
-                margin="normal"
-              />
+         {editingRecipe && (
+          <Box sx={{ pt: 2 }}>
+            <TextField
+              fullWidth
+              label="Recipe Title"
+              value={editingRecipe.title}
+              onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, title: e.target.value } : null)}
+              margin="normal"
+            />
+            
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Cook Time (minutes)"
+                  type="number"
+                  value={editingRecipe.cookTime}
+                  onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, cookTime: parseInt(e.target.value) } : null)}
+                  margin="normal"
+                />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                  fullWidth
+                  label="Servings"
+                  type="number"
+                  value={editingRecipe.servings}
+                  onChange={(e) => setEditingRecipe(prev => prev ? { ...prev, servings: parseInt(e.target.value) } : null)}
+                  margin="normal"
+                />
+              </Grid>
+            </Grid>
+
+            <Box sx={{ mt: 2 }}>
+              <Typography variant="h6" gutterBottom>Tags</Typography>
+              <Box sx={{ display: 'flex', gap: 1, mb: 2, flexWrap: 'wrap' }}>
+                {editingRecipe.tags?.map((tag, index) => (
+                  <Chip
+                    key={index}
+                    label={tag}
+                    onDelete={() => {
+                      setEditingRecipe(prev => prev ? {
+                        ...prev,
+                        tags: prev.tags.filter((_, i) => i !== index)
+                      } : null)
+                    }}
+                  />
+                ))}
+              </Box>
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  label="Add tag"
+                  size="small"
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      const value = (e.target as HTMLInputElement).value.trim();
+                      if (value && (!editingRecipe.tags?.includes(value))) {
+                        setEditingRecipe(prev => prev ? {
+                          ...prev,
+                          tags: [...(prev.tags || []), value]
+                        } : null);
+                        (e.target as HTMLInputElement).value = '';
+                      }
+                    }
+                  }}
+                />
+              </Box>
+            </Box>
               
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mt: 2 }}>
               <Typography variant="h6">Steps</Typography>
