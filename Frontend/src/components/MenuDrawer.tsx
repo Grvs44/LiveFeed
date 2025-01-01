@@ -13,6 +13,7 @@ import HomeIcon from '@mui/icons-material/Home'
 import LiveTvIcon from '@mui/icons-material/LiveTv'
 import OndemandVideoIcon from '@mui/icons-material/OndemandVideo'
 import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import RestaurantIcon from '@mui/icons-material/Restaurant';
 import BlenderIcon from '@mui/icons-material/Blender'
 import SettingsIcon from '@mui/icons-material/Settings'
 import Box from '@mui/material/Box'
@@ -53,6 +54,14 @@ export default function MenuDrawer(props: SwipeableDrawerProps) {
               <OndemandVideoIcon />
             </ListItemIcon>
             <ListItemText>On-demand</ListItemText>
+          </ListItemButtonLink>
+        </ListItem>
+        <ListItem>
+          <ListItemButtonLink to="upcomingrecipe">
+            <ListItemIcon>
+              <RestaurantIcon />
+            </ListItemIcon>
+            <ListItemText>Upcoming Recipe</ListItemText>
           </ListItemButtonLink>
         </ListItem>
         <ListItem>
