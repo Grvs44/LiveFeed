@@ -19,6 +19,10 @@ const onDemandStreams: Item[] = [
   { id: 7, title: 'Music Replay', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
 ];
 
+const  upcomingStreams: Item[] = [
+  { id: 8, title: 'About to Cook', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' }
+];
+
 export default function HomePage() {
 
   const dispatch = useDispatch()
@@ -46,8 +50,13 @@ export default function HomePage() {
       </div>
 
       {/* On-Demand Section */}
-      <div style={{ width: '80%', maxWidth: '1500px' }}>
+      <div style={{ width: '80%', maxWidth: '1500px', marginBottom: '50px' }}>
         <Section title="On Demand" items={onDemandStreams} />
+      </div>
+
+      {/* Upcoming Section */}
+      <div style={{ width: '80%', maxWidth: '1500px' }}>
+        <Section title="Upcoming" items={upcomingStreams} />
       </div>
     </div>
   );
