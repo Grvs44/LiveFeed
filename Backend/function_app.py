@@ -1,3 +1,4 @@
+import time
 import azure.functions as func
 from azure.cosmos import CosmosClient
 import os
@@ -214,6 +215,7 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     if (response.streaming_state == "STOPPED"):
         stream_data['stream_url'] = vod_url
         stream_data['live_status'] = streaming.VOD
+        stream_data['start_time'] = time.time()
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully ended")
     else:
@@ -259,6 +261,20 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
 
     return func.HttpResponse("Successfully stepped", status_code=201)
+
+@app.route(route="streams", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_streams(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        items = list(stream_container.read_all_items())
+            
+        response_body = json.dumps(items)
+        logging.info('Successful streams retrieval')
+        logging.info(items)
+        return func.HttpResponse(response_body, status_code=200)
+        
+    except Exception as e:
+        logging.info(e)
+        return func.HttpResponse("Error while retrieving streams", status_code=500)
 
 ############################
 #---- Recipe Functions ----#
@@ -425,6 +441,8 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f'Error updating recipe: {str(e)}')
    
     return func.HttpResponse("Error updating recipe", status_code=500)
+
+
 
 def get_stream_from_db(recipe_id):
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
