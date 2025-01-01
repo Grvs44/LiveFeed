@@ -13,6 +13,7 @@ import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
 import OndemandPage from './pages/OndemandPage'
+import UpcomingRecipesPage from './pages/UpcomingRecipesPage'
 import RecipesPage from './pages/RecipesPage'
 import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
@@ -50,6 +51,10 @@ const router = createBrowserRouter(
         {
           path: 'ondemand/:id',
           element: <WatchOndemandPage />,
+        },
+        {
+          path: 'upcomingrecipe',
+          element: <UpcomingRecipesPage/>,
         },
         {
           path: 'saved',
