@@ -10,6 +10,7 @@ const liveStreams: Item[] = [
   { id: 2, title: 'Gaming Live', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
   { id: 3, title: 'Art Stream', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
   { id: 4, title: 'Just Chatting', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
+  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
 ];
 
 const onDemandStreams: Item[] = [
