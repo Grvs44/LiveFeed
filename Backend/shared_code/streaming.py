@@ -182,5 +182,6 @@ def save_vod(recipe_id):
     storage_client = storage.Client()
     bucket = storage_client.bucket('livefeed-bucket')
     vod_name = f'vods/vod-{recipe_id}'
-
-    return bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url
+    public_url = bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url
+    
+    return f"{public_url}/manifest.m3u8"
