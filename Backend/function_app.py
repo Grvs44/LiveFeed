@@ -310,7 +310,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     stream_dict = {
         "id": recipe_id,
         "user_id": user_id,
-        "stream_url": stream_url,
+        "stream_url": f"https://storage.googleapis.com/livefeed-bucket/outputs/output-{recipe_id}/manifest.m3u8",
         "step_timings": {}
     }
 
