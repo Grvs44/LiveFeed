@@ -3,33 +3,47 @@ import { useDispatch } from 'react-redux'
 import { setTitle } from '../redux/titleSlice'
 import Section from '../containers/Section';
 import { Item } from '../redux/types'
-
-// Dummy data
-const liveStreams: Item[] = [
-  { id: 1, title: 'Cooking Show', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
-  { id: 2, title: 'Gaming Live', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
-  { id: 3, title: 'Art Stream', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
-  { id: 4, title: 'Just Chatting', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
-  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250', link: '/live/1' },
-];
-
-const onDemandStreams: Item[] = [
-  { id: 5, title: 'Recorded Cooking', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
-  { id: 6, title: 'Gaming Highlights', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
-  { id: 7, title: 'Music Replay', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' },
-];
-
-const  upcomingStreams: Item[] = [
-  { id: 8, title: 'About to Cook', thumbnail: 'https://via.placeholder.com/300x250', link: '/ondemand/1' }
-];
+import { useGetLiveRecipeMutation, useGetOnDemandRecipeMutation, useGetUpcomingRecipeMutation } from '../redux/apiSlice';
 
 export default function HomePage() {
 
   const dispatch = useDispatch()
 
+  const [fetchLiveStreams, { data: liveData }] = useGetLiveRecipeMutation()
+  const [fetchOnDemandStreams, { data: onDemandData }] = useGetOnDemandRecipeMutation()
+  const [fetchUpcomingStreams, { data: upcomingData }] = useGetUpcomingRecipeMutation()
+
   React.useEffect(() => {
     dispatch(setTitle('LiveFeed'))
-  }, [])
+    fetchLiveStreams()
+    fetchOnDemandStreams()
+    fetchUpcomingStreams()
+  }, [dispatch, fetchLiveStreams, fetchOnDemandStreams, fetchUpcomingStreams])
+
+  const liveStreams: Item[] = 
+  liveData?.map((recipe: any) => ({
+    id: recipe.id,
+    title: recipe.title,
+    thumbnail: recipe.image,
+    link: `/live/${recipe.id}`,
+  })) || []
+
+  const onDemandStreams: Item[] = 
+  onDemandData?.map((recipe: any) => ({
+    id: recipe.id,
+    title: recipe.title,
+    thumbnail: recipe.image,
+    link: `/ondemand/${recipe.id}`,
+  })) || []
+
+  const upcomingStreams: Item[] =
+  upcomingData?.map((recipe: any) => ({
+    id: recipe.id,
+    title: recipe.title,
+    thumbnail: recipe.image,
+    link: `/upcoming/${recipe.id}`,
+  })) || []
+
 
   return (
     <div
