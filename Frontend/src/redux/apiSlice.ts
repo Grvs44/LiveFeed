@@ -66,6 +66,12 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
+    displayRecipe: builder.mutation<any, any>({
+      query: (id) => ({
+        url: `/recipe/display?id=${id}`,
+        method: 'GET',
+      }),
+    }),
     updateRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
         url: '/recipe/update',
@@ -114,4 +120,5 @@ export const {
   useGetLiveRecipeMutation,
   useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
+  useDisplayRecipeMutation,
 } = apiSlice

@@ -53,7 +53,7 @@ const router = createBrowserRouter(
           element: <WatchOndemandPage />,
         },
         {
-          path: 'upcoming',
+          path: 'upcoming/:id',
           element: <UpcomingRecipesPage/>,
         },
         {
