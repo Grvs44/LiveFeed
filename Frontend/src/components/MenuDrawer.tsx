@@ -57,7 +57,7 @@ export default function MenuDrawer(props: SwipeableDrawerProps) {
           </ListItemButtonLink>
         </ListItem>
         <ListItem>
-          <ListItemButtonLink to="upcomingrecipe">
+          <ListItemButtonLink to="upcoming">
             <ListItemIcon>
               <RestaurantIcon />
             </ListItemIcon>
