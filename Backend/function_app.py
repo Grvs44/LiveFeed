@@ -444,7 +444,36 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
+@app.route(route="recipe/display", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Display Recipe')
+    
+    try:
+        info = req.params
+        logging.info(info)
+        id = info.get('id')
+      
 
+        query = f"SELECT * FROM c WHERE c.id = '{id}'"
+        items = list(recipe_container.query_items(
+                query=query,
+                enable_cross_partition_query=True
+            ))
+            
+        if not items:
+                return func.HttpResponse(
+                    "Recipe not found",
+                    status_code=404
+                )
+                
+        response_body = json.dumps(items[0])
+        logging.info('Successful recipe retrieval }')
+        logging.info(items)
+        return func.HttpResponse(response_body, status_code=200)
+    except Exception as e:
+        logging.error(f'Error updating recipe: {str(e)}')
+   
+    return func.HttpResponse("Error updating recipe", status_code=500)
 
 def get_stream_from_db(recipe_id):
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
