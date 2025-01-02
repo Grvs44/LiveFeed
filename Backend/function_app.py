@@ -13,6 +13,7 @@ from azure.messaging.webpubsubservice import (
 )
 from jwt import PyJWKClient
 from msal import ConfidentialClientApplication
+from datetime import datetime, timezone
 
 app = func.FunctionApp()
 
@@ -40,6 +41,7 @@ msal_client = ConfidentialClientApplication(
     client_credential=SECRET,
     authority=f"https://login.microsoftonline.com/{TENANT_ID}"
 )
+current_date = datetime.now(timezone.utc).isoformat(timespec='minutes')
 
 def get_web_access_token():
     result = msal_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
@@ -476,3 +478,92 @@ def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
     stream_dict = get_stream_from_db(recipe_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
+
+@app.route(route="recipe/live", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Get All "Live" Recipes')
+    try:
+        query = f"""
+        SELECT c.id, c.title, c.image 
+        FROM UploadedRecipes c 
+        WHERE c.variable = 1'
+        """
+        items = list(recipe_container.query_items(
+            query=query,
+            enable_cross_partition_query=True
+        ))
+
+        if not items:
+            return func.HttpResponse(
+                'No "Live" recipes found',
+                status_code=404
+            )
+
+        response_body = json.dumps(items)
+        logging.info('Successfully retrieved all "Live" recipes')
+        return func.HttpResponse(response_body, status_code=200)
+        
+    except Exception as e:
+        logging.error(f'Error retrieving "Live" recipes: {str(e)}')
+        return func.HttpResponse('Error retrieving "Live" recipes', status_code=500)
+
+@app.route(route="recipe/ondemand", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Get All "On demand" Recipes')
+    logging.info(f"Current date {current_date}")
+    try:
+        # Get all recipes that have passed the current date
+        query = f"""
+        SELECT c.id, c.title, c.image 
+        FROM UploadedRecipes c 
+        WHERE c.date < '{current_date}' 
+        AND c.user_id != '1b7d8e26-cff7-4259-acb1-4f8ac7f32037'
+        """
+        items = list(recipe_container.query_items(
+            query=query,
+            enable_cross_partition_query=True
+        ))
+
+        if not items:
+            return func.HttpResponse(
+                'No "On demand" recipes found',
+                status_code=404
+            )
+
+        response_body = json.dumps(items)
+        logging.info('Successfully retrieved all "On Demand" recipes')
+        return func.HttpResponse(response_body, status_code=200)
+        
+    except Exception as e:
+        logging.error(f'Error retrieving "On Demand" recipes: {str(e)}')
+        return func.HttpResponse('Error retrieving "On Demand" recipes', status_code=500)
+    
+@app.route(route="recipe/upcoming", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info('Get All "Upcoming" Recipes')
+
+    try:
+        # Get all future upcoming recipes
+        query = f"""
+        SELECT c.id, c.title, c.image 
+        FROM UploadedRecipes c 
+        WHERE c.date > '{current_date}'
+        """
+        items = list(recipe_container.query_items(
+            query=query,
+            enable_cross_partition_query=True
+        ))
+
+        if not items:
+            return func.HttpResponse(
+                'No "Upcoming" recipes found',
+                status_code=404
+            )
+
+        response_body = json.dumps(items)
+        logging.info('Successfully retrieved all "Upcoming" recipes')
+        return func.HttpResponse(response_body, status_code=200)
+        
+    except Exception as e:
+        logging.error(f'Error retrieving "Upcoming" recipes: {str(e)}')
+        return func.HttpResponse('Error retrieving "Upcoming" recipes', status_code=500)
