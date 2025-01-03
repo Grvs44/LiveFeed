@@ -180,7 +180,7 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     if (response.streaming_state == "STOPPED"):
         return func.HttpResponse("Error while starting stream", status_code=500)
     else:
-        return func.HttpResponse("Livestream successfully started")
+        return func.HttpResponse("Livestream successfully started", status_code=200)
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
@@ -217,7 +217,7 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     stream_container.upsert_item(stream_data)
 
     if (response.streaming_state == "STOPPED"):
-        return func.HttpResponse("Livestream successfully ended")
+        return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
     
@@ -450,11 +450,11 @@ def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
-    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
-    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
