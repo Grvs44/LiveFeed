@@ -67,8 +67,6 @@ export default function StartStreamPage() {
           </Button>
         )
       case StreamState.Started:
-        return <Typography>Waiting for video...</Typography>
-      case StreamState.Streaming:
         return (
           <Button onClick={onStopStream} variant="contained">
             Stop stream
