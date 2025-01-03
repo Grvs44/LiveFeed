@@ -181,7 +181,27 @@ def stop_stream(recipe_id):
 def save_vod(recipe_id):
     storage_client = storage.Client()
     bucket = storage_client.bucket('livefeed-bucket')
-    vod_name = f'vods/vod-{recipe_id}'
-    public_url = bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url
+    stream_directory = f'outputs/output-{recipe_id}'
+    vod_directory = f'vods/vod-{recipe_id}'
+    blobs = bucket.list_blobs(prefix=stream_directory)
+    for blob in blobs:
+        new_name = blob.name.replace(stream_directory, vod_directory, 1)
+        bucket.rename_blob(blob, new_name)
+
+    public_url = bucket.blob(f'{vod_directory}/manifest.m3u8').public_url
     
-    return f"{public_url}/manifest.m3u8"
+    return public_url
+
+"""stop_channel('950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
+
+def test_credentials():
+    try:
+        client = storage.Client()
+        buckets = list(client.list_buckets())
+        bucket = client.get_bucket('livefeed-bucket')
+        blobs = bucket.list_blobs(prefix='outputs/output-950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
+        print(f"Connected successfully. Blobs: {[blob.name for blob in blobs]}")
+    except Exception as e:
+        print(f"Failed to authenticate: {e}")
+
+test_credentials()"""
