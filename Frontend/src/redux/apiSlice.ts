@@ -114,13 +114,20 @@ export const apiSlice = createApi({
           notifications,
         },
       }),
-    })
+    }),
+    getPreferences: builder.query<any, void>({
+      query: () => ({
+        url: '/settings/preferences',
+        method: 'GET',
+      }),
+    }),
   }),
 })
 
 export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
+  useGetPreferencesQuery,
   useStartStreamMutation,
   useEndStreamMutation,
   useChangeStepMutation,

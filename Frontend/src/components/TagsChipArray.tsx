@@ -8,16 +8,30 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useDispatch, useSelector } from 'react-redux'
 import TAGS from '../config/Tags'
-import { useUpdatePreferencesMutation } from '../redux/apiSlice'
-import { addTag, removeTag } from '../redux/tagsSlice'
+import {
+  useGetPreferencesQuery,
+  useUpdatePreferencesMutation,
+} from '../redux/apiSlice'
+import { addTag, removeTag, setTags } from '../redux/tagsSlice'
 import { State } from '../redux/types'
 
 //TO-DO: Custom colours for the chips?
 export default function TagsChipArray() {
   const dispatch = useDispatch()
   const [updatePreferences] = useUpdatePreferencesMutation()
+  const { data, isLoading } = useGetPreferencesQuery()
   const tags = useSelector((state: State) => state.tags.tags || [])
   const [selectedTag, setSelectedTag] = React.useState<string>('')
+
+  React.useEffect(() => {
+    console.log('API Response for Preferences:', data)
+    if (data && data.tags) {
+      dispatch(setTags(data.tags))
+    }
+  }, [data, dispatch])
+  if (isLoading) {
+    return <p>Loading preferences...</p>
+  }
 
   const handleAddTag = (tagToAdd: string) => {
     dispatch(addTag(tagToAdd))

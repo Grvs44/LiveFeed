@@ -663,5 +663,6 @@ def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     except CosmosResourceNotFoundError:
         return func.HttpResponse(json.dumps({"tags": [], "notifications": True}), status_code=200)
     except Exception as e:
+        logging.error(f"Failed to retrieve preferences for user {user_id}: {str(e)}")
         return func.HttpResponse(f"Failed to retrieve preferences: {str(e)}", status_code=500)
 
