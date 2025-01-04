@@ -7,6 +7,7 @@ import {
   RecipeStepChange,
   StartStream,
   State,
+  UpdatePreferences
 } from './types'
 
 enum TagTypes {
@@ -104,6 +105,16 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
+    updatePreferences: builder.mutation<any, UpdatePreferences>({
+      query: ({tags, notifications }) => ({
+        url: `/settings/preferences`,
+        method: 'PATCH',
+        body: {
+          tags,
+          notifications,
+        },
+      }),
+    })
   }),
 })
 
@@ -121,4 +132,5 @@ export const {
   useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
+  useUpdatePreferencesMutation
 } = apiSlice

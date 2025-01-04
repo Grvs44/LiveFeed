@@ -1,6 +1,7 @@
 import time
 import azure.functions as func
 from azure.cosmos import CosmosClient
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 import os
 import logging
 import datetime
@@ -19,8 +20,10 @@ app = func.FunctionApp()
 
 client = CosmosClient("https://livefeed-storage.documents.azure.com:443/", "RMcJvdRXCSCk60vX8ga7uAdnfl2yKW1nGBDf0EKcHc8NtdwKs72NAq2mDtUk8hW6NWwN3RnXMUFxACDbWLE70A==")
 database = client.get_database_client('Recipes')
+user_database = client.get_database_client('Users')
 recipe_container = database.get_container_client('UploadedRecipes')
 stream_container = database.get_container_client('Streams')
+prefs_container = user_database.get_container_client('Preferences')
 
 NOTIFY_HUB_NAME = 'livefeed-notify'
 CHAT_HUB_NAME = 'livefeed'
@@ -94,6 +97,23 @@ def validate_token(token):
         claim_info['error'] = func.HttpResponse(f"Invalid token: {e}", status_code=401)
     
     return claim_info
+
+def get_user_id_header(req):
+    #Authenticate user
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("Unauthorized", status_code=401)
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
+    return user_id
+
 
 ############################
 #---- Stream Functions ----#
@@ -596,3 +616,38 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f'Error retrieving "Upcoming" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "Upcoming" recipes', status_code=500)
+
+############################
+#---- User Functions ----#
+############################
+
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PATCH])
+def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info(f"Request to update user preferences received")
+
+    user_id = get_user_id_header(req)
+    try:
+        body = req.get_json()
+        try:
+            preferences = prefs_container.read_item(item=user_id, partition_key=user_id)
+        except CosmosResourceNotFoundError:
+            logging.info(f"No existing preferences for {user_id}, creating new record.")
+            preferences = {"id": user_id, "user_id": user_id, "tags": [], "notifications": True}
+        if 'tags' in body:
+            preferences['tags'] = body['tags']
+        if 'notifications' in body:
+            preferences['notifications'] = body['notifications']
+
+        prefs_container.upsert_item(preferences)
+        return func.HttpResponse(
+            json.dumps({"message": "Preferences updated successfully."}),
+            status_code=200,
+            mimetype="application/json"
+        )
+    except ValueError:
+        return func.HttpResponse("Invalid JSON format", status_code=400)
+    except Exception as e:
+        logging.error(f"Failed to update preferences: {str(e)}")
+        return func.HttpResponse("Failed to update preferences", status_code=500)
+
+
