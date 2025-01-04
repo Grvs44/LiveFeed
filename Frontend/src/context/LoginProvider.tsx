@@ -13,7 +13,7 @@ import React from 'react'
 import { AccountInfo, SilentRequest } from '@azure/msal-browser'
 import { useMsal } from '@azure/msal-react'
 import { useDispatch } from 'react-redux'
-import { loginRequest } from '../auth/authConfig'
+import { loginRequest } from '../config/authConfig'
 import { setToken } from '../redux/tokenSlice'
 
 export type ProviderValue = {
