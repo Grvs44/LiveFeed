@@ -8,12 +8,14 @@ import Stack from '@mui/material/Stack'
 import Typography from '@mui/material/Typography'
 import { useDispatch, useSelector } from 'react-redux'
 import TAGS from '../config/Tags'
+import { useUpdatePreferencesMutation } from '../redux/apiSlice'
 import { addTag, removeTag } from '../redux/tagsSlice'
 import { State } from '../redux/types'
 
 //TO-DO: Custom colours for the chips?
 export default function TagsChipArray() {
   const dispatch = useDispatch()
+  const [updatePreferences] = useUpdatePreferencesMutation()
   const tags = useSelector((state: State) => state.tags.tags || [])
   const [selectedTag, setSelectedTag] = React.useState<string>('')
 
@@ -23,6 +25,17 @@ export default function TagsChipArray() {
 
   const handleDelete = (tagToDelete: string) => {
     dispatch(removeTag(tagToDelete))
+  }
+
+  const handleSaveChanges = async () => {
+    try {
+      updatePreferences({
+        tags,
+      })
+    } catch (err) {
+      console.error('Failed to update preferences:', err)
+      alert('Failed to save preferences.')
+    }
   }
 
   return (
@@ -84,7 +97,11 @@ export default function TagsChipArray() {
             marginTop: '40px',
           }}
         >
-          <Button variant="contained" color="success">
+          <Button
+            variant="contained"
+            color="success"
+            onClick={handleSaveChanges}
+          >
             Save Changes
           </Button>
         </Box>
