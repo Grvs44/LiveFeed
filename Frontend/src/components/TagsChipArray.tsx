@@ -5,30 +5,35 @@ import Chip from '@mui/material/Chip'
 import MenuItem from '@mui/material/MenuItem'
 import Select from '@mui/material/Select'
 import Stack from '@mui/material/Stack'
-import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import { useDispatch, useSelector } from 'react-redux'
 import TAGS from '../config/Tags'
+import { addTag, removeTag } from '../redux/tagsSlice'
+import { State } from '../redux/types'
 
 //TO-DO: Custom colours for the chips?
 export default function TagsChipArray() {
-  const [tags, setTags] = React.useState<string[]>([])
+  const dispatch = useDispatch()
+  const tags = useSelector((state: State) => state.tags.tags || [])
   const [selectedTag, setSelectedTag] = React.useState<string>('')
 
-  const handleDelete = (tagToDelete: string) => {
-    setTags((prevTags) => prevTags.filter((tag) => tag !== tagToDelete))
+  const handleAddTag = (tagToAdd: string) => {
+    dispatch(addTag(tagToAdd))
   }
 
-  const handleAddTag = () => {
-    if (selectedTag && !tags.includes(selectedTag)) {
-      setTags([...tags, selectedTag])
-      setSelectedTag('')
-    }
+  const handleDelete = (tagToDelete: string) => {
+    dispatch(removeTag(tagToDelete))
   }
 
   return (
     <Box sx={{ marginTop: '40px', marginBottom: '40px' }}>
       <Box
-        sx={{ padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}
+        sx={{
+          padding: '20px',
+          border: '1px solid #ddd',
+          borderRadius: '8px',
+          position: 'relative',
+        }}
       >
         <Typography variant="h6" sx={{ fontSize: '1.125rem' }} gutterBottom>
           Recipe Preferences
@@ -66,10 +71,21 @@ export default function TagsChipArray() {
           </Select>
           <Button
             variant="contained"
-            onClick={handleAddTag}
+            onClick={() => handleAddTag(selectedTag)}
             disabled={!selectedTag}
           >
             Add
+          </Button>
+        </Box>
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            marginTop: '40px',
+          }}
+        >
+          <Button variant="contained" color="success">
+            Save Changes
           </Button>
         </Box>
       </Box>
