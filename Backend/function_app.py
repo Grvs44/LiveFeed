@@ -650,4 +650,18 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Failed to update preferences: {str(e)}")
         return func.HttpResponse("Failed to update preferences", status_code=500)
 
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
+    user_id = get_user_id_header(req)
+    try:
+        preferences = prefs_container.read_item(item=user_id, partition_key=user_id)
+        return func.HttpResponse(
+            json.dumps(preferences),
+            status_code=200,
+            mimetype="application/json"
+        )
+    except CosmosResourceNotFoundError:
+        return func.HttpResponse(json.dumps({"tags": [], "notifications": True}), status_code=200)
+    except Exception as e:
+        return func.HttpResponse(f"Failed to retrieve preferences: {str(e)}", status_code=500)
 
