@@ -90,3 +90,7 @@ export type Recipe = {
   tags: string[];
 }
 
+export type TagsState = {
+  tags?: string[];
+}
+
