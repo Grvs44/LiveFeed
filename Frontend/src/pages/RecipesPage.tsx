@@ -66,6 +66,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
   const [tagInput, setTagInput] = useState<string>('');
   const [servings, setServings] = useState<number>(1);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const addStep = () => {
     setSteps([...steps, { id: steps.length + 1, text: '' }]);
@@ -124,6 +125,11 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     let file = null;
     if (e.target.files && e.target.files.length > 0) {
       file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
     setImageFile(file);
   };
@@ -187,7 +193,12 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       </div>
       <div>
         <h3>Select Image for Recipe</h3>
-        <input type="file" accept="image/*" onChange={uploadImage} />
+        <input className="uploadImgbutton" type="file" accept="image/*" onChange={uploadImage} />
+        {imagePreview && (
+          <div className="imagePreviewContainer">
+            <img className="imagePreview" src={imagePreview} alt="Image Preview"/>
+          </div>
+        )}
       </div>
 
       <div className='section'>
@@ -215,15 +226,36 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       <div className='section'>
         <label className='label'>Tags:</label>
         <div className='tagInput'>
-          <input
+          <select
             className='input'
-            type="text"
-            placeholder="Add tags"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-          />
-          <button className='addButton' onClick={handleAddTag}>Add Tag</button>
+          >
+            <option value="">Select tags</option>
+            <option value="Vegetarian">Vegetarian</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Gluten Free">Gluten Free</option>
+            <option value="Dairy Free">Dairy Free</option>
+            <option value="Nut free">Nut free</option>
+            <option value="Low Carb">Low Carb</option>
+            <option value="High Protein">High Protein</option>
+            <option value="Meal Prep">Meal Prep</option>
+            <option value="Air Fryer">Air Fryer</option>
+            <option value="Beginner Friendly">Beginner Friendly</option>
+            <option value="Dessert">Dessert</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Comfort Food">Comfort Food</option>
+            <option value="Spicy">Spicy</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Lunch">Lunch</option>
+            <option value="Dinner">Dinner</option>
+            <option value="Snacks">Snacks</option>
+            <option value="One-Pot Meals">One-Pot Meals</option>
+            <option value="Party Food">Party Food</option>
+            <option value="BBQ">BBQ</option>
+            <option value="Low Budget">Low Budget</option>
+          </select>
+          <button className='addTagButton' onClick={handleAddTag}>Add Tag</button>
         </div>
         <div className='tagContainer'>
           {tags.map((tag, index) => (
