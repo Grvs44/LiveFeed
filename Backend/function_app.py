@@ -596,3 +596,8 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f'Error retrieving "Upcoming" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "Upcoming" recipes', status_code=500)
+
+@app.route(route="notifications/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+@app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString")
+def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpResponse:
+    return func.HttpResponse(connectionInfo)
