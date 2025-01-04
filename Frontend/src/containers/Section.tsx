@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Typography, Card, CardMedia, CardContent, IconButton, Button } from '@mui/material';
+import { Typography, Card, CardMedia, CardContent, IconButton, Chip } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import { Item, SectionProps } from '../redux/types';
@@ -123,8 +123,8 @@ export default function Section({ title, items }: SectionProps) {
                 component={RouterLink} // Use RouterLink for navigation
                 to={item.link} // Navigate to the item's link (e.g., "/live/1" or "/ondemand/1")
                 style={{
-                  width: '300px',
-                  height: '250px',
+                  width: '320px',
+                  height: '260px',
                   boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
                   borderRadius: '10px',
                   textDecoration: 'none', // Remove default link styling
@@ -139,10 +139,41 @@ export default function Section({ title, items }: SectionProps) {
                     objectFit: 'cover',
                   }}
                 />
-                <CardContent>
-                  <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
+                <CardContent
+                    style={{
+                        padding: '5px',
+                    }}
+                >
+                  {/* Display Title */}
+                  <Typography variant="subtitle1" style={{ textAlign: 'center', marginBottom: '5px'}}>
                     {item.title}
                   </Typography>
+                  {/* Display Tags */}
+                  <div
+                      style={{
+                          display: 'flex',
+                          justifyContent: 'center',
+                          flexWrap: 'wrap',
+                          gap: '8px',
+                          marginBottom: '100px',
+                      }}
+                  >
+                      {item.tags &&
+                          item.tags.map((tag, index) => (
+                              <Chip
+                                  key={index}
+                                  label={tag}
+                                  style={{
+                                      backgroundColor: '#F0F0F0',
+                                      color: '#333',
+                                      fontWeight: 'bold',
+                                      fontSize: '12px',
+                                      borderRadius: '16px',
+                                      
+                                  }}
+                              />
+                          ))}
+                            </div>
                 </CardContent>
               </Card>
             ))}

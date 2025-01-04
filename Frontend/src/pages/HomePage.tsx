@@ -25,6 +25,7 @@ export default function HomePage() {
     id: recipe.id,
     title: recipe.title,
     thumbnail: recipe.image,
+    tags: recipe.tags,
     link: `/live/${recipe.id}`,
   })) || []
 
@@ -33,6 +34,7 @@ export default function HomePage() {
     id: recipe.id,
     title: recipe.title,
     thumbnail: recipe.image,
+    tags: recipe.tags,
     link: `/ondemand/${recipe.id}`,
   })) || []
 
@@ -41,6 +43,7 @@ export default function HomePage() {
     id: recipe.id,
     title: recipe.title,
     thumbnail: recipe.image,
+    tags: recipe.tags,
     link: `/upcoming/${recipe.id}`,
   })) || []
 
