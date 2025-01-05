@@ -15,6 +15,7 @@ import { useMsal } from '@azure/msal-react'
 import { useDispatch } from 'react-redux'
 import { loginRequest } from '../config/authConfig'
 import { setToken } from '../redux/tokenSlice'
+import RecipesPage from '../pages/RecipesPage';
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
@@ -151,3 +152,10 @@ export default function LoginProvider(props: LoginProviderProps) {
     </LoginContext.Provider>
   )
 }
+const App = () => {
+  return (
+    <LoginProvider>
+      <RecipesPage />
+    </LoginProvider>
+  );
+};

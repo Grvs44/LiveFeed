@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
@@ -9,10 +9,13 @@ import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,us
 import "../App.css";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { BlobServiceClient } from "@azure/storage-blob";
+import { LoginContext } from '../context/LoginProvider';
+
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
   const [startStream] = useStartStreamMutation()
+  const { activeAccount } = useContext(LoginContext);
   const handleStart = async () => {
     const stream = await startStream('hello').unwrap()
     console.log('started stream:')
@@ -24,6 +27,9 @@ export default function RecipesPage() {
   }, [])
   
   const [currentTab, setCurrentTab] = useState<'uploads' | 'manager'>('manager');
+  if (!activeAccount) {
+    return <Typography variant="h6" style={{margin: '20px'}}>Please sign in to access this page.</Typography>;
+  }
   return (
     <div>
       <Box display="flex" mb={2} mt={0} justifyContent="space-between" alignItems="center">
