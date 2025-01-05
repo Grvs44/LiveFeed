@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
 import { HubConnectionBuilder } from '@microsoft/signalr'
