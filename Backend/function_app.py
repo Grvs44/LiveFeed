@@ -65,7 +65,7 @@ def get_display_name(object_id):
     else:
         raise Exception(f"Couldn't get user: {response.status_code}, {response.text}")
     
-def validate_token(token):
+def validate_token(req):
     """
     Validates a token and returns its associated claims.
 
@@ -75,7 +75,14 @@ def validate_token(token):
         claim_info (dict): A dictionary containing 'claims' if the provided token is valid,
         and an 'error' containing a HttpResponse if the token is invalid.
     """
+    auth_header = req.headers.get("Authorization")
     claim_info = {'claims': None, 'error': None}
+
+    if not auth_header.startswith("Bearer "):
+        claim_info['error'] = func.HttpResponse("No token provided", status_code=401)
+        return claim_info
+    token = auth_header.split(" ")[1]
+
     try:
         # Get JWKS keys
         jwks_client = PyJWKClient(JWKS_URL)
@@ -91,29 +98,13 @@ def validate_token(token):
         )
 
         claim_info['claims'] = payload
+        logging.info(f"Identified sender as {payload.get('name')} ({payload.get('sub')})")
     except jwt.ExpiredSignatureError:
         claim_info['error'] = func.HttpResponse("Token has expired", status_code=401)
     except jwt.InvalidTokenError as e:
         claim_info['error'] = func.HttpResponse(f"Invalid token: {e}", status_code=401)
     
     return claim_info
-
-def get_user_id_header(req):
-    #Authenticate user
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
-    return user_id
-
 
 ############################
 #---- Stream Functions ----#
@@ -130,26 +121,11 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
         logging.info('Missing recipe ID')
         return func.HttpResponse("Missing recipe ID from chat negotiation", status_code=400)
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        logging.info("No token provided, treating as anonymous user")
+    claim_info = validate_token(req)
+    if (claim_info.get('claims') != None):
+        username = claim_info.get('claims').get('name')
     else:
-        logging.info('Found Authorization header')
-
-        token = auth_header.split(" ")[1]
-        logging.info('Retrieved token')
-        
-        claim_info = validate_token(token)
-        claims = claim_info.get('claims')
-        if (not claims): return claim_info.get('error')
-
-        username = claims.get('name')
-        logging.info(f"Identified username of sender as {username}")
-
-        
-    ### Authentication ###
+        logging.info("Token not found, treating as a guest user")
 
     roles=[]
 
@@ -168,23 +144,12 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
 def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-    logging.info('Found Authorization header')
-
-    token = auth_header.split(" ")[1]
-    logging.info('Retrieved token')
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -207,21 +172,12 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -247,21 +203,12 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
 def next_step(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -306,21 +253,12 @@ def get_streams(req: func.HttpRequest) -> func.HttpResponse:
 def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received recipe create request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     
     info = req.get_json()
     title = info.get('title')
@@ -342,8 +280,6 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
         "cookTime" : cookTime,
         "tags": tags,
         "servings": servings
-        
-        
     }
     
     cosmos_dict = recipe_container.create_item(body=recipe_dict, enable_automatic_id_generation=True)
@@ -371,18 +307,13 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get Recipe')
 
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-
-    user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
     
     try:
@@ -421,6 +352,7 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
         logging.info(info)
         id = info.get('id')
       
+        recipe_container.read_item()
 
         query = f"SELECT * FROM c WHERE c.id = '{id}'"
         items = list(recipe_container.query_items(query=query, enable_cross_partition_query=True))
@@ -625,7 +557,13 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Request to update user preferences received")
 
-    user_id = get_user_id_header(req)
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
+
     try:
         body = req.get_json()
         try:
@@ -652,7 +590,12 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="settings/preferences", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
 def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
-    user_id = get_user_id_header(req)
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     try:
         preferences = prefs_container.read_item(item=user_id, partition_key=user_id)
         return func.HttpResponse(
