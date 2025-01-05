@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip} from '@mui/material';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip, MenuItem,Select} from '@mui/material';
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu, Tag,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 import "../App.css";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { BlobServiceClient } from "@azure/storage-blob";
+import { LoginContext } from '../context/LoginProvider';
+import { RecipeListContainer } from '../containers/RecipeListBox';
+
+
 
 export default function RecipesPage() {
   const dispatch = useDispatch()
   const [startStream] = useStartStreamMutation()
+  const { activeAccount } = useContext(LoginContext);
   const handleStart = async () => {
     const stream = await startStream('hello').unwrap()
     console.log('started stream:')
@@ -24,6 +29,9 @@ export default function RecipesPage() {
   }, [])
   
   const [currentTab, setCurrentTab] = useState<'uploads' | 'manager'>('manager');
+  if (!activeAccount) {
+    return <Typography variant="h6" style={{margin: '20px'}}>Please sign in to access this page.</Typography>;
+  }
   return (
     <div>
       <Box display="flex" mb={2} mt={0} justifyContent="space-between" alignItems="center">
@@ -66,6 +74,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
   const [tagInput, setTagInput] = useState<string>('');
   const [servings, setServings] = useState<number>(1);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const addStep = () => {
     setSteps([...steps, { id: steps.length + 1, text: '' }]);
@@ -124,6 +133,11 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     let file = null;
     if (e.target.files && e.target.files.length > 0) {
       file = e.target.files[0];
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
     }
     setImageFile(file);
   };
@@ -187,7 +201,12 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       </div>
       <div>
         <h3>Select Image for Recipe</h3>
-        <input type="file" accept="image/*" onChange={uploadImage} />
+        <input className="uploadImgbutton" type="file" accept="image/*" onChange={uploadImage} />
+        {imagePreview && (
+          <div className="imagePreviewContainer">
+            <img className="imagePreview" src={imagePreview} alt="Image Preview"/>
+          </div>
+        )}
       </div>
 
       <div className='section'>
@@ -215,15 +234,36 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       <div className='section'>
         <label className='label'>Tags:</label>
         <div className='tagInput'>
-          <input
+          <select
             className='input'
-            type="text"
-            placeholder="Add tags"
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleAddTag()}
-          />
-          <button className='addButton' onClick={handleAddTag}>Add Tag</button>
+          >
+            <option value="">Select tags</option>
+            <option value="Vegetarian">Vegetarian</option>
+            <option value="Vegan">Vegan</option>
+            <option value="Gluten Free">Gluten Free</option>
+            <option value="Dairy Free">Dairy Free</option>
+            <option value="Nut free">Nut free</option>
+            <option value="Low Carb">Low Carb</option>
+            <option value="High Protein">High Protein</option>
+            <option value="Meal Prep">Meal Prep</option>
+            <option value="Air Fryer">Air Fryer</option>
+            <option value="Beginner Friendly">Beginner Friendly</option>
+            <option value="Dessert">Dessert</option>
+            <option value="Healthy">Healthy</option>
+            <option value="Comfort Food">Comfort Food</option>
+            <option value="Spicy">Spicy</option>
+            <option value="Breakfast">Breakfast</option>
+            <option value="Lunch">Lunch</option>
+            <option value="Dinner">Dinner</option>
+            <option value="Snacks">Snacks</option>
+            <option value="One-Pot Meals">One-Pot Meals</option>
+            <option value="Party Food">Party Food</option>
+            <option value="BBQ">BBQ</option>
+            <option value="Low Budget">Low Budget</option>
+          </select>
+          <button className='addTagButton' onClick={handleAddTag}>Add Tag</button>
         </div>
         <div className='tagContainer'>
           {tags.map((tag, index) => (
@@ -507,17 +547,16 @@ const deleteShoppingItem = (index: number) => {
                 </Box>
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <LocalOffer className="mr-2 text-gray-500" />
-                 
-                  <Typography className="mr-2" ><strong>Tags:</strong></Typography>
-                    <Stack direction="row" spacing={1} className="flex-wrap">
-                      {recipe.tags && recipe.tags.length > 0 ? (
+                    <LocalOffer sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography sx={{ mr: 2 }}><strong>Tags:</strong></Typography>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                        {recipe.tags && recipe.tags.length > 0 ? (
                         recipe.tags.map((tag, index) => (
                           <Chip key={index} label={tag} variant="outlined" size="small" />
-                        ))
-                      ) : (
+                                ))
+                          ) : (
                           <Typography>None</Typography>
-                        )}
+                            )}
                     </Stack>
                   </Box>
     
@@ -676,22 +715,43 @@ const deleteShoppingItem = (index: number) => {
                 ))}
               </Box>
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <TextField
-                  label="Add tag"
-                  size="small"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const value = (e.target as HTMLInputElement).value.trim();
-                      if (value && (!editingRecipe.tags?.includes(value))) {
-                        setEditingRecipe(prev => prev ? {
-                          ...prev,
-                          tags: [...(prev.tags || []), value]
-                        } : null);
-                        (e.target as HTMLInputElement).value = '';
-                      }
+                <Select
+                  fullWidth
+                  value=""
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value && (!editingRecipe.tags?.includes(value))) {
+                      setEditingRecipe(prev => prev ? {
+                        ...prev,
+                        tags: [...(prev.tags || []), value]
+                      } : null);
                     }
                   }}
-                />
+                >
+                  <MenuItem value="">Select tags</MenuItem>
+                  <MenuItem value="Vegetarian">Vegetarian</MenuItem>
+                  <MenuItem value="Vegan">Vegan</MenuItem>
+                  <MenuItem value="Gluten Free">Gluten Free</MenuItem>
+                  <MenuItem value="Dairy Free">Dairy Free</MenuItem>
+                  <MenuItem value="Nut free">Nut free</MenuItem>
+                  <MenuItem value="Low Carb">Low Carb</MenuItem>
+                  <MenuItem value="High Protein">High Protein</MenuItem>
+                  <MenuItem value="Meal Prep">Meal Prep</MenuItem>
+                  <MenuItem value="Air Fryer">Air Fryer</MenuItem>
+                  <MenuItem value="Beginner Friendly">Beginner Friendly</MenuItem>
+                  <MenuItem value="Dessert">Dessert</MenuItem>
+                  <MenuItem value="Healthy">Healthy</MenuItem>
+                  <MenuItem value="Comfort Food">Comfort Food</MenuItem>
+                  <MenuItem value="Spicy">Spicy</MenuItem>
+                  <MenuItem value="Breakfast">Breakfast</MenuItem>
+                  <MenuItem value="Lunch">Lunch</MenuItem>
+                  <MenuItem value="Dinner">Dinner</MenuItem>
+                  <MenuItem value="Snacks">Snacks</MenuItem>
+                  <MenuItem value="One-Pot Meals">One-Pot Meals</MenuItem>
+                  <MenuItem value="Party Food">Party Food</MenuItem>
+                  <MenuItem value="BBQ">BBQ</MenuItem>
+                  <MenuItem value="Low Budget">Low Budget</MenuItem>
+                </Select>
               </Box>
             </Box>
               

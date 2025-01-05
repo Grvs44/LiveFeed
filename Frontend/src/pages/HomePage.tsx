@@ -46,22 +46,25 @@ export default function HomePage() {
       id: recipe.id,
       title: recipe.title,
       thumbnail: recipe.image,
-      link: `/live/${recipe.id}`,
+      tags: recipe.tags,
+    link: `/live/${recipe.id}`,
     })) || [];
 
-  const onDemandStreams: Item[] =
-    onDemandData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      link: `/ondemand/${recipe.id}`,
-    })) || [];
+  const onDemandStreams: Item[] = 
+  onDemandData?.map((recipe: any) => ({
+    id: recipe.id,
+    title: recipe.title,
+    thumbnail: recipe.image,
+    tags: recipe.tags,
+    link: `/ondemand/${recipe.id}`,
+  })) || []
 
   const upcomingStreams: Item[] =
     upcomingData?.map((recipe: any) => ({
       id: recipe.id,
       title: recipe.title,
       thumbnail: recipe.image,
+      tags: recipe.tags,
       link: `/upcoming/${recipe.id}`,
     })) || [];
 
