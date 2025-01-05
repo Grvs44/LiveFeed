@@ -64,11 +64,11 @@ export type RecipeStepChange = {
 
 export type State = ReturnType<typeof store.getState>
 
-// Newly added *might need checking*
 export type Item = {
   id: number 
   title: string
-  thumbnail: string; // URL to the thumbnail image(?)
+  thumbnail: string;
+  tags?: string[];
   link: string; 
 }
 

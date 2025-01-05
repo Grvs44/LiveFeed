@@ -513,7 +513,7 @@ def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Live" Recipes')
     try:
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
         WHERE c.variable = 1'
         """
@@ -543,7 +543,7 @@ def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
     try:
         # Get all recipes that have passed the current date
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
         WHERE c.date < '{current_date}' 
         AND c.user_id != '1b7d8e26-cff7-4259-acb1-4f8ac7f32037'
@@ -574,7 +574,7 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     try:
         # Get all future upcoming recipes
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT * 
         FROM UploadedRecipes c 
         WHERE c.date > '{current_date}'
         """
