@@ -78,7 +78,7 @@ def validate_token(req):
     auth_header = req.headers.get("Authorization")
     claim_info = {'claims': None, 'error': None}
 
-    if not auth_header.startswith("Bearer "):
+    if auth_header is None or not auth_header.startswith("Bearer "):
         claim_info['error'] = func.HttpResponse("No token provided", status_code=401)
         return claim_info
     token = auth_header.split(" ")[1]
