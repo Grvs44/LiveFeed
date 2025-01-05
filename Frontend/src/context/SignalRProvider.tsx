@@ -11,8 +11,8 @@ export type ProviderValue = {
 }
 
 export type SignalRProviderProps = {
-children: React.ReactNode
-onNotification: (notification: string) => void
+  children: React.ReactNode
+  onNotification: (notification: string) => void
 }
 
 export const SignalRContext = React.createContext<ProviderValue>({
