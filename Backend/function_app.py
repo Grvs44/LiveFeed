@@ -393,8 +393,28 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse(response_body, status_code=200)
 
 @app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
-def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalRMessages",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def update_recipe(req: func.HttpRequest, signalRMessages) -> func.HttpResponse:
     logging.info('Update Recipe')
+
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("User ID required", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
     
     try:
         info = req.get_json()
@@ -411,6 +431,13 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
 
         recipe_container.replace_item(item=id, body=req.get_json())
+
+        signalRMessages.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": ["Successfully updated recipe"]
+        }))
+
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
@@ -600,6 +627,7 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 @app.route(route="notifications/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 @app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString")
 def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpResponse:
+    logging.info("SignalR negotiation request")
     auth_header = req.headers.get("Authorization")
 
     if not auth_header.startswith("Bearer "):
@@ -613,7 +641,5 @@ def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpRespons
 
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
-
-    connectionInfo.set({"userId": user_id})
     
     return func.HttpResponse(connectionInfo)
