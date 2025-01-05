@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip} from '@mui/material';
+import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip, MenuItem,Select} from '@mui/material';
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu, Tag,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
@@ -708,22 +708,43 @@ const deleteShoppingItem = (index: number) => {
                 ))}
               </Box>
               <Box sx={{ display: 'flex', gap: 1 }}>
-                <TextField
-                  label="Add tag"
-                  size="small"
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      const value = (e.target as HTMLInputElement).value.trim();
-                      if (value && (!editingRecipe.tags?.includes(value))) {
-                        setEditingRecipe(prev => prev ? {
-                          ...prev,
-                          tags: [...(prev.tags || []), value]
-                        } : null);
-                        (e.target as HTMLInputElement).value = '';
-                      }
+                <Select
+                  fullWidth
+                  value=""
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value && (!editingRecipe.tags?.includes(value))) {
+                      setEditingRecipe(prev => prev ? {
+                        ...prev,
+                        tags: [...(prev.tags || []), value]
+                      } : null);
                     }
                   }}
-                />
+                >
+                  <MenuItem value="">Select tags</MenuItem>
+                  <MenuItem value="Vegetarian">Vegetarian</MenuItem>
+                  <MenuItem value="Vegan">Vegan</MenuItem>
+                  <MenuItem value="Gluten Free">Gluten Free</MenuItem>
+                  <MenuItem value="Dairy Free">Dairy Free</MenuItem>
+                  <MenuItem value="Nut free">Nut free</MenuItem>
+                  <MenuItem value="Low Carb">Low Carb</MenuItem>
+                  <MenuItem value="High Protein">High Protein</MenuItem>
+                  <MenuItem value="Meal Prep">Meal Prep</MenuItem>
+                  <MenuItem value="Air Fryer">Air Fryer</MenuItem>
+                  <MenuItem value="Beginner Friendly">Beginner Friendly</MenuItem>
+                  <MenuItem value="Dessert">Dessert</MenuItem>
+                  <MenuItem value="Healthy">Healthy</MenuItem>
+                  <MenuItem value="Comfort Food">Comfort Food</MenuItem>
+                  <MenuItem value="Spicy">Spicy</MenuItem>
+                  <MenuItem value="Breakfast">Breakfast</MenuItem>
+                  <MenuItem value="Lunch">Lunch</MenuItem>
+                  <MenuItem value="Dinner">Dinner</MenuItem>
+                  <MenuItem value="Snacks">Snacks</MenuItem>
+                  <MenuItem value="One-Pot Meals">One-Pot Meals</MenuItem>
+                  <MenuItem value="Party Food">Party Food</MenuItem>
+                  <MenuItem value="BBQ">BBQ</MenuItem>
+                  <MenuItem value="Low Budget">Low Budget</MenuItem>
+                </Select>
               </Box>
             </Box>
               
