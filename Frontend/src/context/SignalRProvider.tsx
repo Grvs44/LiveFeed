@@ -38,8 +38,9 @@ export default function SignalRProvider(props: SignalRProviderProps) {
       try {
         const response = await fetch(
           `${baseUrl}notifications/negotiate`,
-          { headers },
+          { headers, method: 'POST'},
         )
+        console.log(response)
         const connectionInfo = await response.json()
 
         const newConnection = new HubConnectionBuilder()
@@ -49,7 +50,7 @@ export default function SignalRProvider(props: SignalRProviderProps) {
         .withAutomaticReconnect()
         .build()
 
-        newConnection.on("ReceiveMessage", (notification: string) => {
+        newConnection.on("EventNotification", (notification: string) => {
           setNotifications([...notifications, notification])
           props.onNotification(notification)
           console.log("Notification received:", notification)
