@@ -23,7 +23,7 @@ export default function TopBar({ searchQuery, setSearchQuery }: TopBarProps) {
   const navigate = useNavigate();
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && tempQuery != '') {
       setSearchQuery(tempQuery); // Apply the filter
       setTempQuery(''); // Clear the input field
       navigate('/'); // Redirect to the main dashboard (if not already there)
@@ -32,7 +32,7 @@ export default function TopBar({ searchQuery, setSearchQuery }: TopBarProps) {
 
   return (
     <>
-      <AppBar position="sticky" style={{ backgroundColor: '#FDAA48' }}>
+      <AppBar position="sticky" style={{ backgroundColor: '#FDA448' }}>
         <Toolbar>
           <IconButton
             aria-label="Open menu"
