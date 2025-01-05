@@ -18,8 +18,11 @@ import { State } from '../redux/types'
 //TO-DO: Custom colours for the chips?
 export default function TagsChipArray() {
   const dispatch = useDispatch()
+  const token = useSelector((state: State) => state.token.token)
   const [updatePreferences] = useUpdatePreferencesMutation()
-  const { data, isLoading } = useGetPreferencesQuery()
+  const { data, isLoading } = useGetPreferencesQuery(undefined, {
+    skip: token === undefined,
+  })
   const tags = useSelector((state: State) => state.tags.tags || [])
   const [selectedTag, setSelectedTag] = React.useState<string>('')
 
