@@ -19,6 +19,7 @@ import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import WatchLivePage from './pages/WatchLivePage'
 import WatchOndemandPage from './pages/WatchOndemandPage'
+import UpcomingListPage from './pages/UpcomingListPage'
 import store from './redux/store'
 import theme from './theme'
 
@@ -55,6 +56,10 @@ const router = createBrowserRouter(
         {
           path: 'upcoming/:id',
           element: <UpcomingRecipesPage/>,
+        },
+        {
+          path: 'upcoming',
+          element: <UpcomingListPage/>,
         },
         {
           path: 'saved',
