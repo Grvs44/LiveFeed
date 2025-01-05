@@ -104,6 +104,12 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
+    getSignalRConnection: builder.mutation<any, void>({
+      query: () => ({
+        url: '/notifications/negotiate',
+        method: 'POST',
+      }),
+    }),
   }),
 })
 
@@ -121,4 +127,5 @@ export const {
   useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
+  useGetSignalRConnectionMutation,
 } = apiSlice

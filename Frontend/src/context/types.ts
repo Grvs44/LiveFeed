@@ -28,3 +28,10 @@ export type StepUpdate = {
   id: number
   time: number
 }
+
+export type Notification = {
+  title: string
+  message: string
+  theme: string
+  native: boolean
+}
