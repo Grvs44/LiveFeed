@@ -574,7 +574,7 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     try:
         # Get all future upcoming recipes
         query = f"""
-        SELECT c.id, c.title, c.image, c.tags 
+        SELECT * 
         FROM UploadedRecipes c 
         WHERE c.date > '{current_date}'
         """
