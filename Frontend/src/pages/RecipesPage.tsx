@@ -539,17 +539,16 @@ const deleteShoppingItem = (index: number) => {
                 </Box>
                 <Box>
                   <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <LocalOffer className="mr-2 text-gray-500" />
-                 
-                  <Typography className="mr-2" ><strong>Tags:</strong></Typography>
-                    <Stack direction="row" spacing={1} className="flex-wrap">
-                      {recipe.tags && recipe.tags.length > 0 ? (
+                    <LocalOffer sx={{ mr: 1, color: 'text.secondary' }} />
+                    <Typography sx={{ mr: 2 }}><strong>Tags:</strong></Typography>
+                    <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
+                        {recipe.tags && recipe.tags.length > 0 ? (
                         recipe.tags.map((tag, index) => (
                           <Chip key={index} label={tag} variant="outlined" size="small" />
-                        ))
-                      ) : (
+                                ))
+                          ) : (
                           <Typography>None</Typography>
-                        )}
+                            )}
                     </Stack>
                   </Box>
     
