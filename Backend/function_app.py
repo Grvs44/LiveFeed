@@ -110,7 +110,7 @@ def validate_token(req):
 #---- Stream Functions ----#
 ############################
 
-@app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="chat/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received chat token negotiation request')
 
@@ -140,7 +140,7 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
 
-@app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
@@ -168,7 +168,7 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started")
 
-@app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
@@ -199,7 +199,7 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
     
-@app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def next_step(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
@@ -231,7 +231,7 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse("Successfully stepped", status_code=201)
 
-@app.route(route="streams", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="streams", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_streams(req: func.HttpRequest) -> func.HttpResponse:
     try:
         items = list(stream_container.read_all_items())
@@ -249,7 +249,7 @@ def get_streams(req: func.HttpRequest) -> func.HttpResponse:
 #---- Recipe Functions ----#
 ############################
 
-@app.route(route="recipe/create", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="recipe/create", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received recipe create request')
 
@@ -303,7 +303,7 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
-@app.route(route="recipe/get", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/get", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get Recipe')
 
@@ -343,7 +343,7 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse(response_body, status_code=200)
 
-@app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
+@app.route(route="recipe/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PUT])
 def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Update Recipe')
     
@@ -370,7 +370,7 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-@app.route(route="recipe/delete", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="recipe/delete", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Delete Recipe')
     
@@ -396,7 +396,7 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-@app.route(route="recipe/display", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/display", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Display Recipe')
     
@@ -446,21 +446,21 @@ def get_stream_from_db(recipe_id):
 
     return stream_dict
 
-@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
-@app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
-@app.route(route="recipe/live", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/live", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Live" Recipes')
     try:
@@ -488,7 +488,7 @@ def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f'Error retrieving "Live" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "Live" recipes', status_code=500)
 
-@app.route(route="recipe/ondemand", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/ondemand", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "On demand" Recipes')
     logging.info(f"Current date {current_date}")
@@ -519,7 +519,7 @@ def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f'Error retrieving "On Demand" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "On Demand" recipes', status_code=500)
     
-@app.route(route="recipe/upcoming", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/upcoming", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Upcoming" Recipes')
 
@@ -553,7 +553,7 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 #---- User Functions ----#
 ############################
 
-@app.route(route="settings/preferences", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PATCH])
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
 def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Request to update user preferences received")
 
@@ -588,7 +588,7 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Failed to update preferences: {str(e)}")
         return func.HttpResponse("Failed to update preferences", status_code=500)
 
-@app.route(route="settings/preferences", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     claim_info = validate_token(req)
     user_id = None
