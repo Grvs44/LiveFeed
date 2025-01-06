@@ -42,7 +42,6 @@ export default function SignalRProvider(props: SignalRProviderProps) {
           `${baseUrl}notifications/negotiate`,
           { headers, method: 'POST'},
         )
-        console.log(response)
         const connectionInfo = await response.json()
 
         const newConnection = new HubConnectionBuilder()
@@ -74,7 +73,7 @@ export default function SignalRProvider(props: SignalRProviderProps) {
         console.log("SignalR Disconnected.")
       }
     }
-  })
+  }, [activeAccount, accessToken])
 
   const value: ProviderValue = {
     connection,

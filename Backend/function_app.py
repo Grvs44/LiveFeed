@@ -394,12 +394,12 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
 
 @app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
 @app.generic_output_binding(
-    arg_name="signalRMessages",
+    arg_name="signalROutput",
     type="signalR",
     hubName="serverless",
     connectionStringSetting="AzureSignalRConnectionString"
 )
-def update_recipe(req: func.HttpRequest, signalRMessages) -> func.HttpResponse:
+def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Update Recipe')
 
     auth_header = req.headers.get("Authorization")
@@ -432,7 +432,7 @@ def update_recipe(req: func.HttpRequest, signalRMessages) -> func.HttpResponse:
 
         recipe_container.replace_item(item=id, body=req.get_json())
 
-        signalRMessages.set(json.dumps({
+        signalROutput.set(json.dumps({
             "userId": user_id,
             "target": "eventNotification",
             "arguments": ["Successfully updated recipe"]
