@@ -12,7 +12,7 @@ export default function LivePage() {
   }, [])
 
   return (
-    <Link component={RouteLink} to="62e85472-da95-4702-96f2-8a081b100db5">
+    <Link component={RouteLink} to="950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb">
       Stream 1
     </Link>
   )
