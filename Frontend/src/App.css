@@ -113,3 +113,86 @@
     background-color: #ccc;
     transform: scale(1.01);
 }
+
+.addTagButton {
+    padding: 10px 15px;
+    background-color: #fab700;
+    color: #000000;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 800;
+    margin-bottom: 9px;
+}
+
+.addTagButton:hover {
+    background-color: #ffce48;
+    transform: scale(1.01);
+}
+
+
+.tagContainer {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 5px;
+    gap: 10px;
+}
+
+.tag {
+    display: flex;
+    align-items: center;
+    background-color: #ffffff;
+    color: #000000;
+    margin-left: 0px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    border-radius: 16px;
+    padding: 5px 10px;
+    font-size: 16px;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.tag:hover {
+    background-color: #f2f2f2;
+}
+
+.removeTag {
+    border: none;
+    background: none;
+    color: #88888888;
+    margin-left: 5px;
+    margin-right: 1px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    padding: 0;
+}
+
+.removeTag:hover {
+    color: #ff0000;
+}
+
+.imagePreviewContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.imagePreview {
+    width: 220px;
+    height: auto;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.3);
+    margin-top: 12px; 
+}
+
+.uploadImgbutton {
+    color: #000000;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 15px;
+    margin-bottom: 10px;
+}
+  
