@@ -36,6 +36,9 @@ TENANT_NAME = os.environ.get("AzureB2CTenantName")
 POLICY_NAME = os.environ.get("AzureB2CPolicyName")
 SECRET = os.environ.get("AzureB2CAppSecret")
 
+SPA_CLIENT_ID = os.environ.get("AzureB2CSpaAppID")
+
+
 ISSUER = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_ID}/v2.0/"
 JWKS_URL = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_NAME}.onmicrosoft.com/discovery/v2.0/keys?p={POLICY_NAME}"
 
@@ -44,10 +47,22 @@ msal_client = ConfidentialClientApplication(
     client_credential=SECRET,
     authority=f"https://login.microsoftonline.com/{TENANT_ID}"
 )
+msal_spa_client = ConfidentialClientApplication(
+    client_id=SPA_CLIENT_ID,
+    client_credential=SECRET,
+    authority=f"https://login.microsoftonline.com/{TENANT_ID}"
+)
 current_date = datetime.now(timezone.utc).isoformat(timespec='minutes')
 
 def get_web_access_token():
     result = msal_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
+    if "access_token" in result:
+        return result["access_token"]
+    else:
+        raise Exception("Access token not acquired")
+    
+def get_graph_access_token():
+    result = msal_spa_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
     if "access_token" in result:
         return result["access_token"]
     else:
@@ -578,7 +593,48 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 ############################
 #---- User Functions ----#
 ############################
+@app.route(route="settings/user/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
+def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        req_body = req.get_json()
+        user_id = req_body.get('id')
+        display_name = req_body.get('displayName')
+        given_name = req_body.get('givenName')
+        family_name = req_body.get('familyName')
+        
+        if not user_id or not display_name or not given_name or not family_name:
+            return func.HttpResponse(
+                "Missing required fields (user_id, displayName, givenName, surname).",
+                status_code=400
+            )
+        token = get_graph_access_token()
+        url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        body = {
+            "displayName": display_name,
+            "givenName": given_name,
+            "surname": family_name
+        }
+        
+        response = requests.patch(url, headers=headers, json=body)
+        
+        if response.status_code == 204:
+            logging.info(f"User {user_id} updated successfully")
+            return func.HttpResponse("User updated successfully.", status_code=200)
+        
+        logging.error(f"Failed to update user: {response.status_code}, {response.text}")
+        return func.HttpResponse(
+            f"Failed to update user. Error: {response.text}",
+            status_code=response.status_code
+        )
 
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+    
 @app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
 def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Request to update user preferences received")
