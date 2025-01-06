@@ -75,18 +75,23 @@ export default function LoginProvider(props: LoginProviderProps) {
   }
 
   const refreshAccount = async () => {
+    console.log('Refreshing account')
     try {
       const accounts = instance.getAllAccounts()
       if (accounts.length > 0) {
         const tokenRequest = {
           scopes: ['openid', 'profile'],
+          loginHint: accounts[0]?.username,
           account: accounts[0],
         }
         const response = await instance.ssoSilent(tokenRequest)
         if (response) {
           instance.setActiveAccount(response.account)
           setActiveAccount(response.account) // Update local state with refreshed account
-          console.log('ID Token refreshed:', response.idTokenClaims)
+          console.log(
+            'ID Token refreshed for account refresh:',
+            response.idTokenClaims,
+          )
         }
       }
     } catch (error: any) {
