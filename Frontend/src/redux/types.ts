@@ -106,3 +106,7 @@ export type UserDetails = {
   familyName? : string,
 }
 
+export type NotificationState = {
+  notif?: boolean
+}
+
