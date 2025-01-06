@@ -1,0 +1,161 @@
+/* Container for the entire Section component */
+.sectionContainer {
+  text-decoration: none;
+  }
+  
+  /* Header containing the section title */
+  .sectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+  
+  /* Section Title styles */
+  .sectionTitle {
+    text-decoration: none;
+    color: black;
+    padding: 10px 20px;
+    transition: all 0.3s ease-in-out;
+  }
+  
+  /* Hover effect for Title */
+  .sectionTitle:hover {
+    color: #555;
+  }
+  
+  .noItemsContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 250px;
+    text-align: center;
+  }
+  
+  .itemsContainer {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Common nav button styles */
+  .navButton {
+    background-color: white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Left nav button */
+  .navButtonLeft {
+    left: 50px;
+  }
+  
+  /* Right nav button */
+  .navButtonRight {
+    right: 50px;
+  }
+  
+  /* Grid container for displaying the cards */
+  .itemsGrid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 25px;
+    flex-grow: 1;
+  }
+  
+  /* The Card item styles */
+  .cardItem {
+    width: 330px;
+    height: 270px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .badgeLive {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: red;
+    color: white;
+    font-size: 15px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    z-index: 1;
+  }
+  
+  /* Wrapper for the CardMedia area */
+  .cardMediaContainer {
+    position: relative;
+    height: 190px;
+    overflow: hidden;
+  }
+  
+  /* Absolute container for diagonal overlay */
+  .diagonalContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+  
+  .diagonalLabel {
+    position: absolute;
+    top: 40%;       /* how far down from top to place the strip */
+    right: -50%;    /* shift it far to the right so rotating lines it up */
+    width: 200%;    /* wide enough to span the diagonal */
+    height: 50px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    line-height: 50px;
+    transform: rotate(-45deg); /* rotate the strip */
+    z-index: 2;
+  }
+  
+  /* The actual image in the CardMedia */
+  .cardMedia {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  /* Container for the tags under each item title */
+  .tagsContainer {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 100px;
+  }
+  
+  /* Individual Chip styling */
+  .tagChip {
+    font-size: 12px;
+    border-radius: 20px;
+    background-color: #F0F0F0;
+    color: #333;
+    font-weight: bold;
+  }
+
+.homePageContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 0;
+    box-sizing: border-box;
+  }
+  
+  .sectionWrapper {
+    width: 80%;
+    max-width: 1500px;
+  }
