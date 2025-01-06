@@ -15,7 +15,7 @@ interface RecipeListProps {
 
 export const RecipeList: React.FC<RecipeListProps> = ({ recipes }) => {
   const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString();
+    return new Date(date).toLocaleString();
   };
 
   return (
