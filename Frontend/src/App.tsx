@@ -7,23 +7,24 @@ import SignalRProvider from './context/SignalRProvider'
 
 export default function App() {
   const onNotification = (notification: string) => {
+    console.log("Notification received:", notification)
     addNotification({
       title: 'Notification',
       message: notification,
       theme: 'darkblue',
-      native: true
+      native: false
     })
   }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <SignalRProvider
-        onNotification={onNotification}
-      >
-        <Notifications/>
-      </SignalRProvider>
       <TopBar />
       <Box sx={{ my: 4 }}>
+        <SignalRProvider
+          onNotification={onNotification}
+        >
+          <Notifications position='top-right'/>
+        </SignalRProvider>
         <Outlet />
       </Box>
     </div>
