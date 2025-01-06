@@ -292,7 +292,6 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       <button className='backButton' onClick={closeTab}> Back to Manager </button>
 
       <div>
-        <h4>Uploaded Recipes</h4>
         <ul>
           {recipes.map((recipe, i) => (
             <li key={i}>
