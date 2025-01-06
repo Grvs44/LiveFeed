@@ -4,6 +4,7 @@ import { useDispatch } from 'react-redux';
 import { setTitle } from '../redux/titleSlice';
 import Section from '../containers/Section';
 import { Item } from '../redux/types';
+import '../assets/HomePage.css';
 import {
   useGetLiveRecipeMutation,
   useGetOnDemandRecipeMutation,
@@ -47,17 +48,17 @@ export default function HomePage() {
       title: recipe.title,
       thumbnail: recipe.image,
       tags: recipe.tags,
-    link: `/live/${recipe.id}`,
+      link: `/live/${recipe.id}`,
     })) || [];
 
   const onDemandStreams: Item[] = 
-  onDemandData?.map((recipe: any) => ({
-    id: recipe.id,
-    title: recipe.title,
-    thumbnail: recipe.image,
-    tags: recipe.tags,
-    link: `/ondemand/${recipe.id}`,
-  })) || []
+    onDemandData?.map((recipe: any) => ({
+      id: recipe.id,
+      title: recipe.title,
+      thumbnail: recipe.image,
+      tags: recipe.tags,
+      link: `/ondemand/${recipe.id}`,
+    })) || [];
 
   const upcomingStreams: Item[] =
     upcomingData?.map((recipe: any) => ({
@@ -88,30 +89,19 @@ export default function HomePage() {
     : upcomingStreams;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        width: '100%',
-        margin: '0 auto',
-        padding: '20px 0',
-        boxSizing: 'border-box',
-      }}
-    >
+    <div className="homePageContainer">
       {/* Live Section */}
-      <div style={{ width: '80%', maxWidth: '1500px', marginBottom: '50px' }}>
+      <div className="sectionWrapper" style={{ marginBottom: '50px' }}>
         <Section title="Live" items={filteredLiveStreams} />
       </div>
 
       {/* On-Demand Section */}
-      <div style={{ width: '80%', maxWidth: '1500px', marginBottom: '50px' }}>
+      <div className="sectionWrapper" style={{ marginBottom: '50px' }}>
         <Section title="On Demand" items={filteredOnDemandStreams} />
       </div>
 
       {/* Upcoming Section */}
-      <div style={{ width: '80%', maxWidth: '1500px' }}>
+      <div className="sectionWrapper">
         <Section title="Upcoming" items={filteredUpcomingStreams} />
       </div>
     </div>
