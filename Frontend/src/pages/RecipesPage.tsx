@@ -3,7 +3,7 @@ import { useDispatch } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
 import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip, MenuItem,Select} from '@mui/material';
-import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu, Tag,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
 import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
 import "../App.css";
@@ -11,6 +11,7 @@ import AddBoxIcon from '@mui/icons-material/AddBox';
 import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import { RecipeListContainer } from '../containers/RecipeListBox';
+import TAGS from '../config/Tags'
 
 
 
@@ -486,7 +487,7 @@ const deleteShoppingItem = (index: number) => {
   return (
     <Box sx={{ maxWidth: 1200, margin: 'auto', p: 2 }}>
     {recipeList.map((recipe) => (
-      <Card sx={{ mb: 3 }} key={recipe.id}>
+      <Card variant="elevation" sx={{ mb: 3 }} key={recipe.id}>
         <CardContent>
             <Grid item xs={12}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -727,30 +728,12 @@ const deleteShoppingItem = (index: number) => {
                       } : null);
                     }
                   }}
-                >
-                  <MenuItem value="">Select tags</MenuItem>
-                  <MenuItem value="Vegetarian">Vegetarian</MenuItem>
-                  <MenuItem value="Vegan">Vegan</MenuItem>
-                  <MenuItem value="Gluten Free">Gluten Free</MenuItem>
-                  <MenuItem value="Dairy Free">Dairy Free</MenuItem>
-                  <MenuItem value="Nut free">Nut free</MenuItem>
-                  <MenuItem value="Low Carb">Low Carb</MenuItem>
-                  <MenuItem value="High Protein">High Protein</MenuItem>
-                  <MenuItem value="Meal Prep">Meal Prep</MenuItem>
-                  <MenuItem value="Air Fryer">Air Fryer</MenuItem>
-                  <MenuItem value="Beginner Friendly">Beginner Friendly</MenuItem>
-                  <MenuItem value="Dessert">Dessert</MenuItem>
-                  <MenuItem value="Healthy">Healthy</MenuItem>
-                  <MenuItem value="Comfort Food">Comfort Food</MenuItem>
-                  <MenuItem value="Spicy">Spicy</MenuItem>
-                  <MenuItem value="Breakfast">Breakfast</MenuItem>
-                  <MenuItem value="Lunch">Lunch</MenuItem>
-                  <MenuItem value="Dinner">Dinner</MenuItem>
-                  <MenuItem value="Snacks">Snacks</MenuItem>
-                  <MenuItem value="One-Pot Meals">One-Pot Meals</MenuItem>
-                  <MenuItem value="Party Food">Party Food</MenuItem>
-                  <MenuItem value="BBQ">BBQ</MenuItem>
-                  <MenuItem value="Low Budget">Low Budget</MenuItem>
+     
+              >
+                {TAGS.map((tag: { id: string; name: string }) => (
+                  <MenuItem  key={tag.id} value={tag.name}>{tag.name}</MenuItem>
+      
+                ))}
                 </Select>
               </Box>
             </Box>
