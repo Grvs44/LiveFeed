@@ -90,3 +90,12 @@ export type Recipe = {
   tags: string[];
 }
 
+export type TagsState = {
+  tags?: string[];
+}
+
+export type UpdatePreferences = {
+  tags?: string[];
+  notifications?: boolean
+}
+
