@@ -3,17 +3,15 @@ import Box from '@mui/material/Box';
 import { Outlet, useLocation } from 'react-router-dom';
 import TopBar from './containers/TopBar';
 import MenuDrawer from './components/MenuDrawer';
-import addNotification, { Notifications } from 'react-push-notification'
 import SignalRProvider from './context/SignalRProvider'
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function App() {
   const onNotification = (notification: string) => {
     console.log("Notification received:", notification)
-    addNotification({
-      title: 'Notification',
-      message: notification,
-      theme: 'darkblue',
-      native: false
+    toast(notification, {
+      duration: 5000,
+      position: 'top-right',
     })
   }
 
@@ -32,7 +30,7 @@ export default function App() {
         <SignalRProvider
           onNotification={onNotification}
         >
-          <Notifications position='top-right'/>
+          <Toaster />
         </SignalRProvider>
         <Outlet context={{ searchQuery, setSearchQuery }} />
       </Box>
