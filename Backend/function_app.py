@@ -36,10 +36,6 @@ TENANT_NAME = os.environ.get("AzureB2CTenantName")
 POLICY_NAME = os.environ.get("AzureB2CPolicyName")
 SECRET = os.environ.get("AzureB2CAppSecret")
 
-SPA_CLIENT_ID = os.environ.get("AzureB2CSpaAppID")
-SPA_SECRET = os.environ.get("AzureB2CSpaAppSecret")
-
-
 ISSUER = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_ID}/v2.0/"
 JWKS_URL = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_NAME}.onmicrosoft.com/discovery/v2.0/keys?p={POLICY_NAME}"
 
@@ -48,22 +44,10 @@ msal_client = ConfidentialClientApplication(
     client_credential=SECRET,
     authority=f"https://login.microsoftonline.com/{TENANT_ID}"
 )
-msal_spa_client = ConfidentialClientApplication(
-    client_id=SPA_CLIENT_ID,
-    client_credential=SPA_SECRET,
-    authority=f"https://login.microsoftonline.com/{TENANT_ID}"
-)
 current_date = datetime.now(timezone.utc).isoformat(timespec='minutes')
 
 def get_web_access_token():
     result = msal_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
-    if "access_token" in result:
-        return result["access_token"]
-    else:
-        raise Exception("Access token not acquired")
-    
-def get_graph_access_token():
-    result = msal_spa_client.acquire_token_for_client(scopes=["https://graph.microsoft.com/.default"])
     if "access_token" in result:
         return result["access_token"]
     else:
@@ -605,10 +589,11 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
         
         if not user_id or not display_name or not given_name or not family_name:
             return func.HttpResponse(
-                "Missing required fields (user_id, displayName, givenName, surname).",
-                status_code=400
+                json.dumps({"message": "Missing fields"}),
+                mimetype="application/json",
+                status_code=200
             )
-        token = get_graph_access_token()
+        token = get_web_access_token()
         url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
         headers = {
             "Authorization": f"Bearer {token}",
@@ -624,11 +609,16 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
         
         if response.status_code == 204:
             logging.info(f"User {user_id} updated successfully")
-            return func.HttpResponse("User updated successfully.", status_code=200)
+            return func.HttpResponse(
+                json.dumps({"message": "User updated successfully."}),
+                mimetype="application/json",
+                status_code=200
+            )
         
         logging.error(f"Failed to update user: {response.status_code}, {response.text}")
         return func.HttpResponse(
-            f"Failed to update user. Error: {response.text}",
+            json.dumps({"message": f"Failed to update user. Error: {response.text}"}),
+            mimetype="application/json",
             status_code=response.status_code
         )
 
