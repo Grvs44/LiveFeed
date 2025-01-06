@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
-import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
+import StepBox from '../containers/StepBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import {
   useEndStreamMutation,
@@ -26,7 +26,6 @@ export default function StartStreamPage() {
   const [startStream] = useStartStreamMutation()
   const [sendStreamStartTime] = useSendStreamStartTimeMutation()
   const [endStream] = useEndStreamMutation()
-  const [currentStep, setCurrentStep] = React.useState<number>(0)
   const [streamState, setStreamState] = React.useState<LiveStatus | undefined>(
     undefined,
   )
@@ -91,8 +90,11 @@ export default function StartStreamPage() {
             <Grid size={4}>
               <Typography>Stream {id}</Typography>
               {getStreamControl()}
+              <StepBox
+                steps={data.recipe}
+                show={streamState == LiveStatus.Started}
+              />
               <ShoppingListBox list={data.shopping} />
-              <RecipeBox steps={data.recipe} currentStep={currentStep} />
             </Grid>
             <Grid size={8}>
               <VideoPlayer src={data.stream} onLoadedData={onStreamStart} />
