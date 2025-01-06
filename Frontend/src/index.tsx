@@ -7,18 +7,20 @@ import ReactDOM from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 import App from './App'
-import { msalConfig } from './auth/authConfig'
+import { msalConfig } from './config/authConfig'
 import LoginProvider from './context/LoginProvider'
 import ErrorPage from './pages/ErrorPage'
 import HomePage from './pages/HomePage'
 import LivePage from './pages/LivePage'
 import OndemandPage from './pages/OndemandPage'
+import UpcomingRecipesPage from './pages/UpcomingRecipesPage'
 import RecipesPage from './pages/RecipesPage'
 import SavedPage from './pages/SavedPage'
 import SettingsPage from './pages/SettingsPage'
 import StartStreamPage from './pages/StartStreamPage'
 import WatchLivePage from './pages/WatchLivePage'
 import WatchOndemandPage from './pages/WatchOndemandPage'
+import UpcomingListPage from './pages/UpcomingListPage'
 import store from './redux/store'
 import theme from './theme'
 
@@ -55,6 +57,14 @@ const router = createBrowserRouter(
         {
           path: 'ondemand/:id',
           element: <WatchOndemandPage />,
+        },
+        {
+          path: 'upcoming/:id',
+          element: <UpcomingRecipesPage/>,
+        },
+        {
+          path: 'upcoming',
+          element: <UpcomingListPage/>,
         },
         {
           path: 'saved',

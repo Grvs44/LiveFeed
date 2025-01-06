@@ -9,6 +9,10 @@ import logging
 
 # Adapted from https://cloud.google.com/livestream/docs/quickstarts/quickstart-hls
 
+AWAITING_LIVE = 0
+LIVE = 1
+VOD = 2
+
 project_id = "livefeed-443712"
 location = "europe-west2"
 
@@ -28,10 +32,9 @@ def create_input(channel_id: str) -> live_stream_v1.types.Input:
     )
     operation = client.create_input(parent=parent, input=input, input_id=f"input-{channel_id}")
     response = operation.result(900)
-    print(f"Input: {response.name}")
+    logging.info(f"Input: {response.name}")
 
     return response
-
 
 def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
     """Creates a channel.
@@ -111,7 +114,7 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
         parent=parent, channel=channel, channel_id=channel_id
     )
     response = operation.result(600)
-    print(f"Channel: {response.name}")
+    logging.info(f"Channel: {response.name}")
 
     return response
 
@@ -126,7 +129,7 @@ def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
 
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
     response = client.get_channel(name=name)
-    print(f"Channel: {response.name}")
+    logging.info(f"Channel: {response.name}")
 
     return response
 
@@ -142,7 +145,7 @@ def start_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationRespo
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
     operation = client.start_channel(name=name)
     response = operation.result(900)
-    print("Started channel")
+    logging.info("Started channel")
 
     return response
 
@@ -158,15 +161,17 @@ def stop_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationRespon
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
     operation = client.stop_channel(name=name)
     response = operation.result(600)
-    print("Stopped channel")
+    logging.info("Stopped channel")
 
     return response
 
 def create_recipe_channel(recipe_id):
-    create_input(recipe_id)
+    input = create_input(recipe_id)
     create_channel(recipe_id)
 
-    return get_channel(recipe_id)
+    channel_info = get_channel(recipe_id)
+    stream_dict = {"output_url": channel_info.output.uri, "input_url": input.uri}
+    return stream_dict
 
 def start_stream(recipe_id):
     logging.info(start_channel(recipe_id))
@@ -205,3 +210,14 @@ def test_credentials():
         print(f"Failed to authenticate: {e}")
 
 test_credentials()"""
+
+def delete_vod(recipe_id):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket('livefeed-bucket')
+    vod_name = f'vods/vod-{recipe_id}'
+    
+    try:
+        bucket.delete_blob(vod_name)
+        logging.info("Deleted recipe VOD")
+    except google_exceptions.NotFound:
+        logging.info("Recipe had no VOD")
