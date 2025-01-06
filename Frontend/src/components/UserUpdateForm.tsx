@@ -57,7 +57,7 @@ export default function UserUpdateForm() {
 
       console.log('User updated successfully:', result)
       setFeedback({ message: 'Profile updated successfully', error: false })
-      await refreshAccount
+      await refreshAccount?.()
     } catch (error) {
       console.error('Failed to update user:', error)
       setFeedback({ message: 'Something went wrong. ', error: true })
