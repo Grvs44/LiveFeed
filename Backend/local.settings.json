@@ -11,6 +11,8 @@
     "AzureB2CPolicyName": "B2C_1_signupsignin1",
     "AzureB2CAppSecret": "UFx8Q~Oz77SRdMc-drnQnddfPC-lUJ.U1nGRSaNb",
     "GoogleLiveStreamPID": "livefeed-443712", 
-    "GoogleLiveStreamLocation": "europe-west2"
+    "GoogleLiveStreamLocation": "europe-west2",
+    "GOOGLE_APPLICATION_CREDENTIALS": "./gcp-credentials.json",
+    "AzureSignalRConnectionString": "Endpoint=https://livefeed.service.signalr.net;AccessKey=50K01npMhm7jIZ71JKoKT6na0G0aIQzVXV057Bg4KOuLtkyZV35IJQQJ99BAACmepeSXJ3w3AAAAASRSfKxD;Version=1.0;"
   }
 }
