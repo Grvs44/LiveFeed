@@ -444,6 +444,13 @@ def get_stream_from_db(recipe_id):
         "shopping": recipe_data.get('shopping')
     }
 
+    live_status = stream_data.get('live_status')
+    if live_status is not None:
+        stream_dict['liveStatus'] = live_status
+    # for testing:
+    else:
+        stream_dict['liveStatus'] = 0
+
     return stream_dict
 
 @app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
