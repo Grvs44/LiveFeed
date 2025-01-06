@@ -29,6 +29,8 @@ export default function SignalRProvider(props: SignalRProviderProps) {
     const headers: HeadersInit = {}
     if (activeAccount && accessToken) {
       headers.Authorization = 'Bearer ' + accessToken
+      const userId = activeAccount.localAccountId
+      headers['x-ms-signalr-userid'] = userId
     } else if (activeAccount || accessToken) {
       // Wait for accessToken
       return

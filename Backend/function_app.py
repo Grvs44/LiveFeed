@@ -625,7 +625,7 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse('Error retrieving "Upcoming" recipes', status_code=500)
 
 @app.route(route="notifications/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
-@app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString")
+@app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString", userId="{headers.x-ms-signalr-userid}")
 def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpResponse:
     logging.info("SignalR negotiation request")
     auth_header = req.headers.get("Authorization")
@@ -641,5 +641,8 @@ def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpRespons
 
     user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
-    
+
+    if user_id != req.headers.get('x-ms-signalr-userid'):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
     return func.HttpResponse(connectionInfo)
