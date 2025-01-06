@@ -97,7 +97,7 @@ export default function HomePage() {
 
       {/* On-Demand Section */}
       <div className="sectionWrapper" style={{ marginBottom: '50px' }}>
-        <Section title="On Demand" items={filteredOnDemandStreams} />
+        <Section title="Recent Broadcasts" items={filteredOnDemandStreams} />
       </div>
 
       {/* Upcoming Section */}
