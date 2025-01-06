@@ -524,8 +524,7 @@ def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
         query = f"""
         SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
-        WHERE c.date < '{current_date}' 
-        AND c.user_id != '1b7d8e26-cff7-4259-acb1-4f8ac7f32037'
+        WHERE c.date < '{current_date}'
         """
         items = list(recipe_container.query_items(
             query=query,
