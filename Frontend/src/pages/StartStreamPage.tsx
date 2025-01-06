@@ -17,13 +17,7 @@ import {
   useStartStreamMutation,
 } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
-
-enum StreamState {
-  Initial,
-  Started,
-  Streaming,
-  Stopped,
-}
+import { LiveStatus } from '../redux/types'
 
 export default function StartStreamPage() {
   const dispatch = useDispatch()
@@ -33,47 +27,53 @@ export default function StartStreamPage() {
   const [sendStreamStartTime] = useSendStreamStartTimeMutation()
   const [endStream] = useEndStreamMutation()
   const [currentStep, setCurrentStep] = React.useState<number>(0)
-  const [streamState, setStreamState] = React.useState<StreamState>(
-    StreamState.Initial,
+  const [streamState, setStreamState] = React.useState<LiveStatus | undefined>(
+    undefined,
   )
 
   React.useEffect(() => {
     dispatch(setTitle('Start stream'))
   }, [])
 
+  React.useEffect(() => {
+    if (data) setStreamState(data.liveStatus)
+  }, [isLoading])
+
   const onStartStream = () => {
     if (!id) return
     startStream(id)
-    setStreamState(StreamState.Started)
+    setStreamState(LiveStatus.Started)
   }
   const onStreamStart: React.ReactEventHandler<HTMLVideoElement> = (event) => {
     if (!id) return
     console.log(`Started at: ${event.currentTarget.currentTime}s`)
     sendStreamStartTime({ id, time: Math.floor(Date.now() / 1000) })
-    setStreamState(StreamState.Streaming)
+    setStreamState(LiveStatus.Started)
   }
   const onStopStream = () => {
     if (!id) return
     endStream(id)
-    setStreamState(StreamState.Stopped)
+    setStreamState(LiveStatus.Stopped)
   }
 
   const getStreamControl = () => {
     switch (streamState) {
-      case StreamState.Initial:
+      case LiveStatus.Initial:
         return (
           <Button onClick={onStartStream} variant="contained">
             Start
           </Button>
         )
-      case StreamState.Started:
+      case LiveStatus.Started:
         return (
           <Button onClick={onStopStream} variant="contained">
             Stop stream
           </Button>
         )
-      default:
+      case LiveStatus.Stopped:
         return <Typography>Stream stopped</Typography>
+      default:
+        return <Typography>Loading...</Typography>
     }
   }
 
