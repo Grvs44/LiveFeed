@@ -3,12 +3,14 @@ import { apiSlice } from './apiSlice'
 import pubsubReducer from './pubsubSlice'
 import titleReducer from './titleSlice'
 import tokenReducer from './tokenSlice'
+import tagsReducer from './tagsSlice'
 
 export default configureStore({
   reducer: {
     title: titleReducer,
     pubsub: pubsubReducer,
     token: tokenReducer,
+    tags: tagsReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>

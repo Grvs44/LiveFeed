@@ -1,9 +1,16 @@
 import React, { useState } from 'react';
-import { Typography, Card, CardMedia, CardContent, IconButton } from '@mui/material';
+import {
+  Typography,
+  Card,
+  CardMedia,
+  CardContent,
+  IconButton,
+  Chip
+} from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { Item, SectionProps } from '../redux/types';
+import '../assets/HomePage.css';
 import { Link as RouterLink } from 'react-router-dom';
-
 
 export default function Section({ title, items }: SectionProps) {
   const [startIndex, setStartIndex] = useState(0); // Index of the first visible item
@@ -15,99 +22,127 @@ export default function Section({ title, items }: SectionProps) {
   // Navigation handlers
   const handlePrev = () => {
     if (startIndex > 0) {
-      setStartIndex(startIndex - 1);
+      setStartIndex((prev) => prev - 1);
     }
   };
 
   const handleNext = () => {
     if (startIndex + itemsPerPage < items.length) {
-      setStartIndex(startIndex + 1);
+      setStartIndex((prev) => prev + 1);
     }
   };
 
   return (
-    <div>
-      {/* Section Title */}
-      <Typography
-        variant="h4"
-        style={{
-          marginBottom: '20px',
-          textAlign: 'left',
-          fontWeight: 'bold',
-        }}
-      >
-        {title}
-      </Typography>
-
-      {/* Navigation and Items */}
-      <div style={{ display: 'flex', alignItems: 'center' }}>
-        {/* Previous Button */}
-        <IconButton 
-          onClick={handlePrev} 
-          disabled={startIndex === 0} 
-          style={{
-            position: 'absolute',
-            left: '50px',
-            backgroundColor: 'white',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-          }}>
-          <ArrowBack />
-        </IconButton>
-
-        {/* Items */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: `repeat(${itemsPerPage}, 1fr)`,
-            gap: '25px',
-            flexGrow: 1,
-          }}
+    <div className="sectionContainer">
+      {/* Section Header with Title */}
+      <div className="sectionHeader">
+        {/* Section Title */}
+        <Typography
+          variant="h3"
+          component={RouterLink}
+          to={`/${title.toLowerCase().replace(/\s+/g, '')}`}
+          style={{ fontWeight: 'bold' }}
+          className="sectionTitle"
         >
-          {visibleItems.map((item) => (
-            <Card
-              key={item.id}
-              component={RouterLink} // Use RouterLink for navigation
-              to={item.link} // Navigate to the item's link (e.g., "/live/1" or "/ondemand/1")
-              style={{
-                width: '300px',
-                height: '250px',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                borderRadius: '10px',
-                textDecoration: 'none', // Remove default link styling
-              }}
-            >
-              <CardMedia
-                component="img"
-                image={item.thumbnail}
-                alt={item.title}
-                style={{
-                  height: '180px',
-                  objectFit: 'cover',
-                }}
-              />
-              <CardContent>
-                <Typography variant="subtitle1" style={{ textAlign: 'center' }}>
-                  {item.title}
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Next Button */}
-        <IconButton
-          onClick={handleNext}
-          disabled={startIndex + itemsPerPage >= items.length}
-          style={{
-            position: 'absolute',
-            right: '50px',
-            backgroundColor: 'white',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-          }}
-        >
-          <ArrowForward />
-        </IconButton>
+          {title}
+        </Typography>
       </div>
+
+      {/* Fallback Message if No Items */}
+      {items.length === 0 ? (
+        <div className="noItemsContainer">
+          <Typography
+            variant="h6"
+            style={{ color: '#888', fontSize: '3rem' }}
+          >
+            There are currently no <strong>{title}</strong> streams available.
+          </Typography>
+        </div>
+      ) : (
+        <div className="itemsContainer">
+          {/* Previous Button */}
+          <IconButton
+            onClick={handlePrev}
+            disabled={startIndex === 0}
+            className="navButton navButtonLeft"
+            style={{ position: 'absolute' }}
+          >
+            <ArrowBack />
+          </IconButton>
+
+          {/* Items */}
+          <div className="itemsGrid">
+            {visibleItems.map((item) => (
+              <Card
+                key={item.id}
+                component={RouterLink}
+                to={item.link}
+                className="cardItem"
+                style={{
+                  boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+                  borderRadius: '10px'
+                }}
+              >
+                {/* Badge for "Live" */}
+                {title.toLowerCase() === 'live' && (
+                  <div className="badgeLive">LIVE</div>
+                )}
+
+                {/* Container that fills the CardMedia area */}
+                <div className="cardMediaContainer">
+                  {/* Absolute container covering the same area */}
+                  <div className="diagonalContainer">
+                    {/* Diagonal Label */}
+                    {title.toLowerCase() === 'upcoming' && (
+                      <div className="diagonalLabel">UPCOMING</div>
+                    )}
+                  </div>
+
+                  {/* The actual image */}
+                  <CardMedia
+                    component="img"
+                    image={item.thumbnail}
+                    alt={item.title}
+                    className="cardMedia"
+                  />
+                </div>
+
+                <CardContent style={{ padding: '5px' }}>
+                  {/* Display Title */}
+                  <Typography
+                    variant="subtitle1"
+                    style={{ textAlign: 'center', marginBottom: '5px' }}
+                  >
+                    {item.title}
+                  </Typography>
+
+                  {/* Display Tags */}
+                  <div className="tagsContainer">
+                    {item.tags &&
+                      item.tags.map((tag, index) => (
+                        <Chip
+                          key={index}
+                          label={tag}
+                          className="tagChip"
+                        />
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Next Button */}
+          <IconButton
+            onClick={handleNext}
+            disabled={startIndex + itemsPerPage >= items.length}
+            className="navButton navButtonRight"
+            style={{ position: 'absolute' }}
+          >
+            <ArrowForward />
+          </IconButton>
+        </div>
+      )}
     </div>
   );
 }
