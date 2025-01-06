@@ -344,8 +344,28 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse(response_body, status_code=200)
 
 @app.route(route="recipe/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PUT])
-def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Update Recipe')
+
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("User ID required", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
     
     try:
         info = req.get_json()
@@ -363,6 +383,13 @@ def update_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
 
         recipe_container.replace_item(item=id, body=req.get_json())
+
+        signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": ["Successfully updated recipe"]
+        }))
+
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
@@ -504,8 +531,7 @@ def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
         query = f"""
         SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
-        WHERE c.date < '{current_date}' 
-        AND c.user_id != '1b7d8e26-cff7-4259-acb1-4f8ac7f32037'
+        WHERE c.date < '{current_date}'
         """
         items = list(recipe_container.query_items(
             query=query,
@@ -616,3 +642,26 @@ def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f"Failed to retrieve preferences for user {user_id}: {str(e)}")
         return func.HttpResponse(f"Failed to retrieve preferences: {str(e)}", status_code=500)
 
+
+@app.route(route="notifications/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
+@app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString", userId="{headers.x-ms-signalr-userid}")
+def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpResponse:
+    logging.info("SignalR negotiation request")
+    auth_header = req.headers.get("Authorization")
+
+    if not auth_header.startswith("Bearer "):
+        return func.HttpResponse("User ID required", status_code=401)
+
+    token = auth_header.split(" ")[1]
+    
+    claim_info = validate_token(token)
+    claims = claim_info.get('claims')
+    if (not claims): return claim_info.get('error')
+
+    user_id = claims.get('sub')
+    logging.info(f"Identified sender as {user_id}")
+
+    if user_id != req.headers.get('x-ms-signalr-userid'):
+        return func.HttpResponse("Unauthorized", status_code=401)
+
+    return func.HttpResponse(connectionInfo)

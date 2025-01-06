@@ -1,3 +1,6 @@
+import os
+import tempfile
+import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
     LivestreamServiceClient,
@@ -15,6 +18,7 @@ VOD = 2
 
 project_id = "livefeed-443712"
 location = "europe-west2"
+bucket_name = "livefeed-bucket"
 
 def create_input(channel_id: str) -> live_stream_v1.types.Input:
     """Creates an input.
@@ -118,6 +122,32 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
 
     return response
 
+def delete_input(channel_id: str):
+    client = LivestreamServiceClient()
+    input = f"projects/{project_id}/locations/{location}/inputs/input-{channel_id}"
+
+    request=live_stream_v1.DeleteInputRequest(
+        name=input
+    )
+    
+    operation = client.delete_input(request)
+    response = operation.result(600)
+    
+    return response
+
+def delete_channel(channel_id: str):
+    client = LivestreamServiceClient()
+    name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
+
+    request=live_stream_v1.DeleteChannelRequest(
+        name,
+    )
+    
+    operation = client.delete_channel(request)
+    response = operation.result(600)
+    
+    return response
+
 def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
     """Gets a channel.
     Args:
@@ -171,7 +201,12 @@ def create_recipe_channel(recipe_id):
 
     channel_info = get_channel(recipe_id)
     stream_dict = {"output_url": channel_info.output.uri, "input_url": input.uri}
+
     return stream_dict
+
+def delete_recipe_channel(recipe_id):
+    delete_channel(recipe_id)
+    delete_input(recipe_id)
 
 def start_stream(recipe_id):
     logging.info(start_channel(recipe_id))
@@ -185,7 +220,7 @@ def stop_stream(recipe_id):
 
 def save_vod(recipe_id):
     storage_client = storage.Client()
-    bucket = storage_client.bucket('livefeed-bucket')
+    bucket = storage_client.bucket(bucket_name)
     stream_directory = f'outputs/output-{recipe_id}'
     vod_directory = f'vods/vod-{recipe_id}'
     blobs = bucket.list_blobs(prefix=stream_directory)
@@ -213,7 +248,7 @@ test_credentials()"""
 
 def delete_vod(recipe_id):
     storage_client = storage.Client()
-    bucket = storage_client.bucket('livefeed-bucket')
+    bucket = storage_client.bucket(bucket_name)
     vod_name = f'vods/vod-{recipe_id}'
     
     try:
@@ -221,3 +256,46 @@ def delete_vod(recipe_id):
         logging.info("Deleted recipe VOD")
     except google_exceptions.NotFound:
         logging.info("Recipe had no VOD")
+
+def download_stream(stream_blob_path, local_path):
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    vod_blob = bucket.blob(stream_blob_path)
+    vod_blob.download_to_filename(local_path)
+    logging.info(f"Downloaded {stream_blob_path} to {local_path}")
+
+def upload_vod(vod_blob_path, local_path):
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    vod_blob = bucket.blob(vod_blob_path)
+    vod_blob.upload_from_filename(local_path)
+    logging.info(f"Uploaded {local_path} to {vod_blob_path}")
+
+    return vod_blob.public_url
+
+def convert_stream(input_m3u8_path, output_mp4_path):
+    try:
+        (
+            ffmpeg
+            .input(input_m3u8_path)
+            .output(output_mp4_path, codec="copy")
+            .run()
+        )
+        logging.info(f"Conversion successful: {output_mp4_path}")
+    except ffmpeg.Error as e:
+        logging.error(f"Error during conversion: {e}")
+        raise
+
+def save_vod(recipe_id):
+    stream_blob_path = f'outputs/output-{recipe_id}/manifest.m3u8'
+    vod_blob_path = f'vods/vod-{recipe_id}/video.mp4'
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        m3u8_path = os.path.join(temp_dir, "input.m3u8")
+        output_mp4_path = os.path.join(temp_dir, "output.mp4")
+        
+        download_stream(bucket_name, stream_blob_path, m3u8_path)
+        
+        convert_stream(m3u8_path, output_mp4_path)
+        
+        return upload_vod(bucket_name, output_mp4_path, vod_blob_path)

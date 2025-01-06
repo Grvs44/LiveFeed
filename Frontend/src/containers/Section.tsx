@@ -93,7 +93,7 @@ export default function Section({ title, items }: SectionProps) {
                   {/* Absolute container covering the same area */}
                   <div className="diagonalContainer">
                     {/* Diagonal Label */}
-                    {title.toLowerCase() === 'upcoming' && (
+                    {title.toLowerCase() === 'Upcoming' && (
                       <div className="diagonalLabel">UPCOMING</div>
                     )}
                   </div>
