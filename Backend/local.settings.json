@@ -11,6 +11,7 @@
     "AzureB2CPolicyName": "B2C_1_signupsignin1",
     "AzureB2CAppSecret": "UFx8Q~Oz77SRdMc-drnQnddfPC-lUJ.U1nGRSaNb",
     "GoogleLiveStreamPID": "livefeed-443712", 
-    "GoogleLiveStreamLocation": "europe-west2"
+    "GoogleLiveStreamLocation": "europe-west2",
+    "GOOGLE_APPLICATION_CREDENTIALS": "./gcp-credentials.json"
   }
 }
