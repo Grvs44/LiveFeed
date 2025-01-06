@@ -37,6 +37,7 @@ POLICY_NAME = os.environ.get("AzureB2CPolicyName")
 SECRET = os.environ.get("AzureB2CAppSecret")
 
 SPA_CLIENT_ID = os.environ.get("AzureB2CSpaAppID")
+SPA_SECRET = os.environ.get("AzureB2CSpaAppSecret")
 
 
 ISSUER = f"https://{TENANT_NAME}.b2clogin.com/{TENANT_ID}/v2.0/"
@@ -49,7 +50,7 @@ msal_client = ConfidentialClientApplication(
 )
 msal_spa_client = ConfidentialClientApplication(
     client_id=SPA_CLIENT_ID,
-    client_credential=SECRET,
+    client_credential=SPA_SECRET,
     authority=f"https://login.microsoftonline.com/{TENANT_ID}"
 )
 current_date = datetime.now(timezone.utc).isoformat(timespec='minutes')
