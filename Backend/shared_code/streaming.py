@@ -249,10 +249,11 @@ test_credentials()"""
 def delete_vod(recipe_id):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    vod_name = f'vods/vod-{recipe_id}'
-    
+    vod_directory = f'vods/vod-{recipe_id}'
+    blobs = bucket.list_blobs(prefix=vod_directory)
+
     try:
-        bucket.delete_blob(vod_name)
+        bucket.delete_blobs(blobs)
         logging.info("Deleted recipe VOD")
     except google_exceptions.NotFound:
         logging.info("Recipe had no VOD")
