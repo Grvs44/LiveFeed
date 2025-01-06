@@ -8,7 +8,7 @@ import { UserInfo } from '../context/types'
 import { useUpdateUserDetailsMutation } from '../redux/apiSlice'
 
 export default function UserUpdateForm() {
-  const { activeAccount } = React.useContext(LoginContext)
+  const { activeAccount, refreshAccount } = React.useContext(LoginContext)
   const [updateUserDetails] = useUpdateUserDetailsMutation()
   const [feedback, setFeedback] = React.useState({ message: '', error: false })
   const [userDetails, setUserDetails] = React.useState<UserInfo>({
@@ -57,6 +57,7 @@ export default function UserUpdateForm() {
 
       console.log('User updated successfully:', result)
       setFeedback({ message: 'Profile updated successfully', error: false })
+      await refreshAccount
     } catch (error) {
       console.error('Failed to update user:', error)
       setFeedback({ message: 'Something went wrong. ', error: true })
