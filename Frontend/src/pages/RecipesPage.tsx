@@ -240,6 +240,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
           >
+          <option value="">Select tag</option>
           {TAGS.map((tag) => (
           <option key={tag.name}>
             {tag.name}
