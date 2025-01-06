@@ -5,6 +5,12 @@ export type TitleState = {
   title: string
 }
 
+export enum LiveStatus {
+  Initial,
+  Started,
+  Stopped,
+}
+
 export type LiveStream = {
   name: string // Stream/recipe name
   stream: string // Video URL
@@ -12,6 +18,7 @@ export type LiveStream = {
   group: string // PubSub group
   recipe: RecipeStep[]
   shopping: ShoppingListEntry[]
+  liveStatus: LiveStatus
 }
 
 export type OndemandStream = {
