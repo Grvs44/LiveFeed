@@ -183,6 +183,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         setCookTime(0);
         setTags([]);
         setServings(1);
+        closeTab();
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
         alert("Error uploading recipe to DB");
@@ -190,6 +191,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     }
     else {
       console.error("Please fill in all the required information before uploading")
+      alert("Please fill in all the required information before uploading");
     }
   };
 
