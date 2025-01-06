@@ -1,7 +1,8 @@
-import React from 'react'
-import Box from '@mui/material/Box'
-import { Outlet } from 'react-router-dom'
-import TopBar from './containers/TopBar'
+import React, { useState } from 'react';
+import Box from '@mui/material/Box';
+import { Outlet, useLocation } from 'react-router-dom';
+import TopBar from './containers/TopBar';
+import MenuDrawer from './components/MenuDrawer';
 import addNotification, { Notifications } from 'react-push-notification'
 import SignalRProvider from './context/SignalRProvider'
 
@@ -16,17 +17,25 @@ export default function App() {
     })
   }
 
+  const [searchQuery, setSearchQuery] = useState(''); // Shared state for search
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <TopBar />
+      <TopBar searchQuery={searchQuery} setSearchQuery={setSearchQuery} />
+      <MenuDrawer
+        open={false} // Adjust based on your logic
+        onClose={() => {}}
+        onOpen={() => {}}
+        setSearchQuery={setSearchQuery} // Pass the setSearchQuery function
+      />
       <Box sx={{ my: 4 }}>
         <SignalRProvider
           onNotification={onNotification}
         >
           <Notifications position='top-right'/>
         </SignalRProvider>
-        <Outlet />
+        <Outlet context={{ searchQuery, setSearchQuery }} />
       </Box>
     </div>
-  )
+  );
 }

@@ -7,6 +7,7 @@ import {
   RecipeStepChange,
   StartStream,
   State,
+  UpdatePreferences
 } from './types'
 
 enum TagTypes {
@@ -104,10 +105,20 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
-    getSignalRConnection: builder.mutation<any, void>({
+    updatePreferences: builder.mutation<any, UpdatePreferences>({
+      query: ({tags, notifications }) => ({
+        url: `/settings/preferences`,
+        method: 'PATCH',
+        body: {
+          tags,
+          notifications,
+        },
+      }),
+    }),
+    getPreferences: builder.query<any, void>({
       query: () => ({
-        url: '/notifications/negotiate',
-        method: 'POST',
+        url: '/settings/preferences',
+        method: 'GET',
       }),
     }),
   }),
@@ -116,6 +127,7 @@ export const apiSlice = createApi({
 export const {
   useGetLiveStreamQuery,
   useGetOndemandStreamQuery,
+  useGetPreferencesQuery,
   useStartStreamMutation,
   useEndStreamMutation,
   useChangeStepMutation,
@@ -127,5 +139,5 @@ export const {
   useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
-  useGetSignalRConnectionMutation,
+  useUpdatePreferencesMutation
 } = apiSlice

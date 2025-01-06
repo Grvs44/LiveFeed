@@ -1,6 +1,7 @@
 import time
 import azure.functions as func
 from azure.cosmos import CosmosClient
+from azure.cosmos.exceptions import CosmosResourceNotFoundError
 import os
 import logging
 import datetime
@@ -19,8 +20,10 @@ app = func.FunctionApp()
 
 client = CosmosClient("https://livefeed-storage.documents.azure.com:443/", "RMcJvdRXCSCk60vX8ga7uAdnfl2yKW1nGBDf0EKcHc8NtdwKs72NAq2mDtUk8hW6NWwN3RnXMUFxACDbWLE70A==")
 database = client.get_database_client('Recipes')
+user_database = client.get_database_client('Users')
 recipe_container = database.get_container_client('UploadedRecipes')
 stream_container = database.get_container_client('Streams')
+prefs_container = user_database.get_container_client('Preferences')
 
 NOTIFY_HUB_NAME = 'livefeed-notify'
 CHAT_HUB_NAME = 'livefeed'
@@ -62,7 +65,7 @@ def get_display_name(object_id):
     else:
         raise Exception(f"Couldn't get user: {response.status_code}, {response.text}")
     
-def validate_token(token):
+def validate_token(req):
     """
     Validates a token and returns its associated claims.
 
@@ -72,7 +75,14 @@ def validate_token(token):
         claim_info (dict): A dictionary containing 'claims' if the provided token is valid,
         and an 'error' containing a HttpResponse if the token is invalid.
     """
+    auth_header = req.headers.get("Authorization")
     claim_info = {'claims': None, 'error': None}
+
+    if auth_header is None or not auth_header.startswith("Bearer "):
+        claim_info['error'] = func.HttpResponse("No token provided", status_code=401)
+        return claim_info
+    token = auth_header.split(" ")[1]
+
     try:
         # Get JWKS keys
         jwks_client = PyJWKClient(JWKS_URL)
@@ -88,6 +98,7 @@ def validate_token(token):
         )
 
         claim_info['claims'] = payload
+        logging.info(f"Identified sender as {payload.get('name')} ({payload.get('sub')})")
     except jwt.ExpiredSignatureError:
         claim_info['error'] = func.HttpResponse("Token has expired", status_code=401)
     except jwt.InvalidTokenError as e:
@@ -99,7 +110,7 @@ def validate_token(token):
 #---- Stream Functions ----#
 ############################
 
-@app.route(route="chat/negotiate", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="chat/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received chat token negotiation request')
 
@@ -110,26 +121,11 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
         logging.info('Missing recipe ID')
         return func.HttpResponse("Missing recipe ID from chat negotiation", status_code=400)
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        logging.info("No token provided, treating as anonymous user")
+    claim_info = validate_token(req)
+    if (claim_info.get('claims') != None):
+        username = claim_info.get('claims').get('name')
     else:
-        logging.info('Found Authorization header')
-
-        token = auth_header.split(" ")[1]
-        logging.info('Retrieved token')
-        
-        claim_info = validate_token(token)
-        claims = claim_info.get('claims')
-        if (not claims): return claim_info.get('error')
-
-        username = claims.get('name')
-        logging.info(f"Identified username of sender as {username}")
-
-        
-    ### Authentication ###
+        logging.info("Token not found, treating as a guest user")
 
     roles=[]
 
@@ -144,27 +140,16 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Successful chat negotiation')
     return func.HttpResponse(response_body, status_code=200)
 
-@app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-    logging.info('Found Authorization header')
-
-    token = auth_header.split(" ")[1]
-    logging.info('Retrieved token')
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -183,25 +168,16 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started")
 
-@app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -223,25 +199,16 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
     
-@app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def next_step(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received stream start request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if auth_header is None or not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
 
@@ -264,7 +231,7 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse("Successfully stepped", status_code=201)
 
-@app.route(route="streams", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="streams", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_streams(req: func.HttpRequest) -> func.HttpResponse:
     try:
         items = list(stream_container.read_all_items())
@@ -282,25 +249,16 @@ def get_streams(req: func.HttpRequest) -> func.HttpResponse:
 #---- Recipe Functions ----#
 ############################
 
-@app.route(route="recipe/create", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="recipe/create", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Received recipe create request')
 
-    ### Authentication ###
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-    ### Authentication ###
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     
     info = req.get_json()
     title = info.get('title')
@@ -322,8 +280,6 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
         "cookTime" : cookTime,
         "tags": tags,
         "servings": servings
-        
-        
     }
     
     cosmos_dict = recipe_container.create_item(body=recipe_dict, enable_automatic_id_generation=True)
@@ -347,22 +303,17 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
-@app.route(route="recipe/get", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/get", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get Recipe')
 
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("Unauthorized", status_code=401)
-
-    token = auth_header.split(" ")[1]
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-
-    user_id = claims.get('sub')
     logging.info(f"Identified sender as {user_id}")
     
     try:
@@ -392,7 +343,7 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse(response_body, status_code=200)
 
-@app.route(route="recipe/update", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.PUT])
+@app.route(route="recipe/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PUT])
 @app.generic_output_binding(
     arg_name="signalROutput",
     type="signalR",
@@ -421,6 +372,7 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         logging.info(info)
         id = info.get('id')
       
+        recipe_container.read_item()
 
         query = f"SELECT * FROM c WHERE c.id = '{id}'"
         items = list(recipe_container.query_items(query=query, enable_cross_partition_query=True))
@@ -445,7 +397,7 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-@app.route(route="recipe/delete", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.POST])
+@app.route(route="recipe/delete", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Delete Recipe')
     
@@ -471,7 +423,7 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-@app.route(route="recipe/display", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/display", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Display Recipe')
     
@@ -521,26 +473,26 @@ def get_stream_from_db(recipe_id):
 
     return stream_dict
 
-@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
-@app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
     recipe_id = req.route_params.get('recipeId')
     stream_dict = get_stream_from_db(recipe_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
 
-@app.route(route="recipe/live", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/live", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Live" Recipes')
     try:
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
         WHERE c.variable = 1'
         """
@@ -563,14 +515,14 @@ def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f'Error retrieving "Live" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "Live" recipes', status_code=500)
 
-@app.route(route="recipe/ondemand", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/ondemand", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "On demand" Recipes')
     logging.info(f"Current date {current_date}")
     try:
         # Get all recipes that have passed the current date
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT c.id, c.title, c.image, c.tags 
         FROM UploadedRecipes c 
         WHERE c.date < '{current_date}' 
         AND c.user_id != '1b7d8e26-cff7-4259-acb1-4f8ac7f32037'
@@ -594,14 +546,14 @@ def get_on_demand_recipes(req: func.HttpRequest) -> func.HttpResponse:
         logging.error(f'Error retrieving "On Demand" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "On Demand" recipes', status_code=500)
     
-@app.route(route="recipe/upcoming", auth_level=func.AuthLevel.FUNCTION, methods=[func.HttpMethod.GET])
+@app.route(route="recipe/upcoming", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Upcoming" Recipes')
 
     try:
         # Get all future upcoming recipes
         query = f"""
-        SELECT c.id, c.title, c.image 
+        SELECT * 
         FROM UploadedRecipes c 
         WHERE c.date > '{current_date}'
         """
@@ -623,6 +575,67 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f'Error retrieving "Upcoming" recipes: {str(e)}')
         return func.HttpResponse('Error retrieving "Upcoming" recipes', status_code=500)
+
+############################
+#---- User Functions ----#
+############################
+
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
+def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
+    logging.info(f"Request to update user preferences received")
+
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
+
+    try:
+        body = req.get_json()
+        try:
+            preferences = prefs_container.read_item(item=user_id, partition_key=user_id)
+        except CosmosResourceNotFoundError:
+            logging.info(f"No existing preferences for {user_id}, creating new record.")
+            preferences = {"id": user_id, "user_id": user_id, "tags": [], "notifications": True}
+        if 'tags' in body:
+            preferences['tags'] = body['tags']
+        if 'notifications' in body:
+            preferences['notifications'] = body['notifications']
+
+        prefs_container.upsert_item(preferences)
+        return func.HttpResponse(
+            json.dumps({"message": "Preferences updated successfully."}),
+            status_code=200,
+            mimetype="application/json"
+        )
+    except ValueError:
+        return func.HttpResponse("Invalid JSON format", status_code=400)
+    except Exception as e:
+        logging.error(f"Failed to update preferences: {str(e)}")
+        return func.HttpResponse("Failed to update preferences", status_code=500)
+
+@app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
+def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
+    try:
+        preferences = prefs_container.read_item(item=user_id, partition_key=user_id)
+        return func.HttpResponse(
+            json.dumps(preferences),
+            status_code=200,
+            mimetype="application/json"
+        )
+    except CosmosResourceNotFoundError:
+        return func.HttpResponse(json.dumps({"tags": [], "notifications": True}), status_code=200)
+    except Exception as e:
+        logging.error(f"Failed to retrieve preferences for user {user_id}: {str(e)}")
+        return func.HttpResponse(f"Failed to retrieve preferences: {str(e)}", status_code=500)
+
 
 @app.route(route="notifications/negotiate", auth_level=func.AuthLevel.ANONYMOUS, methods=["POST"])
 @app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString", userId="{headers.x-ms-signalr-userid}")
