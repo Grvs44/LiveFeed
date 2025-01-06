@@ -240,29 +240,11 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
           >
-            <option value="">Select tags</option>
-            <option value="Vegetarian">Vegetarian</option>
-            <option value="Vegan">Vegan</option>
-            <option value="Gluten Free">Gluten Free</option>
-            <option value="Dairy Free">Dairy Free</option>
-            <option value="Nut free">Nut free</option>
-            <option value="Low Carb">Low Carb</option>
-            <option value="High Protein">High Protein</option>
-            <option value="Meal Prep">Meal Prep</option>
-            <option value="Air Fryer">Air Fryer</option>
-            <option value="Beginner Friendly">Beginner Friendly</option>
-            <option value="Dessert">Dessert</option>
-            <option value="Healthy">Healthy</option>
-            <option value="Comfort Food">Comfort Food</option>
-            <option value="Spicy">Spicy</option>
-            <option value="Breakfast">Breakfast</option>
-            <option value="Lunch">Lunch</option>
-            <option value="Dinner">Dinner</option>
-            <option value="Snacks">Snacks</option>
-            <option value="One-Pot Meals">One-Pot Meals</option>
-            <option value="Party Food">Party Food</option>
-            <option value="BBQ">BBQ</option>
-            <option value="Low Budget">Low Budget</option>
+          {TAGS.map((tag) => (
+          <option key={tag.name}>
+            {tag.name}
+          </option>
+        ))}
           </select>
           <button className='addTagButton' onClick={handleAddTag}>Add Tag</button>
         </div>
