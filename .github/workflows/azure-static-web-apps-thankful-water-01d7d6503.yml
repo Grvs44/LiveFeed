@@ -5,14 +5,14 @@ on:
     branches:
       - main
     paths:
-      - frontend/*
+      - Frontend/*
       - .github/workflows/azure-static-web-apps-thankful-water-01d7d6503.yml
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
     paths:
-      - frontend/*
+      - Frontend/*
       - .github/workflows/azure-static-web-apps-thankful-water-01d7d6503.yml
 
 jobs:
