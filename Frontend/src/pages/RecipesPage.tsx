@@ -240,6 +240,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
             value={tagInput}
             onChange={(e) => setTagInput(e.target.value)}
           >
+          <option value="">Select tag</option>
           {TAGS.map((tag) => (
           <option key={tag.name}>
             {tag.name}
@@ -291,7 +292,6 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       <button className='backButton' onClick={closeTab}> Back to Manager </button>
 
       <div>
-        <h4>Uploaded Recipes</h4>
         <ul>
           {recipes.map((recipe, i) => (
             <li key={i}>
