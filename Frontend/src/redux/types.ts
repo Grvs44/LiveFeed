@@ -107,6 +107,6 @@ export type UserDetails = {
 }
 
 export type NotificationState = {
-  notif?: boolean
+  enabled?: boolean
 }
 

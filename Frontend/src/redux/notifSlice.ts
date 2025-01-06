@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { NotificationState } from './types'
 
 const initialState: NotificationState = {
-  notif : true,
+  enabled : true,
 }
 
 export const notifSlice = createSlice({
@@ -11,7 +11,7 @@ export const notifSlice = createSlice({
   initialState,
   reducers: {
     setNotif: (state, action: PayloadAction<boolean>) => {
-      state.notif = action.payload
+      state.enabled = action.payload
     },
   },
 })
