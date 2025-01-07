@@ -355,8 +355,6 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
     else:
         return claim_info.get('error')
     
-    logging.info(f"Identified sender as {user_id}")
-    
     try:
     
         query = f"SELECT * FROM c WHERE c.user_id = '{ user_id}'"
@@ -394,19 +392,12 @@ def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
 def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Update Recipe')
 
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("User ID required", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
     
     try:
         info = req.get_json()
