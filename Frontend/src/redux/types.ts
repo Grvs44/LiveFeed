@@ -5,13 +5,21 @@ export type TitleState = {
   title: string
 }
 
+export enum LiveStatus {
+  Initial,
+  Started,
+  Stopped,
+}
+
 export type LiveStream = {
+  input: string // Input URL
   name: string // Stream/recipe name
   stream: string // Video URL
   streamer: string // PubSub channel
   group: string // PubSub group
   recipe: RecipeStep[]
   shopping: ShoppingListEntry[]
+  liveStatus: LiveStatus
 }
 
 export type OndemandStream = {
@@ -49,6 +57,11 @@ export type TokenState = {
 export type StartStream = {
   // stream data
   id?: string
+}
+
+export type StreamStartTime = {
+  id: string
+  time: number
 }
 
 export type EndStream = {
@@ -98,5 +111,12 @@ export type TagsState = {
 export type UpdatePreferences = {
   tags?: string[];
   notifications?: boolean
+}
+
+export type UserDetails = {
+  id? : string,
+  displayName?: string,
+  givenName?: string,
+  familyName? : string,
 }
 

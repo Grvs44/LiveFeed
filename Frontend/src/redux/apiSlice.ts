@@ -7,7 +7,9 @@ import {
   RecipeStepChange,
   StartStream,
   State,
-  UpdatePreferences
+  StreamStartTime,
+  UpdatePreferences,
+  UserDetails
 } from './types'
 
 enum TagTypes {
@@ -39,6 +41,13 @@ export const apiSlice = createApi({
       query: (id) => ({
         url: `stream/${id}/start/`,
         method: 'POST',
+      }),
+    }),
+    sendStreamStartTime: builder.mutation<string, StreamStartTime>({
+      query: ({ id, time }) => ({
+        url: `stream/${id}/time/`,
+        method: 'POST',
+        body: { time },
       }),
     }),
     endStream: builder.mutation<EndStream, string>({
@@ -100,7 +109,7 @@ export const apiSlice = createApi({
       }),
     }),
     updatePreferences: builder.mutation<any, UpdatePreferences>({
-      query: ({tags, notifications }) => ({
+      query: ({ tags, notifications }) => ({
         url: `/settings/preferences`,
         method: 'PATCH',
         body: {
@@ -115,6 +124,18 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
+    updateUserDetails: builder.mutation<any,UserDetails>({
+      query: ({id, displayName, givenName,familyName }) => ({
+        url: `/settings/user/update`,
+        method: 'PATCH',
+        body: {
+          id,
+          displayName,
+          givenName,
+          familyName,
+        },
+      }),
+    })
   }),
 })
 
@@ -123,6 +144,7 @@ export const {
   useGetOndemandStreamQuery,
   useGetPreferencesQuery,
   useStartStreamMutation,
+  useSendStreamStartTimeMutation,
   useEndStreamMutation,
   useChangeStepMutation,
   useCreateRecipeMutation,
@@ -132,5 +154,6 @@ export const {
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
   useGetStreamsInfoMutation,
-  useUpdatePreferencesMutation
+  useUpdatePreferencesMutation,
+  useUpdateUserDetailsMutation
 } = apiSlice
