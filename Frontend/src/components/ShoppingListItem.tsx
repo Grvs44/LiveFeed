@@ -1,5 +1,5 @@
 import React from 'react'
-import { ListItem, Typography } from '@mui/material'
+import { ListItem, ListItemText } from '@mui/material'
 import { ShoppingListEntry } from '../redux/types'
 
 export type ShoppingListItemProps = {
@@ -7,10 +7,16 @@ export type ShoppingListItemProps = {
 }
 
 export default function ShoppingListItem({ item }: ShoppingListItemProps) {
+  const blankUndefined = (s: string | undefined) => (s == undefined ? '' : s)
+
+  const getSubtitle = () =>
+    item.quantity == undefined && item.unit == undefined
+      ? undefined
+      : blankUndefined(item.quantity) + blankUndefined(item.unit)
+
   return (
     <ListItem>
-      <Typography>{item.quantity}</Typography>
-      <Typography>{item.name}</Typography>
+      <ListItemText primary={item.item} secondary={getSubtitle()} />
     </ListItem>
   )
 }
