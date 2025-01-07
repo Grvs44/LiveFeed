@@ -1,5 +1,6 @@
 import os
 import tempfile
+import av
 import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
@@ -154,9 +155,9 @@ def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
         project_id: The GCP project ID.
         location: The location of the channel.
         channel_id: The user-defined channel ID."""
-
+    
     client = LivestreamServiceClient()
-
+    
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
     response = client.get_channel(name=name)
     logging.info(f"Channel: {response.name}")
@@ -218,6 +219,7 @@ def stop_stream(recipe_id):
 
     return get_channel(recipe_id)
 
+"""
 def save_vod(recipe_id):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
@@ -232,7 +234,7 @@ def save_vod(recipe_id):
     
     return public_url
 
-"""stop_channel('950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
+stop_channel('950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
 
 def test_credentials():
     try:
@@ -258,13 +260,6 @@ def delete_vod(recipe_id):
     except google_exceptions.NotFound:
         logging.info("Recipe had no VOD")
 
-def download_stream(stream_blob_path, local_path):
-    client = storage.Client()
-    bucket = client.get_bucket(bucket_name)
-    vod_blob = bucket.blob(stream_blob_path)
-    vod_blob.download_to_filename(local_path)
-    logging.info(f"Downloaded {stream_blob_path} to {local_path}")
-
 def upload_vod(vod_blob_path, local_path):
     client = storage.Client()
     bucket = client.get_bucket(bucket_name)
@@ -274,29 +269,64 @@ def upload_vod(vod_blob_path, local_path):
 
     return vod_blob.public_url
 
-def convert_stream(input_m3u8_path, output_mp4_path):
+def convert_stream(recipe_id, output_mp4_path):
     try:
         (
             ffmpeg
-            .input(input_m3u8_path)
-            .output(output_mp4_path, codec="copy")
-            .run()
+            .input(f"https://storage.googleapis.com/livefeed-bucket/vods/vod-950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb/manifest.m3u8")
+            .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(overwrite_output=True, capture_stderr=True, capture_stdout=False)
         )
-        logging.info(f"Conversion successful: {output_mp4_path}")
+        print(f"Conversion successful: {output_mp4_path}")
     except ffmpeg.Error as e:
-        logging.error(f"Error during conversion: {e}")
-        raise
+        if e.stderr:
+            error_message = e.stderr.decode("utf-8")
+            print(f"FFmpeg stderr: {error_message}")
+        else:
+            error_message = "Unknown error occurred during FFmpeg execution."
+            print(error_message)
+        raise RuntimeError(f"FFmpeg conversion failed: {error_message}")
+    
+def save_vod():
+    recipe_id = '950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb'
+    vod_blob_path = f'vods/test-vod-{recipe_id}/video.mp4'
 
-def save_vod(recipe_id):
-    stream_blob_path = f'outputs/output-{recipe_id}/manifest.m3u8'
-    vod_blob_path = f'vods/vod-{recipe_id}/video.mp4'
+    actual_path = os.path.join('video.mp4')
 
     with tempfile.TemporaryDirectory() as temp_dir:
-        m3u8_path = os.path.join(temp_dir, "input.m3u8")
         output_mp4_path = os.path.join(temp_dir, "output.mp4")
         
-        download_stream(bucket_name, stream_blob_path, m3u8_path)
+        convert_stream("", output_mp4_path)
         
-        convert_stream(m3u8_path, output_mp4_path)
-        
-        return upload_vod(bucket_name, output_mp4_path, vod_blob_path)
+        return upload_vod(vod_blob_path, output_mp4_path)
+
+print(save_vod())
+
+def delete_all_channels():
+    client = LivestreamServiceClient()
+    
+    request = live_stream_v1.ListChannelsRequest(
+        parent=f"projects/{project_id}/locations/{location}",
+        page_size=10
+    )
+
+    channels = list(client.list_channels(request))
+
+    for channel in channels:
+        print(channel)
+
+    print(len(channels))
+
+def delete_all_inputs():
+    client = LivestreamServiceClient()
+    
+    request = live_stream_v1.ListInputsRequest(
+        parent=f"projects/{project_id}/locations/{location}",
+        page_size=10
+    )
+
+    inputs = list(client.list_inputs(request))
+
+    for input in inputs:
+        print(input)
+
+    print(len(inputs))

@@ -89,6 +89,7 @@ export default function StartStreamPage() {
           <Grid container spacing={2}>
             <Grid size={4}>
               <Typography>Stream {id}</Typography>
+              <Typography>URL: {data.input}</Typography>
               {getStreamControl()}
               <StepBox
                 steps={data.recipe}

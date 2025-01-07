@@ -4,3 +4,4 @@ node_modules
 *.zip
 *.mp4
 .VSCodeCounter
+.DS_Store
