@@ -707,7 +707,7 @@ def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpRespons
     logging.info("SignalR negotiation request")
     auth_header = req.headers.get("Authorization")
 
-    if not auth_header.startswith("Bearer "):
+    if auth_header is None or not auth_header.startswith("Bearer "):
         return func.HttpResponse("User ID required", status_code=401)
 
     token = auth_header.split(" ")[1]
