@@ -160,14 +160,15 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Unauthorized", status_code=401)
 
     response = streaming.start_stream(recipe_id)
-
-    if (response.streaming_state == "STOPPED"):
-        return func.HttpResponse("Error while starting stream", status_code=500)
-    else:
+    
+    if (response.streaming_state in [2, 3, 7]):
         stream_data['live_status'] = streaming.LIVE
         stream_data['start_time'] = time.time()
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started", status_code=200)
+    else:
+        return func.HttpResponse("Error while starting stream", status_code=500)
+        
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
@@ -192,16 +193,16 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         vod_url = streaming.save_vod(recipe_id)
         stream_data['stream_url'] = vod_url
     except Exception as e:
-        logging.error(e)
+        logging.error(f'Error when saving vod: {e}')
 
     try:
         response = streaming.stop_stream(recipe_id)
         stream_data['live_status'] = streaming.VOD
     except Exception as e:
-        logging.error(e)
+        logging.error(f'Error when stopping channel: {e}')
 
-    if (response.streaming_state == "STOPPED"):
-        stream_container.upsert_item(stream_data)
+    stream_container.upsert_item(stream_data)
+    if (response.streaming_state in [6, 8]):
         return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
