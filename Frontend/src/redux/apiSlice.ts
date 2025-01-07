@@ -11,6 +11,7 @@ import {
   UpdatePreferences,
   UserState
 } from './types'
+import { setUser } from './userSlice'
 
 enum TagTypes {
   Live = 'live',
@@ -143,8 +144,7 @@ export const apiSlice = createApi({
       }),
       async onQueryStarted(details, api) {
         await api.queryFulfilled
-        const temp:any = null // delete this line and replace temp below
-        api.dispatch(temp(details))
+        api.dispatch(setUser(details))
       },
     })
   }),
