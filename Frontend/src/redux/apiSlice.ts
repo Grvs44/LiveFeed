@@ -8,7 +8,7 @@ import {
   StartStream,
   State,
   UpdatePreferences,
-  UserDetails
+  UserState
 } from './types'
 
 enum TagTypes {
@@ -122,7 +122,7 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
-    updateUserDetails: builder.mutation<any,UserDetails>({
+    updateUserDetails: builder.mutation<any,UserState>({
       query: ({id, displayName, givenName,familyName }) => ({
         url: `/settings/user/update`,
         method: 'PATCH',

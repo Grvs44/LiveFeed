@@ -4,6 +4,7 @@ import pubsubReducer from './pubsubSlice'
 import titleReducer from './titleSlice'
 import tokenReducer from './tokenSlice'
 import tagsReducer from './tagsSlice'
+import userReducer from './userSlice'
 import notifsReducer from './notifSlice'
 
 export default configureStore({
@@ -13,6 +14,7 @@ export default configureStore({
     token: tokenReducer,
     tags: tagsReducer,
     notif : notifsReducer,
+    user: userReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>
