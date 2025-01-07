@@ -113,10 +113,14 @@ export type UpdatePreferences = {
   notifications?: boolean
 }
 
-export type UserDetails = {
+export type UserState = {
   id? : string,
   displayName?: string,
   givenName?: string,
   familyName? : string,
+}
+
+export type NotificationState = {
+  enabled?: boolean
 }
 
