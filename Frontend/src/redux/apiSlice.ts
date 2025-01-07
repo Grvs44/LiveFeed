@@ -167,5 +167,5 @@ export const {
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
   useUpdatePreferencesMutation,
-  useUpdateUserDetailsMutation
+  useUpdateUserDetailsMutation,
 } = apiSlice
