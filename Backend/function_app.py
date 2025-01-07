@@ -187,19 +187,24 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("Sender is not the creator of the recipe")
         return func.HttpResponse("Unauthorized", status_code=401)
 
-    vod_url = streaming.save_vod(recipe_id)
-    response = streaming.stop_stream(recipe_id)
-
-    if (response.streaming_state == "STOPPED"):
+    try:
+        vod_url = streaming.save_vod(recipe_id)
         stream_data['stream_url'] = vod_url
+    except Exception as e:
+        logging.error(f"Error while saving vod: {e}")
+
+    response = None
+
+    try:
+        response = streaming.stop_stream(recipe_id)
         stream_data['live_status'] = streaming.VOD
     except Exception as e:
-        logging.error(f'Error when stopping channel: {e}')
+        logging.error(f'Error while stopping channel: {e}')
 
     try:
         streaming.delete_recipe_channel(recipe_id)
     except Exception as e:
-        logging.error(f"Channel deletion failed: {e}")
+        logging.error(f"Error while deleting channel: {e}")
 
     stream_container.upsert_item(stream_data)
     if (response.streaming_state in [6, 8]):
