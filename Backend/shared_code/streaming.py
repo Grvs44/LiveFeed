@@ -1,3 +1,7 @@
+import os
+import tempfile
+import threading
+import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
     LivestreamServiceClient,
@@ -15,6 +19,7 @@ VOD = 2
 
 project_id = "livefeed-443712"
 location = "europe-west2"
+bucket_name = "livefeed-bucket"
 
 def create_input(channel_id: str) -> live_stream_v1.types.Input:
     """Creates an input.
@@ -118,15 +123,41 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
 
     return response
 
+def delete_input(channel_id: str):
+    client = LivestreamServiceClient()
+    input = f"projects/{project_id}/locations/{location}/inputs/input-{channel_id}"
+
+    request=live_stream_v1.DeleteInputRequest(
+        name=input
+    )
+    
+    operation = client.delete_input(request)
+    response = operation.result(600)
+    
+    return response
+
+def delete_channel(channel_id: str):
+    client = LivestreamServiceClient()
+    name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
+
+    request=live_stream_v1.DeleteChannelRequest(
+        name,
+    )
+    
+    operation = client.delete_channel(request)
+    response = operation.result(600)
+    
+    return response
+
 def get_channel(channel_id: str) -> live_stream_v1.types.Channel:
     """Gets a channel.
     Args:
         project_id: The GCP project ID.
         location: The location of the channel.
         channel_id: The user-defined channel ID."""
-
+    
     client = LivestreamServiceClient()
-
+    
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
     response = client.get_channel(name=name)
     logging.info(f"Channel: {response.name}")
@@ -171,7 +202,12 @@ def create_recipe_channel(recipe_id):
 
     channel_info = get_channel(recipe_id)
     stream_dict = {"output_url": channel_info.output.uri, "input_url": input.uri}
+
     return stream_dict
+
+def delete_recipe_channel(recipe_id):
+    delete_channel(recipe_id)
+    delete_input(recipe_id)
 
 def start_stream(recipe_id):
     logging.info(start_channel(recipe_id))
@@ -183,20 +219,107 @@ def stop_stream(recipe_id):
 
     return get_channel(recipe_id)
 
-def save_vod(recipe_id):
+def rename_stream(recipe_id):
     storage_client = storage.Client()
-    bucket = storage_client.bucket('livefeed-bucket')
-    vod_name = f'vods/vod-{recipe_id}'
+    bucket = storage_client.bucket(bucket_name)
+    stream_directory = f'outputs/output-{recipe_id}'
+    vod_directory = f'temp-vods/vod-{recipe_id}'
+    blobs = bucket.list_blobs(prefix=stream_directory)
+    for blob in blobs:
+        new_name = blob.name.replace(stream_directory, vod_directory, 1)
+        bucket.rename_blob(blob, new_name)
 
-    return bucket.copy_blob(f'outputs/output-{recipe_id}', bucket, vod_name).public_url
+    public_url = bucket.blob(f'{vod_directory}/manifest.m3u8').public_url
+    
+    return public_url
+
+def delete_blob_directory(blob_prefix):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blobs = list(bucket.list_blobs(prefix=blob_prefix))
+
+    try:
+        bucket.delete_blobs(blobs)
+        logging.info("Blobs deleted")
+    except google_exceptions.NotFound:
+        logging.info("Blob directory not found")
+
+def delete_temp_vod(recipe_id):
+    delete_blob_directory(f'temp-vods/vod-{recipe_id}')
 
 def delete_vod(recipe_id):
-    storage_client = storage.Client()
-    bucket = storage_client.bucket('livefeed-bucket')
-    vod_name = f'vods/vod-{recipe_id}'
-    
+    delete_blob_directory(f'vods/vod-{recipe_id}')
+
+def upload_vod(vod_blob_path, local_path):
+    client = storage.Client()
+    bucket = client.get_bucket(bucket_name)
+    vod_blob = bucket.blob(vod_blob_path)
+    vod_blob.upload_from_filename(local_path)
+    logging.info(f"Uploaded {local_path} to {vod_blob_path}")
+
+    return vod_blob.public_url
+
+def convert_stream(vod_manifest, output_mp4_path):
     try:
-        bucket.delete_blob(vod_name)
-        logging.info("Deleted recipe VOD")
-    except google_exceptions.NotFound:
-        logging.info("Recipe had no VOD")
+        (
+            ffmpeg
+            .input(vod_manifest)
+            .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(overwrite_output=True, capture_stderr=True, capture_stdout=False)
+        )
+        print(f"Conversion successful: {output_mp4_path}")
+    except ffmpeg.Error as e:
+        if e.stderr:
+            error_message = e.stderr.decode("utf-8")
+            print(f"FFmpeg stderr: {error_message}")
+        else:
+            error_message = "Unknown error occurred during FFmpeg execution."
+            print(error_message)
+        raise RuntimeError(f"FFmpeg conversion failed: {error_message}")
+    
+def convert_temp_to_vod(temp_vod_manifest, recipe_id):
+    vod_blob_path = f'vods/vod-{recipe_id}/video.mp4'
+    public_url = None
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        output_mp4_path = os.path.join(temp_dir, "output.mp4")
+        
+        convert_stream(temp_vod_manifest, output_mp4_path)
+        
+        public_url = upload_vod(vod_blob_path, output_mp4_path)
+
+    delete_temp_vod(recipe_id)
+
+    return public_url
+
+def save_vod(recipe_id):
+    temp_vod_manifest = rename_stream(recipe_id)
+
+    return convert_temp_to_vod(temp_vod_manifest, recipe_id)
+
+def delete_all_channels():
+    client = LivestreamServiceClient()
+    
+    list_request = live_stream_v1.ListChannelsRequest(
+        parent=f"projects/{project_id}/locations/{location}",
+        page_size=10
+    )
+
+    channels = list(client.list_channels(list_request))
+
+    for channel in channels:
+        delete_request = live_stream_v1.DeleteChannelRequest(name = channel.name)
+        client.delete_channel(delete_request)
+
+def delete_all_inputs():
+    client = LivestreamServiceClient()
+    
+    list_request = live_stream_v1.ListInputsRequest(
+        parent=f"projects/{project_id}/locations/{location}",
+        page_size=10
+    )
+
+    inputs = list(client.list_inputs(list_request))
+
+    for input in inputs:
+        delete_request = live_stream_v1.DeleteInputRequest(name = input.name)
+        client.delete_input(delete_request)
