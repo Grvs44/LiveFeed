@@ -1,14 +1,3 @@
-import React, { useEffect, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { useLocation, useOutletContext } from 'react-router-dom'
-import Section from '../containers/Section'
-import { setTitle } from '../redux/titleSlice'
-import { Item } from '../redux/types'
-import '../assets/HomePage.css'
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
-import { Box, Chip, IconButton } from '@mui/material'
-import TAGS from '../config/Tags'
 import {
   useGetLiveRecipeMutation,
   useGetOnDemandRecipeMutation,
@@ -16,7 +5,19 @@ import {
   useGetUpcomingRecipeMutation,
 } from '../redux/apiSlice'
 import { setTags } from '../redux/tagsSlice'
-import { State } from '../redux/types'
+import React, { useEffect, useState, useRef} from 'react';
+import { useOutletContext, useLocation } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { setTitle } from '../redux/titleSlice';
+import Section from '../containers/Section';
+import { Item } from '../redux/types';
+import '../assets/HomePage.css';
+import { useGetStreamsInfoMutation } from '../redux/apiSlice';
+import TAGS from '../config/Tags';
+import { Box, Chip, IconButton } from '@mui/material';
+import { State } from '../redux/types';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 export default function HomePage() {
   const dispatch = useDispatch()
@@ -32,6 +33,7 @@ export default function HomePage() {
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>
   }>()
 
+
   const [fetchLiveStreams, { data: liveData }] = useGetLiveRecipeMutation()
   const [fetchOnDemandStreams, { data: onDemandData }] =
     useGetOnDemandRecipeMutation()
@@ -39,14 +41,16 @@ export default function HomePage() {
     useGetUpcomingRecipeMutation()
 
   const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [fetchStreamsInfo, { data: streamsData }] = useGetStreamsInfoMutation();
 
-  // Fetch data on component mount
+
   useEffect(() => {
     dispatch(setTitle('LiveFeed'))
     fetchLiveStreams()
     fetchOnDemandStreams()
     fetchUpcomingStreams()
-  }, [dispatch, fetchLiveStreams, fetchOnDemandStreams, fetchUpcomingStreams])
+    fetchStreamsInfo();
+  }, [dispatch, fetchLiveStreams, fetchOnDemandStreams, fetchUpcomingStreams, fetchStreamsInfo])
 
   //Set tags on load
   useEffect(() => {
@@ -57,6 +61,7 @@ export default function HomePage() {
       dispatch(setTags([]))
     }
   }, [data, dispatch])
+
 
   // Clear searchQuery ONLY when navigating to the homepage from another tab
   useEffect(() => {
@@ -108,23 +113,40 @@ export default function HomePage() {
       link: `/live/${recipe.id}`,
     })) || []
 
+  streamsData
+    ?.filter((stream: any) => stream.live_status === 1)
+    .map((stream: any) => ({
+      id: stream.id,
+      title: stream.title,
+      thumbnail: stream.image,
+      tags: stream.tags,
+      liveState: stream.live_status,
+      link: stream.stream_url,
+    })) || [];
+
   const onDemandStreams: Item[] =
-    onDemandData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      tags: recipe.tags,
-      link: `/ondemand/${recipe.id}`,
-    })) || []
+    streamsData
+      ?.filter((stream: any) => stream.live_status === 2)
+      .map((stream: any) => ({
+        id: stream.id,
+        title: stream.title,
+        thumbnail: stream.image,
+        tags: stream.tags,
+        liveState: stream.live_status,
+        link: `/ondemand/${stream.id}`,
+      })) || [];
 
   const upcomingStreams: Item[] =
-    upcomingData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      tags: recipe.tags,
-      link: `/upcoming/${recipe.id}`,
-    })) || []
+    streamsData
+      ?.filter((stream: any) => stream.live_status === 0)
+      .map((stream: any) => ({
+        id: stream.id,
+        title: stream.title,
+        thumbnail: stream.image,
+        tags: stream.tags,
+        liveState: stream.live_status,
+        link: `/upcoming/${stream.id}`,
+      })) || [];
 
   // Apply filtering logic based on search query
   const filteredLiveStreams = filterByTags(
@@ -154,13 +176,39 @@ export default function HomePage() {
   return (
     <div className="homePageContainer">
       {/* Tag Bar with Arrows */}
+    <Box
+      className="sectionWrapper"
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        marginBottom: '20px',
+        position: 'relative',
+      }}
+    >
+      {/* Left Arrow */}
+      <IconButton
+        onClick={() => scrollTags('left')}
+        sx={{
+          position: 'absolute',
+          left: '-40px',
+          zIndex: 10,
+        }}
+      >
+        <ArrowBackIosIcon />
+      </IconButton>
+
+      {/* Tag Bar */}
       <Box
         className="sectionWrapper" // Use the same styles as other sections
         sx={{
           display: 'flex',
-          alignItems: 'center',
-          marginBottom: '20px',
-          position: 'relative',
+          overflowX: 'auto',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
+          padding: '10px 0',
+          '&::-webkit-scrollbar': {
+            display: 'none',
+          },
         }}
       >
         {/* Left Arrow */}
@@ -231,6 +279,19 @@ export default function HomePage() {
           <ArrowForwardIosIcon />
         </IconButton>
       </Box>
+
+      {/* Right Arrow */}
+      <IconButton
+        onClick={() => scrollTags('right')}
+        sx={{
+          position: 'absolute',
+          right: '-40px',
+          zIndex: 10,
+        }}
+      >
+        <ArrowForwardIosIcon />
+      </IconButton>
+    </Box>
       {/* Live Section */}
       <div className="sectionWrapper" style={{ marginBottom: '50px' }}>
         <Section title="Live" items={filteredLiveStreams} />
@@ -238,7 +299,7 @@ export default function HomePage() {
 
       {/* On-Demand Section */}
       <div className="sectionWrapper" style={{ marginBottom: '50px' }}>
-        <Section title="Recent Broadcasts" items={filteredOnDemandStreams} />
+        <Section title="On Demand" items={filteredOnDemandStreams} />
       </div>
 
       {/* Upcoming Section */}
