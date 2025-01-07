@@ -9,7 +9,6 @@ import {
   State,
   StreamStartTime,
   UpdatePreferences,
-  UpdatePreferences,
   UserDetails
 } from './types'
 
