@@ -1,5 +1,6 @@
 import os
 import tempfile
+import threading
 import av
 import ffmpeg
 from google.cloud.video import live_stream_v1
@@ -219,12 +220,11 @@ def stop_stream(recipe_id):
 
     return get_channel(recipe_id)
 
-"""
-def save_vod(recipe_id):
+def rename_stream(recipe_id):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
     stream_directory = f'outputs/output-{recipe_id}'
-    vod_directory = f'vods/vod-{recipe_id}'
+    vod_directory = f'temp-vods/vod-{recipe_id}'
     blobs = bucket.list_blobs(prefix=stream_directory)
     for blob in blobs:
         new_name = blob.name.replace(stream_directory, vod_directory, 1)
@@ -234,31 +234,22 @@ def save_vod(recipe_id):
     
     return public_url
 
-stop_channel('950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
-
-def test_credentials():
-    try:
-        client = storage.Client()
-        buckets = list(client.list_buckets())
-        bucket = client.get_bucket('livefeed-bucket')
-        blobs = bucket.list_blobs(prefix='outputs/output-950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb')
-        print(f"Connected successfully. Blobs: {[blob.name for blob in blobs]}")
-    except Exception as e:
-        print(f"Failed to authenticate: {e}")
-
-test_credentials()"""
-
-def delete_vod(recipe_id):
+def delete_blob_directory(blob_prefix):
     storage_client = storage.Client()
     bucket = storage_client.bucket(bucket_name)
-    vod_directory = f'vods/vod-{recipe_id}'
-    blobs = bucket.list_blobs(prefix=vod_directory)
+    blobs = list(bucket.list_blobs(prefix=blob_prefix))
 
     try:
         bucket.delete_blobs(blobs)
-        logging.info("Deleted recipe VOD")
+        logging.info("Blobs deleted")
     except google_exceptions.NotFound:
-        logging.info("Recipe had no VOD")
+        logging.info("Blob directory not found")
+
+def delete_temp_vod(recipe_id):
+    delete_blob_directory(f'temp-vods/vod-{recipe_id}')
+
+def delete_vod(recipe_id):
+    delete_blob_directory(f'vods/vod-{recipe_id}')
 
 def upload_vod(vod_blob_path, local_path):
     client = storage.Client()
@@ -269,11 +260,11 @@ def upload_vod(vod_blob_path, local_path):
 
     return vod_blob.public_url
 
-def convert_stream(recipe_id, output_mp4_path):
+def convert_stream(vod_manifest, output_mp4_path):
     try:
         (
             ffmpeg
-            .input(f"https://storage.googleapis.com/livefeed-bucket/vods/vod-950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb/manifest.m3u8")
+            .input(vod_manifest)
             .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(overwrite_output=True, capture_stderr=True, capture_stdout=False)
         )
         print(f"Conversion successful: {output_mp4_path}")
@@ -286,20 +277,25 @@ def convert_stream(recipe_id, output_mp4_path):
             print(error_message)
         raise RuntimeError(f"FFmpeg conversion failed: {error_message}")
     
-def save_vod():
-    recipe_id = '950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb'
-    vod_blob_path = f'vods/test-vod-{recipe_id}/video.mp4'
-
-    actual_path = os.path.join('video.mp4')
+def convert_temp_to_vod(temp_vod_manifest, recipe_id):
+    vod_blob_path = f'vods/vod-{recipe_id}/video.mp4'
 
     with tempfile.TemporaryDirectory() as temp_dir:
         output_mp4_path = os.path.join(temp_dir, "output.mp4")
         
-        convert_stream("", output_mp4_path)
+        convert_stream(temp_vod_manifest, output_mp4_path)
         
-        return upload_vod(vod_blob_path, output_mp4_path)
+        upload_vod(vod_blob_path, output_mp4_path)
 
-print(save_vod())
+    delete_temp_vod(recipe_id)
+
+def save_vod(recipe_id):
+    temp_vod_manifest = rename_stream(recipe_id)
+
+    thread = threading.Thread(target=convert_temp_to_vod, args=(temp_vod_manifest, recipe_id))
+    thread.start()
+
+    return f'https://storage.googleapis.com/livefeed-bucket/vods/vod-{recipe_id}/video.mp4'
 
 def delete_all_channels():
     client = LivestreamServiceClient()
