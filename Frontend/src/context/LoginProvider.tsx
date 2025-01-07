@@ -16,13 +16,13 @@ import { useDispatch } from 'react-redux'
 import { loginRequest } from '../config/authConfig'
 import RecipesPage from '../pages/RecipesPage'
 import { setToken } from '../redux/tokenSlice'
+import { clearUser, setUser } from '../redux/userSlice'
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
   handleLoginPopup?: () => void
   handleLogin?: () => Promise<void>
   handleLogout?: () => void
-  refreshAccount?: () => void
 }
 
 export type LoginProviderProps = {
@@ -47,6 +47,7 @@ export default function LoginProvider(props: LoginProviderProps) {
       console.log('Logout successful via popup')
       setActiveAccount(null)
       dispatch(setToken(''))
+      dispatch(clearUser())
     } catch (error) {
       console.error('Popup logout failed:', error)
       //console.log('Attempting logout redirect as fallback')
@@ -65,45 +66,23 @@ export default function LoginProvider(props: LoginProviderProps) {
         console.log('Active account:', response.account)
         //Set access token
         dispatch(setToken(response.accessToken))
+        //Set user details
+        dispatch(
+          setUser({
+            id: response.account.localAccountId,
+            displayName: response.account.idTokenClaims?.name ?? '',
+            givenName:
+              (response.account.idTokenClaims?.given_name as string) ?? '',
+            familyName:
+              (response.account.idTokenClaims?.family_name as string) ?? '',
+          }),
+        )
         console.log('Login successful via popup')
       }
       return response
     } catch (error) {
       console.error('Error during popup login:', error)
       throw error
-    }
-  }
-
-  const refreshAccount = async () => {
-    console.log('Refreshing account')
-    try {
-      const accounts = instance.getAllAccounts()
-      if (accounts.length > 0) {
-        const tokenRequest = {
-          scopes: ['openid', 'profile'],
-          loginHint: accounts[0]?.username,
-          account: accounts[0],
-        }
-        const response = await instance.ssoSilent(tokenRequest)
-        if (response) {
-          instance.setActiveAccount(response.account)
-          setActiveAccount(response.account) // Update local state with refreshed account
-          console.log(
-            'ID Token refreshed for account refresh:',
-            response.idTokenClaims,
-          )
-        }
-      }
-    } catch (error: any) {
-      console.error('Failed to refresh ID token:', error)
-      if (error.name === 'InteractionRequiredAuthError') {
-        try {
-          await handleLoginPopup
-          console.log('Interactive login refreshed ID token.')
-        } catch (loginError) {
-          console.error('Interactive login failed:', loginError)
-        }
-      }
     }
   }
 
@@ -178,7 +157,6 @@ export default function LoginProvider(props: LoginProviderProps) {
     handleLoginPopup,
     handleLogin,
     handleLogout,
-    refreshAccount,
   }
 
   return (

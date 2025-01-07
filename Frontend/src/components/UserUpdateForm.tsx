@@ -3,29 +3,31 @@ import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
+import { useDispatch, useSelector } from 'react-redux'
 import { LoginContext } from '../context/LoginProvider'
 import { UserInfo } from '../context/types'
 import { useUpdateUserDetailsMutation } from '../redux/apiSlice'
+import { State } from '../redux/types'
+import { setUser } from '../redux/userSlice'
 
 export default function UserUpdateForm() {
-  const { activeAccount, refreshAccount } = React.useContext(LoginContext)
+  const user = useSelector((state: State) => state.user) // Get user details from Redux
+  const { activeAccount } = React.useContext(LoginContext)
   const [updateUserDetails] = useUpdateUserDetailsMutation()
   const [feedback, setFeedback] = React.useState({ message: '', error: false })
   const [userDetails, setUserDetails] = React.useState<UserInfo>({
-    name: '',
-    given_name: '',
-    family_name: '',
+    name: user.displayName ?? '',
+    given_name: user.givenName ?? '',
+    family_name: user.familyName ?? '',
   })
 
   React.useEffect(() => {
-    if (activeAccount?.idTokenClaims) {
-      setUserDetails({
-        name: (activeAccount.idTokenClaims.name as string) ?? '',
-        given_name: (activeAccount.idTokenClaims.given_name as string) ?? '',
-        family_name: (activeAccount.idTokenClaims.family_name as string) ?? '',
-      })
-    }
-  }, [activeAccount])
+    setUserDetails(() => ({
+      name: user.displayName ?? '',
+      given_name: user.givenName ?? '',
+      family_name: user.familyName ?? '',
+    }))
+  }, [user])
 
   const handleInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -57,7 +59,6 @@ export default function UserUpdateForm() {
 
       console.log('User updated successfully:', result)
       setFeedback({ message: 'Profile updated successfully', error: false })
-      await refreshAccount?.()
     } catch (error) {
       console.error('Failed to update user:', error)
       setFeedback({ message: 'Something went wrong. ', error: true })
