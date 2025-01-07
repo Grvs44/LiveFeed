@@ -97,21 +97,15 @@ export const apiSlice = createApi({
         body: recipe,
       }),
     }),
-    getLiveRecipe: builder.mutation<any, void>({
-      query: () => ({
-        url: '/recipe/live',
-        method: 'GET',
-      }),
-    }),
-    getOnDemandRecipe: builder.mutation<any, void>({
-      query: () => ({
-        url: '/recipe/ondemand',
-        method: 'GET',
-      }),
-    }),
     getUpcomingRecipe: builder.mutation<any, void>({
       query: () => ({
         url: '/recipe/upcoming',
+        method: 'GET',
+      }),
+    }),
+    getStreamsInfo: builder.mutation<any, void>({
+      query: () => ({
+        url: '/streams',
         method: 'GET',
       }),
     }),
@@ -162,10 +156,9 @@ export const {
   useGetRecipeMutation,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
-  useGetLiveRecipeMutation,
-  useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
+  useGetStreamsInfoMutation,
   useUpdatePreferencesMutation,
   useUpdateUserDetailsMutation,
 } = apiSlice
