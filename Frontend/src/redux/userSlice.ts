@@ -4,7 +4,7 @@ import { UserState } from './types'
 
 const loadUserFromStorage = (): UserState => {
   const storedUser = localStorage.getItem('user')
-  console.log(`Stored user is: ${localStorage.getItem('user')}`)
+  //console.log(`Stored user is: ${localStorage.getItem('user')}`)
   return storedUser ? JSON.parse(storedUser) : { id: '', displayName: '', givenName: '', familyName: '' }
 }
 
@@ -20,7 +20,6 @@ export const userSlice = createSlice({
         state.givenName = action.payload.givenName;
         state.familyName = action.payload.familyName;
         localStorage.setItem('user', JSON.stringify(state))
-        console.log(`Updating local storage with: ${JSON.stringify(state)}`)
     },
     clearUser: (state) => {
         state.id = '';
