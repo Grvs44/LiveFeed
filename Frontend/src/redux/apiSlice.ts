@@ -9,8 +9,9 @@ import {
   State,
   StreamStartTime,
   UpdatePreferences,
-  UserDetails
+  UserState
 } from './types'
+import { setUser } from './userSlice'
 
 enum TagTypes {
   Live = 'live',
@@ -96,15 +97,21 @@ export const apiSlice = createApi({
         body: recipe,
       }),
     }),
-    getUpcomingRecipe: builder.mutation<any, void>({
+    getLiveRecipe: builder.mutation<any, void>({
       query: () => ({
-        url: '/recipe/upcoming',
+        url: '/recipe/live',
         method: 'GET',
       }),
     }),
-    getStreamsInfo: builder.mutation<any, void>({
+    getOnDemandRecipe: builder.mutation<any, void>({
       query: () => ({
-        url: '/streams',
+        url: '/recipe/ondemand',
+        method: 'GET',
+      }),
+    }),
+    getUpcomingRecipe: builder.mutation<any, void>({
+      query: () => ({
+        url: '/recipe/upcoming',
         method: 'GET',
       }),
     }),
@@ -124,7 +131,7 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
-    updateUserDetails: builder.mutation<any,UserDetails>({
+    updateUserDetails: builder.mutation<any,UserState>({
       query: ({id, displayName, givenName,familyName }) => ({
         url: `/settings/user/update`,
         method: 'PATCH',
@@ -135,6 +142,10 @@ export const apiSlice = createApi({
           familyName,
         },
       }),
+      async onQueryStarted(details, api) {
+        await api.queryFulfilled
+        api.dispatch(setUser(details))
+      },
     })
   }),
 })
@@ -151,9 +162,10 @@ export const {
   useGetRecipeMutation,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
+  useGetLiveRecipeMutation,
+  useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
   useDisplayRecipeMutation,
-  useGetStreamsInfoMutation,
   useUpdatePreferencesMutation,
-  useUpdateUserDetailsMutation
+  useUpdateUserDetailsMutation,
 } = apiSlice
