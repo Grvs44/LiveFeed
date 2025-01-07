@@ -7,7 +7,6 @@ import VideoPlayer from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import RecipeBox from '../containers/RecipeBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
-import TempNextBox from '../containers/TempNextBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import { StepUpdate } from '../context/types'
 import { useGetLiveStreamQuery } from '../redux/apiSlice'
@@ -70,7 +69,6 @@ export default function WatchLivePage() {
             <Grid size={4}>
               <ShoppingListBox list={data.shopping} />
               <RecipeBox steps={recipe} currentStep={currentStep} />
-              <TempNextBox />
             </Grid>
           </Grid>
         </PubSubClientProvider>

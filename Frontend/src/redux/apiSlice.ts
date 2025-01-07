@@ -7,6 +7,8 @@ import {
   RecipeStepChange,
   StartStream,
   State,
+  StreamStartTime,
+  UpdatePreferences,
   UpdatePreferences,
   UserState
 } from './types'
@@ -40,6 +42,13 @@ export const apiSlice = createApi({
       query: (id) => ({
         url: `stream/${id}/start/`,
         method: 'POST',
+      }),
+    }),
+    sendStreamStartTime: builder.mutation<string, StreamStartTime>({
+      query: ({ id, time }) => ({
+        url: `stream/${id}/time/`,
+        method: 'POST',
+        body: { time },
       }),
     }),
     endStream: builder.mutation<EndStream, string>({
@@ -107,7 +116,7 @@ export const apiSlice = createApi({
       }),
     }),
     updatePreferences: builder.mutation<any, UpdatePreferences>({
-      query: ({tags, notifications }) => ({
+      query: ({ tags, notifications }) => ({
         url: `/settings/preferences`,
         method: 'PATCH',
         body: {
@@ -147,6 +156,7 @@ export const {
   useGetOndemandStreamQuery,
   useGetPreferencesQuery,
   useStartStreamMutation,
+  useSendStreamStartTimeMutation,
   useEndStreamMutation,
   useChangeStepMutation,
   useCreateRecipeMutation,

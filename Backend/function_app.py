@@ -166,7 +166,7 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
     else:
         stream_data['live_status'] = streaming.LIVE
         stream_container.upsert_item(stream_data)
-        return func.HttpResponse("Livestream successfully started")
+        return func.HttpResponse("Livestream successfully started", status_code=200)
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
@@ -195,13 +195,13 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         stream_data['live_status'] = streaming.VOD
         stream_data['start_time'] = time.time()
         stream_container.upsert_item(stream_data)
-        return func.HttpResponse("Livestream successfully ended")
+        return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
     
 @app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def next_step(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Received stream start request')
+    logging.info('Received next step request')
 
     claim_info = validate_token(req)
     user_id = None
@@ -288,12 +288,11 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
     channel_info = streaming.create_recipe_channel(recipe_id)
-    stream_url = channel_info.get('output_url')
     input_url = channel_info.get('input_url')
     stream_dict = {
         "id": recipe_id,
         "user_id": user_id,
-        "stream_url": stream_url,
+        "stream_url": f"https://storage.googleapis.com/livefeed-bucket/outputs/output-{recipe_id}/manifest.m3u8",
         "step_timings": {},
         "input_url": input_url,
         "live_status": streaming.AWAITING_LIVE
@@ -454,7 +453,7 @@ def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-def get_stream_from_db(recipe_id):
+def get_stream_from_db(recipe_id, user_id):
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
     streamer_id = stream_data.get('user_id')
     recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
@@ -471,21 +470,40 @@ def get_stream_from_db(recipe_id):
         "shopping": recipe_data.get('shopping')
     }
 
+    stream_dict['input'] = stream_data.get('input_url')
+
+    live_status = stream_data.get('live_status')
+    if live_status is not None:
+        stream_dict['liveStatus'] = live_status
+    # for testing:
+    else:
+        stream_dict['liveStatus'] = 0
+
     return stream_dict
 
 @app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
-    recipe_id = req.route_params.get('recipeId')
-    stream_dict = get_stream_from_db(recipe_id)
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
 
-    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
+    recipe_id = req.route_params.get('recipeId')
+    stream_dict = get_stream_from_db(recipe_id, user_id)
+
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
-    recipe_id = req.route_params.get('recipeId')
-    stream_dict = get_stream_from_db(recipe_id)
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
 
-    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json')
+    recipe_id = req.route_params.get('recipeId')
+    stream_dict = get_stream_from_db(recipe_id, user_id)
+
+    return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
 
 @app.route(route="recipe/live", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_live_recipes(req: func.HttpRequest) -> func.HttpResponse:
