@@ -160,19 +160,17 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Unauthorized", status_code=401)
 
     response = streaming.start_stream(recipe_id)
-    
-    if (response.streaming_state in [2, 3, 7]):
+
+    if (response.streaming_state == "STOPPED"):
+        return func.HttpResponse("Error while starting stream", status_code=500)
+    else:
         stream_data['live_status'] = streaming.LIVE
-        stream_data['start_time'] = time.time()
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started", status_code=200)
-    else:
-        return func.HttpResponse("Error while starting stream", status_code=500)
-        
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Received stream end request')
+    logging.info('Received stream start request')
 
     claim_info = validate_token(req)
     user_id = None
@@ -189,14 +187,11 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("Sender is not the creator of the recipe")
         return func.HttpResponse("Unauthorized", status_code=401)
 
-    try: 
-        vod_url = streaming.save_vod(recipe_id)
-        stream_data['stream_url'] = vod_url
-    except Exception as e:
-        logging.error(f'Error when saving vod: {e}')
+    vod_url = streaming.save_vod(recipe_id)
+    response = streaming.stop_stream(recipe_id)
 
-    try:
-        response = streaming.stop_stream(recipe_id)
+    if (response.streaming_state == "STOPPED"):
+        stream_data['stream_url'] = vod_url
         stream_data['live_status'] = streaming.VOD
     except Exception as e:
         logging.error(f'Error when stopping channel: {e}')
@@ -208,6 +203,7 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
 
     stream_container.upsert_item(stream_data)
     if (response.streaming_state in [6, 8]):
+        stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
@@ -291,7 +287,7 @@ def get_streams_info(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Error retrieving streams: {str(e)}")
         return func.HttpResponse("Error retrieving streams data", status_code=500)
-    
+
 ############################
 #---- Recipe Functions ----#
 ############################
@@ -454,12 +450,7 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
         
 
         recipe_container.delete_item(item=id,partition_key=user_id)
-        try:
-            streaming.delete_vod(id)
-            streaming.delete_recipe_channel(id)
-        except Exception:
-            logging.info("Vod or channel deletion failed")
-
+        streaming.delete_vod(id)
         stream_container.delete_item(id, partition_key=id)
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
