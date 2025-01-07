@@ -1,6 +1,5 @@
 import os
 import tempfile
-import threading
 import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
@@ -113,7 +112,10 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 file_name="manifest.m3u8",
                 type_="HLS",
                 mux_streams=["mux_video", "mux_audio"],
-                max_segment_count=5,
+                max_segment_count=50,
+                segment_keep_duration=duration.Duration(
+                    seconds=120,
+                ),
             ),
         ],
     )
@@ -200,7 +202,7 @@ def stop_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationRespon
 
 def create_recipe_channel(recipe_id):
     input = create_input(recipe_id)
-    create_channel(recipe_id)
+    logging.info(create_channel(recipe_id))
 
     channel_info = get_channel(recipe_id)
     stream_dict = {"output_url": channel_info.output.uri, "input_url": input.uri}
@@ -271,14 +273,14 @@ def convert_stream(vod_manifest, output_mp4_path):
             .input(vod_manifest)
             .output(output_mp4_path, vcodec='mpeg4', acodec='aac', strict='experimental', hls_flags='single_file').run(cmd=ffmpeg_binary_path, overwrite_output=True, capture_stderr=True, capture_stdout=False)
         )
-        print(f"Conversion successful: {output_mp4_path}")
+        logging.info(f"Conversion successful: {output_mp4_path}")
     except ffmpeg.Error as e:
         if e.stderr:
             error_message = e.stderr.decode("utf-8")
-            print(f"FFmpeg stderr: {error_message}")
+            logging.error(f"FFmpeg stderr: {error_message}")
         else:
             error_message = "Unknown error occurred during FFmpeg execution."
-            print(error_message)
+            logging.error(error_message)
         raise RuntimeError(f"FFmpeg conversion failed: {error_message}")
     
 def convert_temp_to_vod(temp_vod_manifest, recipe_id):
