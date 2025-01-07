@@ -67,9 +67,10 @@ export type State = ReturnType<typeof store.getState>
 export type Item = {
   id: number 
   title: string
-  thumbnail: string;
-  tags?: string[];
-  link: string; 
+  thumbnail: string
+  liveState: number
+  tags?: string[]
+  link: string 
 }
 
 export type SectionProps = {

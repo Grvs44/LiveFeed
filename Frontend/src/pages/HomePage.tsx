@@ -5,11 +5,7 @@ import { setTitle } from '../redux/titleSlice';
 import Section from '../containers/Section';
 import { Item } from '../redux/types';
 import '../assets/HomePage.css';
-import {
-  useGetLiveRecipeMutation,
-  useGetOnDemandRecipeMutation,
-  useGetUpcomingRecipeMutation,
-} from '../redux/apiSlice';
+import { useGetStreamsInfoMutation } from '../redux/apiSlice';
 import TAGS from '../config/Tags';
 import { Box, Chip, IconButton } from '@mui/material';
 import { State } from '../redux/types';
@@ -26,21 +22,14 @@ export default function HomePage() {
     setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
   }>();
 
-  const [fetchLiveStreams, { data: liveData }] = useGetLiveRecipeMutation();
-  const [fetchOnDemandStreams, { data: onDemandData }] = useGetOnDemandRecipeMutation();
-  const [fetchUpcomingStreams, { data: upcomingData }] = useGetUpcomingRecipeMutation();
-
+  const [fetchStreamsInfo, { data: streamsData }] = useGetStreamsInfoMutation();
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Fetch data on component mount
   useEffect(() => {
     dispatch(setTitle('LiveFeed'));
-    fetchLiveStreams();
-    fetchOnDemandStreams();
-    fetchUpcomingStreams();
-  }, [dispatch, fetchLiveStreams, fetchOnDemandStreams, fetchUpcomingStreams]);
-
+    fetchStreamsInfo();
+  }, [dispatch, fetchStreamsInfo]);
 
   // Clear searchQuery ONLY when navigating to the homepage from another tab
   useEffect(() => {
@@ -82,31 +71,40 @@ export default function HomePage() {
   }, [tags]);
 
   const liveStreams: Item[] =
-    liveData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      tags: recipe.tags,
-      link: `/live/${recipe.id}`,
+  streamsData
+    ?.filter((stream: any) => stream.live_status === 1)
+    .map((stream: any) => ({
+      id: stream.id,
+      title: stream.title,
+      thumbnail: stream.image,
+      tags: stream.tags,
+      liveState: stream.live_status,
+      link: stream.stream_url,
     })) || [];
 
-  const onDemandStreams: Item[] = 
-    onDemandData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      tags: recipe.tags,
-      link: `/ondemand/${recipe.id}`,
-    })) || [];
+  const onDemandStreams: Item[] =
+    streamsData
+      ?.filter((stream: any) => stream.live_status === 2)
+      .map((stream: any) => ({
+        id: stream.id,
+        title: stream.title,
+        thumbnail: stream.image,
+        tags: stream.tags,
+        liveState: stream.live_status,
+        link: `/ondemand/${stream.id}`,
+      })) || [];
 
   const upcomingStreams: Item[] =
-    upcomingData?.map((recipe: any) => ({
-      id: recipe.id,
-      title: recipe.title,
-      thumbnail: recipe.image,
-      tags: recipe.tags,
-      link: `/upcoming/${recipe.id}`,
-    })) || [];
+    streamsData
+      ?.filter((stream: any) => stream.live_status === 0)
+      .map((stream: any) => ({
+        id: stream.id,
+        title: stream.title,
+        thumbnail: stream.image,
+        tags: stream.tags,
+        liveState: stream.live_status,
+        link: `/upcoming/${stream.id}`,
+      })) || [];
 
   // Apply filtering logic based on search query
   const filteredLiveStreams = filterByTags(
@@ -138,7 +136,7 @@ export default function HomePage() {
     <div className="homePageContainer">
       {/* Tag Bar with Arrows */}
     <Box
-      className="sectionWrapper" // Use the same styles as other sections
+      className="sectionWrapper"
       sx={{
         display: 'flex',
         alignItems: 'center',
@@ -151,7 +149,7 @@ export default function HomePage() {
         onClick={() => scrollTags('left')}
         sx={{
           position: 'absolute',
-          left: '-40px', // Adjust the arrow positions
+          left: '-40px',
           zIndex: 10,
         }}
       >
@@ -164,11 +162,11 @@ export default function HomePage() {
         sx={{
           display: 'flex',
           overflowX: 'auto',
-          scrollbarWidth: 'none', // Hide scrollbar in Firefox
-          msOverflowStyle: 'none', // Hide scrollbar in IE/Edge
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none',
           padding: '10px 0',
           '&::-webkit-scrollbar': {
-            display: 'none', // Hide scrollbar in Chrome/Safari
+            display: 'none',
           },
         }}
       >
@@ -207,7 +205,7 @@ export default function HomePage() {
         onClick={() => scrollTags('right')}
         sx={{
           position: 'absolute',
-          right: '-40px', // Adjust the arrow positions
+          right: '-40px',
           zIndex: 10,
         }}
       >
