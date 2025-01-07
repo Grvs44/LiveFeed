@@ -112,3 +112,10 @@ export type UpdatePreferences = {
   notifications?: boolean
 }
 
+export type UserDetails = {
+  id? : string,
+  displayName?: string,
+  givenName?: string,
+  familyName? : string,
+}
+

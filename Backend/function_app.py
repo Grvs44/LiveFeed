@@ -596,7 +596,54 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 ############################
 #---- User Functions ----#
 ############################
+@app.route(route="settings/user/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
+def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        req_body = req.get_json()
+        user_id = req_body.get('id')
+        display_name = req_body.get('displayName')
+        given_name = req_body.get('givenName')
+        family_name = req_body.get('familyName')
+        
+        if not user_id or not display_name or not given_name or not family_name:
+            return func.HttpResponse(
+                json.dumps({"message": "Missing fields"}),
+                mimetype="application/json",
+                status_code=200
+            )
+        token = get_web_access_token()
+        url = f"https://graph.microsoft.com/v1.0/users/{user_id}"
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Content-Type": "application/json",
+        }
+        body = {
+            "displayName": display_name,
+            "givenName": given_name,
+            "surname": family_name
+        }
+        
+        response = requests.patch(url, headers=headers, json=body)
+        
+        if response.status_code == 204:
+            logging.info(f"User {user_id} updated successfully")
+            return func.HttpResponse(
+                json.dumps({"message": "User updated successfully."}),
+                mimetype="application/json",
+                status_code=200
+            )
+        
+        logging.error(f"Failed to update user: {response.status_code}, {response.text}")
+        return func.HttpResponse(
+            json.dumps({"message": f"Failed to update user. Error: {response.text}"}),
+            mimetype="application/json",
+            status_code=response.status_code
+        )
 
+    except Exception as e:
+        logging.error(f"Unexpected error: {str(e)}")
+        return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+    
 @app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
 def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Request to update user preferences received")
