@@ -69,7 +69,7 @@ export default function TagsChipArray() {
           Recipe Preferences
         </Typography>
         <Stack direction="row" spacing={1} sx={{ flexWrap: 'wrap' }}>
-          {tags.map((tag, index) => (
+          {tags.map((tag: string, index: number) => (
             <Chip
               key={index}
               label={tag}
@@ -111,7 +111,7 @@ export default function TagsChipArray() {
           sx={{
             display: 'flex',
             justifyContent: 'flex-end',
-            marginTop: '40px',
+            marginTop: '0px',
           }}
         >
           <Button
