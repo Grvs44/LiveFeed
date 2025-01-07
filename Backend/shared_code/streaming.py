@@ -21,8 +21,6 @@ project_id = "livefeed-443712"
 location = "europe-west2"
 bucket_name = "livefeed-bucket"
 
-ffmpeg_binary_path = os.path.join(os.getcwd(), 'ffmpeg', 'ffmpeg')
-
 def create_input(channel_id: str) -> live_stream_v1.types.Input:
     """Creates an input.
     Args:
@@ -229,13 +227,10 @@ def rename_stream(recipe_id):
     blobs = bucket.list_blobs(prefix=stream_directory)
     for blob in blobs:
         new_name = blob.name.replace(stream_directory, vod_directory, 1)
-        bucket.copy_blob(blob, bucket, new_name)
-        #bucket.rename_blob(blob, new_name)
+        bucket.rename_blob(blob, new_name)
 
     public_url = bucket.blob(f'{vod_directory}/manifest.m3u8').public_url
     
-    logging.info("Output renamed")
-
     return public_url
 
 def delete_blob_directory(blob_prefix):
@@ -263,13 +258,13 @@ def upload_vod(vod_blob_path, local_path):
     logging.info(f"Uploaded {local_path} to {vod_blob_path}")
 
     return vod_blob.public_url
-    
+
 def convert_stream(vod_manifest, output_mp4_path):
     try:
         (
             ffmpeg
             .input(vod_manifest)
-            .output(output_mp4_path, vcodec='mpeg4', acodec='aac', strict='experimental', hls_flags='single_file').run(cmd=ffmpeg_binary_path, overwrite_output=True, capture_stderr=True, capture_stdout=False)
+            .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(overwrite_output=True, capture_stderr=True, capture_stdout=False)
         )
         print(f"Conversion successful: {output_mp4_path}")
     except ffmpeg.Error as e:
@@ -287,7 +282,6 @@ def convert_temp_to_vod(temp_vod_manifest, recipe_id):
 
     with tempfile.TemporaryDirectory() as temp_dir:
         output_mp4_path = os.path.join(temp_dir, "output.mp4")
-        logging.info(output_mp4_path)
         
         convert_stream(temp_vod_manifest, output_mp4_path)
         
