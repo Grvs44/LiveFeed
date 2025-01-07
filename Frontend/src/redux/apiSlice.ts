@@ -133,6 +133,11 @@ export const apiSlice = createApi({
           familyName,
         },
       }),
+      async onQueryStarted(details, api) {
+        await api.queryFulfilled
+        const temp:any = null // delete this line and replace temp below
+        api.dispatch(temp(details))
+      },
     })
   }),
 })
