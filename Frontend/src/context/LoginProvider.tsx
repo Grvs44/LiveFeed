@@ -16,7 +16,7 @@ import { useDispatch } from 'react-redux'
 import { loginRequest } from '../config/authConfig'
 import RecipesPage from '../pages/RecipesPage'
 import { setToken } from '../redux/tokenSlice'
-import { setUser } from '../redux/userSlice'
+import { clearUser, setUser } from '../redux/userSlice'
 
 export type ProviderValue = {
   activeAccount: AccountInfo | null
@@ -47,6 +47,7 @@ export default function LoginProvider(props: LoginProviderProps) {
       console.log('Logout successful via popup')
       setActiveAccount(null)
       dispatch(setToken(''))
+      dispatch(clearUser())
     } catch (error) {
       console.error('Popup logout failed:', error)
       //console.log('Attempting logout redirect as fallback')

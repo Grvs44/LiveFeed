@@ -13,7 +13,6 @@ import { setUser } from '../redux/userSlice'
 export default function UserUpdateForm() {
   const user = useSelector((state: State) => state.user) // Get user details from Redux
   const { activeAccount } = React.useContext(LoginContext)
-  const dispatch = useDispatch()
   const [updateUserDetails] = useUpdateUserDetailsMutation()
   const [feedback, setFeedback] = React.useState({ message: '', error: false })
   const [userDetails, setUserDetails] = React.useState<UserInfo>({
@@ -23,8 +22,7 @@ export default function UserUpdateForm() {
   })
 
   React.useEffect(() => {
-    setUserDetails((prev) => ({
-      ...prev,
+    setUserDetails(() => ({
       name: user.displayName ?? '',
       given_name: user.givenName ?? '',
       family_name: user.familyName ?? '',
