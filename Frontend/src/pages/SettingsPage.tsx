@@ -1,4 +1,5 @@
 import React from 'react'
+import { Button } from '@mui/material'
 import Box from '@mui/material/Box'
 import Divider from '@mui/material/Divider'
 import FormControl from '@mui/material/FormControl'
@@ -11,17 +12,20 @@ import TagsChipArray from '../components/TagsChipArray'
 import UserUpdateForm from '../components/UserUpdateForm'
 import { LoginContext } from '../context/LoginProvider'
 import { UserInfo } from '../context/types'
+import {
+  useGetPreferencesQuery,
+  useUpdatePreferencesMutation,
+} from '../redux/apiSlice'
 import { setNotif } from '../redux/notifSlice'
 import { setTitle } from '../redux/titleSlice'
 import { State } from '../redux/types'
 
 export default function SettingsPage() {
   const dispatch = useDispatch()
-  const { activeAccount } = React.useContext(LoginContext)
-  const [userDetails] = React.useState<UserInfo>({
-    name: (activeAccount?.idTokenClaims?.name as string) ?? '',
-    given_name: (activeAccount?.idTokenClaims?.given_name as string) ?? '',
-    family_name: (activeAccount?.idTokenClaims?.family_name as string) ?? '',
+  const token = useSelector((state: State) => state.token.token)
+  const [updatePreferences] = useUpdatePreferencesMutation()
+  const { data, isLoading } = useGetPreferencesQuery(undefined, {
+    skip: token === undefined,
   })
   const notificationsEnabled = useSelector(
     (state: State) => state.notif.enabled,
@@ -36,7 +40,21 @@ export default function SettingsPage() {
 
   React.useEffect(() => {
     dispatch(setTitle('Settings'))
-  }, [])
+    if (data && data.notifications !== undefined) {
+      dispatch(setNotif(data.notifications))
+    }
+  }, [data, dispatch])
+
+  function handleSaveChanges(): void {
+    try {
+      updatePreferences({
+        notifications: notificationsEnabled,
+      })
+    } catch (err) {
+      console.error('Failed to update preferences:', err)
+      alert('Failed to save preferences.')
+    }
+  }
 
   return (
     <Box sx={{ width: '100%', padding: '10px 30px 30px' }}>
@@ -63,7 +81,7 @@ export default function SettingsPage() {
             <RadioGroup
               aria-label="notifications"
               name="notifications"
-              value={notificationsEnabled}
+              value={notificationsEnabled ? 'yes' : 'no'}
               onChange={handleNotificationChange}
             >
               <FormControlLabel
@@ -78,6 +96,21 @@ export default function SettingsPage() {
               />
             </RadioGroup>
           </FormControl>
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              marginTop: '0px',
+            }}
+          >
+            <Button
+              variant="contained"
+              color="success"
+              onClick={handleSaveChanges}
+            >
+              Save Changes
+            </Button>
+          </Box>
         </Box>
       </Box>
     </Box>
