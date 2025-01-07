@@ -201,7 +201,7 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     
 @app.route(route="stream/{recipeId}/steps/next", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def next_step(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Received stream start request')
+    logging.info('Received next step request')
 
     claim_info = validate_token(req)
     user_id = None
