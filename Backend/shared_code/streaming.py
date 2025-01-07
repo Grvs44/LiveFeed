@@ -1,7 +1,6 @@
 import os
 import tempfile
 import threading
-import av
 import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
