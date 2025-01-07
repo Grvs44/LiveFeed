@@ -12,6 +12,7 @@ export enum LiveStatus {
 }
 
 export type LiveStream = {
+  input: string // Input URL
   name: string // Stream/recipe name
   stream: string // Video URL
   streamer: string // PubSub channel

@@ -61,7 +61,7 @@ export default function WatchLivePage() {
               <Typography>{data?.streamer}</Typography>
               <VideoPlayer
                 autoPlay={true}
-                src={data?.stream}
+                src='https://storage.googleapis.com/livefeed-bucket/vods/test-vod-950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb/video.mp4'
                 onTimeUpdate={onTimeUpdate}
               />
               <ChatBox />

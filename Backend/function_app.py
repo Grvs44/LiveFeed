@@ -288,7 +288,6 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
     channel_info = streaming.create_recipe_channel(recipe_id)
-    stream_url = channel_info.get('output_url')
     input_url = channel_info.get('input_url')
     stream_dict = {
         "id": recipe_id,
@@ -454,7 +453,7 @@ def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
-def get_stream_from_db(recipe_id):
+def get_stream_from_db(recipe_id, user_id):
     stream_data = stream_container.read_item(recipe_id, partition_key=recipe_id)
     streamer_id = stream_data.get('user_id')
     recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
@@ -471,6 +470,8 @@ def get_stream_from_db(recipe_id):
         "shopping": recipe_data.get('shopping')
     }
 
+    stream_dict['input'] = stream_data.get('input_url')
+
     live_status = stream_data.get('live_status')
     if live_status is not None:
         stream_dict['liveStatus'] = live_status
@@ -482,15 +483,25 @@ def get_stream_from_db(recipe_id):
 
 @app.route(route='stream/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_stream_info(req: func.HttpRequest) -> func.HttpResponse:
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+
     recipe_id = req.route_params.get('recipeId')
-    stream_dict = get_stream_from_db(recipe_id)
+    stream_dict = get_stream_from_db(recipe_id, user_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
 
 @app.route(route='vod/{recipeId}', auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_vod_info(req: func.HttpRequest) -> func.HttpResponse:
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+
     recipe_id = req.route_params.get('recipeId')
-    stream_dict = get_stream_from_db(recipe_id)
+    stream_dict = get_stream_from_db(recipe_id, user_id)
 
     return func.HttpResponse(json.dumps(stream_dict), mimetype='application/json', status_code=200)
 
