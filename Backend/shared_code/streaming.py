@@ -300,29 +300,27 @@ def save_vod(recipe_id):
 def delete_all_channels():
     client = LivestreamServiceClient()
     
-    request = live_stream_v1.ListChannelsRequest(
+    list_request = live_stream_v1.ListChannelsRequest(
         parent=f"projects/{project_id}/locations/{location}",
         page_size=10
     )
 
-    channels = list(client.list_channels(request))
+    channels = list(client.list_channels(list_request))
 
     for channel in channels:
-        print(channel)
-
-    print(len(channels))
+        delete_request = live_stream_v1.DeleteChannelRequest(name = channel.name)
+        client.delete_channel(delete_request)
 
 def delete_all_inputs():
     client = LivestreamServiceClient()
     
-    request = live_stream_v1.ListInputsRequest(
+    list_request = live_stream_v1.ListInputsRequest(
         parent=f"projects/{project_id}/locations/{location}",
         page_size=10
     )
 
-    inputs = list(client.list_inputs(request))
+    inputs = list(client.list_inputs(list_request))
 
     for input in inputs:
-        print(input)
-
-    print(len(inputs))
+        delete_request = live_stream_v1.DeleteInputRequest(name = input.name)
+        client.delete_input(delete_request)
