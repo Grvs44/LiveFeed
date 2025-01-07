@@ -278,23 +278,23 @@ def convert_stream(vod_manifest, output_mp4_path):
     
 def convert_temp_to_vod(temp_vod_manifest, recipe_id):
     vod_blob_path = f'vods/vod-{recipe_id}/video.mp4'
+    public_url = None
 
     with tempfile.TemporaryDirectory() as temp_dir:
         output_mp4_path = os.path.join(temp_dir, "output.mp4")
         
         convert_stream(temp_vod_manifest, output_mp4_path)
         
-        upload_vod(vod_blob_path, output_mp4_path)
+        public_url = upload_vod(vod_blob_path, output_mp4_path)
 
     delete_temp_vod(recipe_id)
+
+    return public_url
 
 def save_vod(recipe_id):
     temp_vod_manifest = rename_stream(recipe_id)
 
-    thread = threading.Thread(target=convert_temp_to_vod, args=(temp_vod_manifest, recipe_id))
-    thread.start()
-
-    return f'https://storage.googleapis.com/livefeed-bucket/vods/vod-{recipe_id}/video.mp4'
+    return convert_temp_to_vod(temp_vod_manifest, recipe_id)
 
 def delete_all_channels():
     client = LivestreamServiceClient()
