@@ -89,7 +89,9 @@ export default function StartStreamPage() {
         >
           <Grid container spacing={2}>
             <Grid size={4}>
-              <Typography variant="h3" component="h1">{data.name}</Typography>
+              <Typography variant="h3" component="h1">
+                {data.name}
+              </Typography>
               <Typography>URL: {data.input}</Typography>
               {getStreamControl()}
               <StepBox
@@ -100,7 +102,7 @@ export default function StartStreamPage() {
             </Grid>
             <Grid size={8}>
               <VideoPlayer src={data.stream} onLoadedData={onStreamStart} />
-              <ChatBox />
+              <ChatBox sx={{ height: 400 }} />
             </Grid>
           </Grid>
         </PubSubClientProvider>
