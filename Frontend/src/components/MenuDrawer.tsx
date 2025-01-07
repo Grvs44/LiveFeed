@@ -102,9 +102,14 @@ export default function MenuDrawer(props: CustomMenuDrawerProps) {
         <Box p={2}>
           <Button
             variant="contained"
-            color="primary"
             fullWidth
             onClick={handleLogout}
+            sx={{
+              backgroundColor: '#FDA448',
+              '&:hover': {
+                backgroundColor: '#D48936', // Slightly darker shade for hover effect
+              },
+            }}
           >
             Log Out
           </Button>
