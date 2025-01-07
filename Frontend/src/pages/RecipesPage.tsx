@@ -12,6 +12,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import { RecipeListContainer } from '../containers/RecipeListBox';
 import TAGS from '../config/Tags'
+import { toast } from 'react-hot-toast';
 
 
 
@@ -173,7 +174,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       };
       try {
         const response = await createRecipe(newRecipe).unwrap();
-        alert("Recipe uploaded successfully");
+        toast.success("Recipe uploaded successfully");
         setRecipes([...recipes, newRecipe]);
         setTitle('');
         setImageUrl('');
@@ -186,12 +187,12 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         closeTab();
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
-        alert("Error uploading recipe to DB");
+        toast.error("Error uploading recipe to DB");
       }
     }
     else {
       console.error("Please fill in all the required information before uploading")
-      alert("Please fill in all the required information before uploading");
+      toast.error("Please fill in all the required information before uploading");
     }
   };
 
