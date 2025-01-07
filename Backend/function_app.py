@@ -2,6 +2,7 @@ import time
 import azure.functions as func
 from azure.cosmos import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
+import math
 import os
 import logging
 import datetime
@@ -225,7 +226,8 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     stream_data['step_timings'][step_id] = time
     stream_container.upsert_item(stream_data)
 
-    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": time}}
+    live_time = math.floor(datetime.now().timestamp())
+    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": live_time}}
 
     CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
 
