@@ -2,12 +2,13 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { UserState } from './types'
 
-const initialState: UserState = {
-    id: '',
-    displayName: '',
-    givenName: '',
-    familyName: '',
+const loadUserFromStorage = (): UserState => {
+  const storedUser = localStorage.getItem('user')
+  console.log(`Stored user is: ${localStorage.getItem('user')}`)
+  return storedUser ? JSON.parse(storedUser) : { id: '', displayName: '', givenName: '', familyName: '' }
 }
+
+const initialState: UserState = loadUserFromStorage()
 
 export const userSlice = createSlice({
   name: 'user',
@@ -18,6 +19,8 @@ export const userSlice = createSlice({
         state.displayName = action.payload.displayName;
         state.givenName = action.payload.givenName;
         state.familyName = action.payload.familyName;
+        localStorage.setItem('user', JSON.stringify(state))
+        console.log(`Updating local storage with: ${JSON.stringify(state)}`)
     },
     clearUser: (state) => {
         state.id = '';
@@ -28,6 +31,6 @@ export const userSlice = createSlice({
   },
 })
 
-export const { setUser } = userSlice.actions
+export const { setUser, clearUser } = userSlice.actions
 
 export default userSlice.reducer
