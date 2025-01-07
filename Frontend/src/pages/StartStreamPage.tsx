@@ -45,7 +45,7 @@ export default function StartStreamPage() {
     setStreamState(LiveStatus.Started)
   }
   const onStreamStart: React.ReactEventHandler<HTMLVideoElement> = (event) => {
-    if (!id) return
+    if (!id || streamState !== LiveStatus.Initial) return
     console.log(`Started at: ${event.currentTarget.currentTime}s`)
     sendStreamStartTime({ id, time: Math.floor(Date.now() / 1000) })
     setStreamState(LiveStatus.Started)
@@ -89,7 +89,7 @@ export default function StartStreamPage() {
         >
           <Grid container spacing={2}>
             <Grid size={4}>
-              <Typography>Stream {id}</Typography>
+              <Typography variant="h3" component="h1">{data.name}</Typography>
               <Typography>URL: {data.input}</Typography>
               {getStreamControl()}
               <StepBox
