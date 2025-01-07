@@ -45,8 +45,15 @@ export default function TopBar({ searchQuery, setSearchQuery }: TopBarProps) {
             <MenuIcon />
           </IconButton>
           {/* Logo */}
-          <img src={logo} alt="Live Feed Logo" style={{ width: '100px', marginRight: '10px' }} />
-
+          <img
+            src={logo}
+            alt="Live Feed Logo"
+            style={{ width: '100px', marginRight: '10px', cursor: 'pointer' }}
+            onClick={() => {
+              setSearchQuery('')
+              navigate('')
+            }}
+          />
           {/* Search Bar */}
           <div style={{ flex: 1, marginLeft: '150px', marginRight: '450px', display: 'flex' }}>
             <Search style={{ alignSelf: 'center', marginRight: '10px' }} />
