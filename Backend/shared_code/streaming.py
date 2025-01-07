@@ -93,7 +93,7 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 elementary_streams=["es_video"],
                 segment_settings=live_stream_v1.types.SegmentSettings(
                     segment_duration=duration.Duration(
-                        seconds=2,
+                        seconds=6,
                     ),
                 ),
             ),
@@ -102,7 +102,7 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 elementary_streams=["es_audio"],
                 segment_settings=live_stream_v1.types.SegmentSettings(
                     segment_duration=duration.Duration(
-                        seconds=2,
+                        seconds=6,
                     ),
                 ),
             ),
@@ -145,7 +145,7 @@ def delete_channel(channel_id: str):
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
 
     request=live_stream_v1.DeleteChannelRequest(
-        name,
+        name=name,
     )
     
     operation = client.delete_channel(request)
