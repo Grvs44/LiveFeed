@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
+import ChatBox from '../containers/ChatBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import StepBox from '../containers/StepBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
@@ -99,6 +100,7 @@ export default function StartStreamPage() {
             </Grid>
             <Grid size={8}>
               <VideoPlayer src={data.stream} onLoadedData={onStreamStart} />
+              <ChatBox />
             </Grid>
           </Grid>
         </PubSubClientProvider>
