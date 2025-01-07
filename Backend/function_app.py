@@ -201,6 +201,11 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f'Error when stopping channel: {e}')
 
+    try:
+        streaming.delete_recipe_channel(recipe_id)
+    except Exception as e:
+        logging.error(f"Channel deletion failed: {e}")
+
     stream_container.upsert_item(stream_data)
     if (response.streaming_state in [6, 8]):
         return func.HttpResponse("Livestream successfully ended", status_code=200)
@@ -329,18 +334,21 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
     logging.info(f"Auto-generated recipe ID: {recipe_id}")
 
-    channel_info = streaming.create_recipe_channel(recipe_id)
-    input_url = channel_info.get('input_url')
-    stream_dict = {
-        "id": recipe_id,
-        "user_id": user_id,
-        "stream_url": f"https://storage.googleapis.com/livefeed-bucket/outputs/output-{recipe_id}/manifest.m3u8",
-        "step_timings": {},
-        "input_url": input_url,
-        "live_status": streaming.AWAITING_LIVE
-    }
+    try:
+        channel_info = streaming.create_recipe_channel(recipe_id)
+        input_url = channel_info.get('input_url')
+        stream_dict = {
+            "id": recipe_id,
+            "user_id": user_id,
+            "stream_url": f"https://storage.googleapis.com/livefeed-bucket/outputs/output-{recipe_id}/manifest.m3u8",
+            "step_timings": {},
+            "input_url": input_url,
+            "live_status": streaming.AWAITING_LIVE
+        }
 
-    stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
+        stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
+    except Exception as e:
+        logging.error(f"Error while creating channel: {e}")
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
