@@ -101,7 +101,7 @@ export default function HomePage() {
         thumbnail: stream.image,
         tags: stream.tags,
         liveState: stream.live_status,
-        link: stream.stream_url,
+        link: `/live/${stream.id}`,
       })) || []
 
   const onDemandStreams: Item[] =
