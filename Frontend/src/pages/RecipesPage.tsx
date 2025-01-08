@@ -1,17 +1,18 @@
 import React, { useContext, useState } from 'react';
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useStartStreamMutation } from '../redux/apiSlice'
 import { setTitle } from '../redux/titleSlice'
 import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip, MenuItem,Select} from '@mui/material';
-import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
-import {Recipe} from '../redux/types'
-import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
+import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu,Timer, Group, LocalOffer} from '@mui/icons-material';
+import {Recipe, State} from '../redux/types'
+import { useCreateRecipeMutation,useGetRecipeQuery,useUpdateRecipeMutation,useDeleteRecipeMutation,useGetStreamsInfoMutation } from '../redux/apiSlice';
 import "../App.css";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
-import { RecipeListContainer } from '../containers/RecipeListBox';
 import TAGS from '../config/Tags'
+import { Link as RouteLink } from 'react-router-dom'
+import toast from 'react-hot-toast';
 
 
 
@@ -173,7 +174,6 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
       };
       try {
         const response = await createRecipe(newRecipe).unwrap();
-        alert("Recipe uploaded successfully");
         setRecipes([...recipes, newRecipe]);
         setTitle('');
         setImageUrl('');
@@ -183,15 +183,16 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         setCookTime(0);
         setTags([]);
         setServings(1);
+        toast.success("Recipe uploaded!")
         closeTab();
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
-        alert("Error uploading recipe to DB");
+        toast.error("Error uploading recipe to DB")
       }
     }
     else {
       console.error("Please fill in all the required information before uploading")
-      alert("Please fill in all the required information before uploading");
+      toast.error("Please fill in all the required information before uploading");
     }
   };
 
@@ -335,19 +336,23 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
 function RecipeManagement () {
  
   const [deleteRecipe] = useDeleteRecipeMutation();
-  const [getRecipe] = useGetRecipeMutation();
   const [updateRecipe] = useUpdateRecipeMutation();
   const [recipeList, setRecipeList] = useState<Recipe[]>([]);
   const [editDialog, setEditDialog] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [fetchStreamsInfo, { data: streamsData }] = useGetStreamsInfoMutation()
+  const token = useSelector((state: State) => state.token.token)
+  const { data, isLoading } = useGetRecipeQuery(undefined, {
+      skip: token === undefined,
+    })
   
-
+  
   React.useEffect(() => {
-    fetchRecipes();
-  }, []);
-  const params = new URLSearchParams({
+    if (data){
+      setRecipeList(data)
+    }
+  }, [data, isLoading]);
 
-  });
   const currDate = (dateStr: string | number | Date) => {
     if (!dateStr) return false;
     const recipeDate = new Date(dateStr);
@@ -360,23 +365,15 @@ function RecipeManagement () {
   };
 
   const handleStartRecipe = (recipe: Recipe) => {
+    toast.success("Starting recipe: " + recipe.title);
     console.log('Starting recipe:', recipe.title);
   };
 
-  const fetchRecipes = async () => {
-    try {
-      const response = await getRecipe("").unwrap();
-      console.log(response)
-      setRecipeList(response);
-    } catch (error) {
-      console.error("Error getting recipe list:", error);
-    }
-  };
 
   const handleDeleteRecipe = async (recipe : Recipe) => {
   try {
     await deleteRecipe(recipe).unwrap();
-    fetchRecipes();
+    toast.remove("Recipe deleted successfully");
   } catch (error) {
     console.error("Error deleting recipe:", error);
   }
@@ -396,7 +393,7 @@ function RecipeManagement () {
     try {
       await updateRecipe(editingRecipe).unwrap();
       handleEditClose();
-      fetchRecipes();
+      toast.success("Recipe updated successfully");
     } catch (error) {
       console.error("Error updating recipe:", error);
     }
@@ -616,6 +613,8 @@ const deleteShoppingItem = (index: number) => {
                     backgroundColor: '#2E6F40'
                   }
                 }}
+                component={RouteLink} 
+                to={`/live/${recipe.id}/start`}
                 onClick={() => handleStartRecipe(recipe)}
               >
                 Start Streaming

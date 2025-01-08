@@ -1,36 +1,36 @@
-import React from 'react';
-import Divider from '@mui/material/Divider';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import ListItemButtonLink from './ListItemButtonLink';
-import ListItemIcon from '@mui/material/ListItemIcon';
+import React from 'react'
+import BlenderIcon from '@mui/icons-material/Blender'
+import BookmarksIcon from '@mui/icons-material/Bookmarks'
+import HomeIcon from '@mui/icons-material/Home'
+import LiveTvIcon from '@mui/icons-material/LiveTv'
+import OndemandVideoIcon from '@mui/icons-material/OndemandVideo'
+import RestaurantIcon from '@mui/icons-material/Restaurant'
+import SettingsIcon from '@mui/icons-material/Settings'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Divider from '@mui/material/Divider'
+import List from '@mui/material/List'
+import ListItem from '@mui/material/ListItem'
+import ListItemIcon from '@mui/material/ListItemIcon'
+import ListItemText from '@mui/material/ListItemText'
 import SwipeableDrawer, {
   SwipeableDrawerProps,
-} from '@mui/material/SwipeableDrawer';
-import HomeIcon from '@mui/icons-material/Home';
-import LiveTvIcon from '@mui/icons-material/LiveTv';
-import OndemandVideoIcon from '@mui/icons-material/OndemandVideo';
-import BookmarksIcon from '@mui/icons-material/Bookmarks';
-import RestaurantIcon from '@mui/icons-material/Restaurant';
-import BlenderIcon from '@mui/icons-material/Blender';
-import SettingsIcon from '@mui/icons-material/Settings';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import { LoginContext } from '../context/LoginProvider';
+} from '@mui/material/SwipeableDrawer'
+import { LoginContext } from '../context/LoginProvider'
+import ListItemButtonLink from './ListItemButtonLink'
 
 interface CustomMenuDrawerProps extends SwipeableDrawerProps {
-  setSearchQuery: React.Dispatch<React.SetStateAction<string>>;
+  setSearchQuery: React.Dispatch<React.SetStateAction<string>>
 }
 
 export default function MenuDrawer(props: CustomMenuDrawerProps) {
-  const { handleLogout } = React.useContext(LoginContext);
-  console.log('handleLogout in MenuDrawer:', handleLogout);
+  const { handleLogout, activeAccount } = React.useContext(LoginContext)
+  console.log('handleLogout in MenuDrawer:', handleLogout)
 
   // Handler to reset the search query
   const handleTabSwitch = () => {
-    props.setSearchQuery(''); // Reset searchQuery whenever a tab is switched
-  };
+    props.setSearchQuery('') // Reset searchQuery whenever a tab is switched
+  }
 
   return (
     <SwipeableDrawer anchor="left" {...props}>
@@ -90,26 +90,33 @@ export default function MenuDrawer(props: CustomMenuDrawerProps) {
             </ListItemButtonLink>
           </ListItem>
           <Divider component="li" />
-          <ListItem>
-            <ListItemButtonLink to="settings" onClick={handleTabSwitch}>
-              <ListItemIcon>
-                <SettingsIcon />
-              </ListItemIcon>
-              <ListItemText>Settings</ListItemText>
-            </ListItemButtonLink>
-          </ListItem>
+          {activeAccount && (
+            <ListItem>
+              <ListItemButtonLink to="settings" onClick={handleTabSwitch}>
+                <ListItemIcon>
+                  <SettingsIcon />
+                </ListItemIcon>
+                <ListItemText>Settings</ListItemText>
+              </ListItemButtonLink>
+            </ListItem>
+          )}
         </List>
         <Box p={2}>
           <Button
             variant="contained"
-            color="primary"
             fullWidth
             onClick={handleLogout}
+            sx={{
+              backgroundColor: '#FDA448',
+              '&:hover': {
+                backgroundColor: '#D48936', // Slightly darker shade for hover effect
+              },
+            }}
           >
             Log Out
           </Button>
         </Box>
       </Box>
     </SwipeableDrawer>
-  );
+  )
 }
