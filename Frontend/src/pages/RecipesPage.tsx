@@ -183,9 +183,11 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         setCookTime(0);
         setTags([]);
         setServings(1);
+        toast.success("Recipe uploaded!")
         closeTab();
       } catch (error) {
         console.error("Error uploading recipe to DB:", error);
+        toast.error("Error uploading recipe to DB")
       }
     }
     else {
