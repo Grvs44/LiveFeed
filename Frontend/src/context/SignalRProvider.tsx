@@ -4,6 +4,7 @@ import { baseUrl } from '../redux/settings'
 import { State } from '../redux/types'
 import { HubConnectionBuilder } from '@microsoft/signalr'
 import { LoginContext } from './LoginProvider'
+import { StreamNotification } from './types'
 
 export type ProviderValue = {
   connection?: signalR.HubConnection
@@ -51,10 +52,15 @@ export default function SignalRProvider(props: SignalRProviderProps) {
         .withAutomaticReconnect()
         .build()
 
-        newConnection.on("EventNotification", (notification: string) => {
+        newConnection.on("eventNotification", (notification: string) => {
           setNotifications([...notifications, notification])
           props.onNotification(notification)
           console.log("Notification received:", notification)
+        })
+
+        newConnection.on("streamNotification", (notification: StreamNotification) => {
+          props.onNotification(notification.message)
+          console.log("Stream notification received:", notification.message)
         })
 
         await newConnection.start()
