@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import VideoPlayer from '../components/VideoPlayer'
+import ChatBox from '../containers/ChatBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import StepBox from '../containers/StepBox'
 import PubSubClientProvider from '../context/PubSubClientProvider'
@@ -44,7 +45,7 @@ export default function StartStreamPage() {
     setStreamState(LiveStatus.Started)
   }
   const onStreamStart: React.ReactEventHandler<HTMLVideoElement> = (event) => {
-    if (!id) return
+    if (!id || streamState !== LiveStatus.Initial) return
     console.log(`Started at: ${event.currentTarget.currentTime}s`)
     sendStreamStartTime({ id, time: Math.floor(Date.now() / 1000) })
     setStreamState(LiveStatus.Started)
@@ -88,7 +89,9 @@ export default function StartStreamPage() {
         >
           <Grid container spacing={2}>
             <Grid size={4}>
-              <Typography>Stream {id}</Typography>
+              <Typography variant="h3" component="h1">
+                {data.name}
+              </Typography>
               <Typography>URL: {data.input}</Typography>
               {getStreamControl()}
               <StepBox
@@ -99,6 +102,7 @@ export default function StartStreamPage() {
             </Grid>
             <Grid size={8}>
               <VideoPlayer src={data.stream} onLoadedData={onStreamStart} />
+              <ChatBox sx={{ height: 400 }} />
             </Grid>
           </Grid>
         </PubSubClientProvider>

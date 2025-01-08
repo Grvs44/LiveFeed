@@ -8,6 +8,8 @@ export type Chat = {
 export enum MessageType {
   Message,
   Step,
+  Start,
+  End,
 }
 
 export type MessageContent = {
@@ -27,4 +29,9 @@ export type UserInfo = {
 export type StepUpdate = {
   id: number
   time: number
+}
+
+export type StreamNotification = {
+  message: string
+  recipeId: string
 }

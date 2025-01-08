@@ -12,8 +12,6 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import TAGS from '../config/Tags'
 import { Link as RouteLink } from 'react-router-dom'
-import toast from 'react-hot-toast';
-
 
 
 export default function RecipesPage() {
@@ -185,12 +183,11 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         setServings(1);
         closeTab();
       } catch (error) {
-        console.error("Error uploading recipe to DB:", error);
+        console.error("Error uploading recipe to DB:", error)
       }
     }
     else {
       console.error("Please fill in all the required information before uploading")
-      toast.error("Please fill in all the required information before uploading");
     }
   };
 
@@ -363,21 +360,16 @@ function RecipeManagement () {
   };
 
   const handleStartRecipe = (recipe: Recipe) => {
-    const response = fetchStreamsInfo().unwrap();
-    // component={RouteLink}
-    //       {...props}
-    //       to={import.meta.env.BASE_URL + props.to.valueOf()
-    console.log('Starting recipe:', recipe.title);
-  };
-
+    console.log('Starting recipe:', recipe.title)
+  }
 
   const handleDeleteRecipe = async (recipe : Recipe) => {
   try {
-    await deleteRecipe(recipe).unwrap();
+    await deleteRecipe(recipe).unwrap()
   } catch (error) {
     console.error("Error deleting recipe:", error);
   }
-};
+}
 
   const handleEditClick = (recipe : Recipe) => {
     setEditingRecipe({ ...recipe });
@@ -613,7 +605,7 @@ const deleteShoppingItem = (index: number) => {
                   }
                 }}
                 component={RouteLink} 
-                to={"http://localhost:3000" + `/live/${recipe.id}/start`}
+                to={`/live/${recipe.id}/start`}
                 onClick={() => handleStartRecipe(recipe)}
               >
                 Start Streaming

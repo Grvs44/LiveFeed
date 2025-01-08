@@ -2,6 +2,7 @@ import time
 import azure.functions as func
 from azure.cosmos import CosmosClient
 from azure.cosmos.exceptions import CosmosResourceNotFoundError
+import math
 import os
 import logging
 import datetime
@@ -178,15 +179,15 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
     recipe_data = recipe_container.read_item(recipe_id, partition_key=user_id)
 
-    username = claim_info.get('sub')
+    username = get_display_name(user_id)
     title = recipe_data.get('title')
     
     response = streaming.start_stream(recipe_id)
 
     if (response.streaming_state in [2, 3, 7]):
         signalROutput.set(json.dumps({
-            "target": "eventNotification",
-            "arguments": [f"{username} went live: {title}"]
+            "target": "streamNotification",
+            "arguments": [{"message": f"{username} went live: {title}", "recipeId": recipe_id}]
         }))
         
         stream_data['live_status'] = streaming.LIVE
@@ -203,7 +204,7 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Received stream start request')
+    logging.info('Received stream end request')
 
     claim_info = validate_token(req)
     user_id = None
@@ -242,6 +243,11 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     stream_container.upsert_item(stream_data)
     if (response.streaming_state in [6, 8]):
         stream_container.upsert_item(stream_data)
+
+        end_data = {"type": messages.END}
+
+        CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=end_data, content_type="application/json")
+
         return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
@@ -272,7 +278,8 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     stream_data['step_timings'][step_id] = time
     stream_container.upsert_item(stream_data)
 
-    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": time}}
+    live_time = math.floor(datetime.now().timestamp())
+    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": live_time}}
 
     CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
 
@@ -588,7 +595,7 @@ def get_stream_from_db(recipe_id, user_id):
     recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
     step_timings = stream_data.get('step_timings')
 
-    timed_steps = [{"id": step.get('id'), "text": step.get('text'), "time": step_timings.get(step.get('id'))} for step in recipe_data.get('steps')]
+    timed_steps = [{"id": step.get('id'), "text": step.get('text'), "time": step_timings.get(str(step.get('id')))} for step in recipe_data.get('steps')]
 
     stream_dict = {
         "name": recipe_data.get('title'),
