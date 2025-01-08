@@ -182,6 +182,12 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started", status_code=200)
     else:
+        signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": ["Error while starting stream"]
+        }))
+
         return func.HttpResponse("Error while starting stream", status_code=500)
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
@@ -370,16 +376,24 @@ def create_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         }
 
         stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
+
+        signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": [f"Successfully created recipe"]
+        }))
+        return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
     except Exception as e:
         logging.error(f"Error while creating channel: {e}")
 
-    signalROutput.set(json.dumps({
-            "userId": user_id,
-            "target": "eventNotification",
-            "arguments": ["Successfully created recipe"]
-        }))
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["Error creating recipe"]
+            }))
+        
+        return func.HttpResponse("Error while creating recipe", status_code=500)
 
-    return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
 @app.route(route="recipe/get", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def get_recipe_list(req: func.HttpRequest) -> func.HttpResponse:
@@ -461,6 +475,12 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f'Error updating recipe: {str(e)}')
+
+    signalROutput.set(json.dumps({
+        "userId": user_id,
+        "target": "eventNotification",
+        "arguments": [f"Error updating recipe"]
+    }))
    
     return func.HttpResponse("Error updating recipe", status_code=500)
 
@@ -500,9 +520,15 @@ def delete_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
-        logging.error(f'Error updating recipe: {str(e)}')
+        logging.error(f'Error deleting recipe: {str(e)}')
+
+    signalROutput.set(json.dumps({
+        "userId": user_id,
+        "target": "eventNotification",
+        "arguments": [f"Error deleting recipe"]
+    }))
    
-    return func.HttpResponse("Error updating recipe", status_code=500)
+    return func.HttpResponse("Error deleting recipe", status_code=500)
 
 @app.route(route="recipe/display", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
