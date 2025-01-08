@@ -413,8 +413,6 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         logging.info(info)
         id = info.get('id')
       
-        recipe_container.read_item()
-
         query = f"SELECT * FROM c WHERE c.id = '{id}'"
         items = list(recipe_container.query_items(query=query, enable_cross_partition_query=True))
         logging.info(items)
