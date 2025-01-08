@@ -12,7 +12,6 @@ import TAGS from '../config/Tags'
 import {
   useGetStreamsInfoMutation,
   useGetPreferencesQuery,
-  useGetUpcomingRecipeMutation,
 } from '../redux/apiSlice'
 import { setTags } from '../redux/tagsSlice'
 import { State } from '../redux/types'
