@@ -12,8 +12,6 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import TAGS from '../config/Tags'
 import { Link as RouteLink } from 'react-router-dom'
-import toast from 'react-hot-toast';
-
 
 
 export default function RecipesPage() {
@@ -183,16 +181,13 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
         setCookTime(0);
         setTags([]);
         setServings(1);
-        toast.success("Recipe uploaded!")
         closeTab();
       } catch (error) {
-        console.error("Error uploading recipe to DB:", error);
-        toast.error("Error uploading recipe to DB")
+        console.error("Error uploading recipe to DB:", error)
       }
     }
     else {
       console.error("Please fill in all the required information before uploading")
-      toast.error("Please fill in all the required information before uploading");
     }
   };
 
@@ -365,19 +360,16 @@ function RecipeManagement () {
   };
 
   const handleStartRecipe = (recipe: Recipe) => {
-    toast.success("Starting recipe: " + recipe.title);
-    console.log('Starting recipe:', recipe.title);
-  };
-
+    console.log('Starting recipe:', recipe.title)
+  }
 
   const handleDeleteRecipe = async (recipe : Recipe) => {
   try {
-    await deleteRecipe(recipe).unwrap();
-    toast.remove("Recipe deleted successfully");
+    await deleteRecipe(recipe).unwrap()
   } catch (error) {
     console.error("Error deleting recipe:", error);
   }
-};
+}
 
   const handleEditClick = (recipe : Recipe) => {
     setEditingRecipe({ ...recipe });
@@ -393,7 +385,6 @@ function RecipeManagement () {
     try {
       await updateRecipe(editingRecipe).unwrap();
       handleEditClose();
-      toast.success("Recipe updated successfully");
     } catch (error) {
       console.error("Error updating recipe:", error);
     }
