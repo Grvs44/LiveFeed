@@ -179,15 +179,15 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
     recipe_data = recipe_container.read_item(recipe_id, partition_key=user_id)
 
-    username = claim_info.get('sub')
+    username = get_display_name(user_id)
     title = recipe_data.get('title')
     
     response = streaming.start_stream(recipe_id)
 
     if (response.streaming_state in [2, 3, 7]):
         signalROutput.set(json.dumps({
-            "target": "eventNotification",
-            "arguments": [f"{username} went live: {title}"]
+            "target": "streamNotification",
+            "arguments": [{"message": f"{username} went live: {title}", "recipeId": recipe_id}]
         }))
         
         stream_data['live_status'] = streaming.LIVE
@@ -595,7 +595,7 @@ def get_stream_from_db(recipe_id, user_id):
     recipe_data = recipe_container.read_item(recipe_id, partition_key=streamer_id)
     step_timings = stream_data.get('step_timings')
 
-    timed_steps = [{"id": step.get('id'), "text": step.get('text'), "time": step_timings.get(step.get('id'))} for step in recipe_data.get('steps')]
+    timed_steps = [{"id": step.get('id'), "text": step.get('text'), "time": step_timings.get(str(step.get('id')))} for step in recipe_data.get('steps')]
 
     stream_dict = {
         "name": recipe_data.get('title'),
@@ -646,29 +646,25 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Upcoming" Recipes')
 
     try:
-        stream_query = """
-        SELECT c.id, c.live_status
-        FROM Streams c WHERE c.live_status = 0
+        # Get all future upcoming recipes
+        query = f"""
+        SELECT * 
+        FROM UploadedRecipes c 
+        WHERE c.date > '{current_date}'
         """
-        stream_items = list(stream_container.query_items(
-            query=stream_query,
+        items = list(recipe_container.query_items(
+            query=query,
             enable_cross_partition_query=True
         ))
 
-        stream_ids = [s["id"] for s in stream_items]
-        
-        id_list = "', '".join(stream_ids)
-        recipe_query = f"""
-        SELECT *
-        FROM UploadedRecipes c
-        WHERE c.id IN ('{id_list}')
-        """
-        recipe_items = list(recipe_container.query_items(
-            query=recipe_query,
-            enable_cross_partition_query=True
-        ))
+        if not items:
+            return func.HttpResponse(
+                'No "Upcoming" recipes found',
+                status_code=404
+            )
 
-        response_body = json.dumps(recipe_items)
+        response_body = json.dumps(items)
+        logging.info('Successfully retrieved all "Upcoming" recipes')
         return func.HttpResponse(response_body, status_code=200)
         
     except Exception as e:

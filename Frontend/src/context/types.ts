@@ -30,3 +30,8 @@ export type StepUpdate = {
   id: number
   time: number
 }
+
+export type StreamNotification = {
+  message: string
+  recipeId: string
+}
