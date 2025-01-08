@@ -1,6 +1,6 @@
 import React from 'react'
 import { Chat } from '../context/types'
-import '../assets/HomePage.css'
+import '../assets/StreamPage.css'
 
 export type ChatItemProps = {
   chat: Chat;

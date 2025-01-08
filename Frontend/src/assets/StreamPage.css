@@ -66,3 +66,35 @@
     color: #999;
     width: 15%;
   }
+
+/* Styles for ShoppingListItem */
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 8px 0;
+  }
+  
+.quantity-unit-box {
+  display: flex;
+  align-items: center;
+  flex: 0 0 25%; /* Fixed width for alignment */
+}
+
+#quantity {
+  font-weight: bold;
+  color: #fda448; /* Highlight quantity */
+}
+
+#unit {
+  color: #555;
+  margin-left: 6px;
+}
+  
+#name {
+  color: #333;
+  font-weight: bold;
+  flex: 1; /* Name takes remaining space */
+  text-align: left;
+}
