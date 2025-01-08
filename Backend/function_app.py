@@ -646,25 +646,29 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Get All "Upcoming" Recipes')
 
     try:
-        # Get all future upcoming recipes
-        query = f"""
-        SELECT * 
-        FROM UploadedRecipes c 
-        WHERE c.date > '{current_date}'
+        stream_query = """
+        SELECT c.id, c.live_status
+        FROM Streams c WHERE c.live_status = 0
         """
-        items = list(recipe_container.query_items(
-            query=query,
+        stream_items = list(stream_container.query_items(
+            query=stream_query,
             enable_cross_partition_query=True
         ))
 
-        if not items:
-            return func.HttpResponse(
-                'No "Upcoming" recipes found',
-                status_code=404
-            )
+        stream_ids = [s["id"] for s in stream_items]
+        
+        id_list = "', '".join(stream_ids)
+        recipe_query = f"""
+        SELECT *
+        FROM UploadedRecipes c
+        WHERE c.id IN ('{id_list}')
+        """
+        recipe_items = list(recipe_container.query_items(
+            query=recipe_query,
+            enable_cross_partition_query=True
+        ))
 
-        response_body = json.dumps(items)
-        logging.info('Successfully retrieved all "Upcoming" recipes')
+        response_body = json.dumps(recipe_items)
         return func.HttpResponse(response_body, status_code=200)
         
     except Exception as e:
