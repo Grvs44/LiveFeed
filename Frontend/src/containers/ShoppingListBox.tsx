@@ -1,6 +1,5 @@
 import React from 'react'
-import Box from '@mui/material/Box'
-import List from '@mui/material/List'
+import { List, Box } from '@mui/material'
 import ShoppingListItem from '../components/ShoppingListItem'
 import { ShoppingListEntry } from '../redux/types'
 
