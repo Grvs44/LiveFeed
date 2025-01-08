@@ -8,6 +8,13 @@ export type ShoppingListItemProps = {
 };
 
 export default function ShoppingListItem({ item }: ShoppingListItemProps) {
+  const blankUndefined = (s: string | undefined) => (s == undefined ? '' : s)
+
+  const getSubtitle = () =>
+    item.quantity == undefined && item.unit == undefined
+      ? undefined
+      : blankUndefined(item.quantity) + blankUndefined(item.unit)
+
   return (
     <ListItem className="list-item">
       {/* Quantity and Unit */}
@@ -17,7 +24,7 @@ export default function ShoppingListItem({ item }: ShoppingListItemProps) {
       </Box>
 
       {/* Name */}
-      <Typography id="name">{item.name}</Typography>
+      <Typography id="name">{item.item}</Typography>
     </ListItem>
   )
 }
