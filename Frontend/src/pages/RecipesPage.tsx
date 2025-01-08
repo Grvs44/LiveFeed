@@ -12,6 +12,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import TAGS from '../config/Tags'
 import { Link as RouteLink } from 'react-router-dom'
+import toast from 'react-hot-toast';
 
 
 
@@ -189,6 +190,7 @@ function RecipeUploads({ closeTab }: { closeTab: () => void }) {
     }
     else {
       console.error("Please fill in all the required information before uploading")
+      toast.error("Please fill in all the required information before uploading");
     }
   };
 
