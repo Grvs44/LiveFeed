@@ -8,6 +8,8 @@ export type Chat = {
 export enum MessageType {
   Message,
   Step,
+  Start,
+  End,
 }
 
 export type MessageContent = {

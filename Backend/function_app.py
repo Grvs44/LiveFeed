@@ -204,7 +204,7 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
-    logging.info('Received stream start request')
+    logging.info('Received stream end request')
 
     claim_info = validate_token(req)
     user_id = None
@@ -243,6 +243,11 @@ def end_stream(req: func.HttpRequest) -> func.HttpResponse:
     stream_container.upsert_item(stream_data)
     if (response.streaming_state in [6, 8]):
         stream_container.upsert_item(stream_data)
+
+        end_data = {"type": messages.END}
+
+        CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=end_data, content_type="application/json")
+
         return func.HttpResponse("Livestream successfully ended", status_code=200)
     else:
         return func.HttpResponse("Error while ending livestream", status_code=500)
