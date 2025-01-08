@@ -14,12 +14,15 @@ export default function App() {
   const notificationsEnabled = useSelector(
     (state: State) => state.notif.enabled,
   )
+
   const onNotification = (notification: string) => {
-    console.log('Notification received:', notification)
-    toast(notification, {
-      duration: 5000,
-      position: 'top-right',
-    })
+    if (notificationsEnabled) {
+      console.log('Notification received:', notification)
+      toast(notification, {
+        duration: 5000,
+        position: 'top-right',
+      })
+    }
   }
 
   const [searchQuery, setSearchQuery] = useState('') // Shared state for search
