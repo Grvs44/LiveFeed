@@ -17,7 +17,7 @@ export default function ShoppingListItem({ item }: ShoppingListItemProps) {
       </Box>
 
       {/* Name */}
-      <Typography id="name">{item.name}</Typography>
+      <Typography id="name">{item.item}</Typography>
     </ListItem>
   )
 }
