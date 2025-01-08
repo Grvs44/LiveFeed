@@ -1,2 +1,4 @@
 MESSAGE = 0
 STEP = 1
+START = 2
+END = 3
