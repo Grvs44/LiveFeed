@@ -687,19 +687,12 @@ def get_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
 @app.generic_input_binding(arg_name="connectionInfo", type="signalRConnectionInfo", hubName="serverless", connectionStringSetting="AzureSignalRConnectionString", userId="{headers.x-ms-signalr-userid}")
 def signalr_negotiate(req: func.HttpRequest, connectionInfo) -> func.HttpResponse:
     logging.info("SignalR negotiation request")
-    auth_header = req.headers.get("Authorization")
-
-    if not auth_header.startswith("Bearer "):
-        return func.HttpResponse("User ID required", status_code=401)
-
-    token = auth_header.split(" ")[1]
-    
-    claim_info = validate_token(token)
-    claims = claim_info.get('claims')
-    if (not claims): return claim_info.get('error')
-
-    user_id = claims.get('sub')
-    logging.info(f"Identified sender as {user_id}")
+    claim_info = validate_token(req)
+    user_id = None
+    if (claim_info.get('claims') != None):
+        user_id = claim_info.get('claims').get('sub')
+    else:
+        return claim_info.get('error')
 
     if user_id != req.headers.get('x-ms-signalr-userid'):
         return func.HttpResponse("Unauthorized", status_code=401)
