@@ -5,13 +5,14 @@ import { setTitle } from '../redux/titleSlice'
 import {Card,CardContent,Typography,Grid,List,ListItem,ListItemText,Paper,Box,Divider, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton, Stack, Chip, MenuItem,Select} from '@mui/material';
 import { AccessTime, FormatListNumbered, ShoppingCart , Edit, Delete,Add, PlayArrow, RestaurantMenu,Timer,Person, Group, LocalOffer} from '@mui/icons-material';
 import {Recipe} from '../redux/types'
-import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation } from '../redux/apiSlice';
+import { useCreateRecipeMutation,useGetRecipeMutation,useUpdateRecipeMutation,useDeleteRecipeMutation,useGetStreamsInfoMutation } from '../redux/apiSlice';
 import "../App.css";
 import AddBoxIcon from '@mui/icons-material/AddBox';
 import { BlobServiceClient } from "@azure/storage-blob";
 import { LoginContext } from '../context/LoginProvider';
 import { RecipeListContainer } from '../containers/RecipeListBox';
 import TAGS from '../config/Tags'
+import { Link as RouteLink } from 'react-router-dom'
 
 
 
@@ -340,8 +341,9 @@ function RecipeManagement () {
   const [recipeList, setRecipeList] = useState<Recipe[]>([]);
   const [editDialog, setEditDialog] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
+  const [fetchStreamsInfo, { data: streamsData }] = useGetStreamsInfoMutation()
   
-
+  
   React.useEffect(() => {
     fetchRecipes();
   }, []);
@@ -360,6 +362,10 @@ function RecipeManagement () {
   };
 
   const handleStartRecipe = (recipe: Recipe) => {
+    const response = fetchStreamsInfo().unwrap();
+    // component={RouteLink}
+    //       {...props}
+    //       to={import.meta.env.BASE_URL + props.to.valueOf()
     console.log('Starting recipe:', recipe.title);
   };
 
@@ -616,6 +622,8 @@ const deleteShoppingItem = (index: number) => {
                     backgroundColor: '#2E6F40'
                   }
                 }}
+                component={RouteLink} 
+                to={"http://localhost:3000/recipes" + `/live/${recipe.id}/start`}
                 onClick={() => handleStartRecipe(recipe)}
               >
                 Start Streaming
