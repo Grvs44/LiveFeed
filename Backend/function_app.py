@@ -675,7 +675,13 @@ def get_upcoming_recipes(req: func.HttpRequest) -> func.HttpResponse:
 #---- User Functions ----#
 ############################
 @app.route(route="settings/user/update", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
-def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def update_user_profile(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     try:
         req_body = req.get_json()
         user_id = req_body.get('id')
@@ -684,6 +690,11 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
         family_name = req_body.get('familyName')
         
         if not user_id or not display_name or not given_name or not family_name:
+            signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["Please fill in all fields"]
+            }))
             return func.HttpResponse(
                 json.dumps({"message": "Missing fields"}),
                 mimetype="application/json",
@@ -705,6 +716,11 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
         
         if response.status_code == 204:
             logging.info(f"User {user_id} updated successfully")
+            signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": [f"Successfully updated details"]
+            }))
             return func.HttpResponse(
                 json.dumps({"message": "User updated successfully."}),
                 mimetype="application/json",
@@ -712,6 +728,11 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
             )
         
         logging.error(f"Failed to update user: {response.status_code}, {response.text}")
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": [f"Unable to update details"]
+        }))
         return func.HttpResponse(
             json.dumps({"message": f"Failed to update user. Error: {response.text}"}),
             mimetype="application/json",
@@ -723,7 +744,13 @@ def update_user_profile(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"Error: {str(e)}", status_code=500)
     
 @app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.PATCH])
-def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def update_user_preferences(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info(f"Request to update user preferences received")
 
     claim_info = validate_token(req)
@@ -732,6 +759,7 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
         user_id = claim_info.get('claims').get('sub')
     else:
         return claim_info.get('error')
+    
 
     try:
         body = req.get_json()
@@ -746,6 +774,11 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
             preferences['notifications'] = body['notifications']
 
         prefs_container.upsert_item(preferences)
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["Preferences updated successfully."]
+        }))
         return func.HttpResponse(
             json.dumps({"message": "Preferences updated successfully."}),
             status_code=200,
@@ -755,6 +788,11 @@ def update_user_preferences(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse("Invalid JSON format", status_code=400)
     except Exception as e:
         logging.error(f"Failed to update preferences: {str(e)}")
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["Failed to update preferences."]
+        }))
         return func.HttpResponse("Failed to update preferences", status_code=500)
 
 @app.route(route="settings/preferences", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
