@@ -14,7 +14,6 @@ export default function UserUpdateForm() {
   const user = useSelector((state: State) => state.user) // Get user details from Redux
   const { activeAccount } = React.useContext(LoginContext)
   const [updateUserDetails] = useUpdateUserDetailsMutation()
-  const [feedback, setFeedback] = React.useState({ message: '', error: false })
   const [userDetails, setUserDetails] = React.useState<UserInfo>({
     name: user.displayName ?? '',
     given_name: user.givenName ?? '',
@@ -46,7 +45,6 @@ export default function UserUpdateForm() {
       !userDetails.given_name ||
       !userDetails.family_name
     ) {
-      setFeedback({ message: 'Please fill all fields', error: true })
       return
     }
     try {
@@ -58,10 +56,8 @@ export default function UserUpdateForm() {
       }).unwrap()
 
       console.log('User updated successfully:', result)
-      setFeedback({ message: 'Profile updated successfully', error: false })
     } catch (error) {
       console.error('Failed to update user:', error)
-      setFeedback({ message: 'Something went wrong. ', error: true })
     }
   }
 
@@ -105,16 +101,6 @@ export default function UserUpdateForm() {
               />
             </Box>
           </Box>
-          <Typography
-            variant="body2"
-            sx={{
-              color: feedback.error ? 'error.main' : 'success.main',
-              marginTop: 2,
-              textAlign: 'left',
-            }}
-          >
-            {feedback.message}
-          </Typography>
           <Box sx={{ marginTop: 3, textAlign: 'right' }}>
             <Button
               type="submit"
