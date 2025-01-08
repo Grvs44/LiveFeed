@@ -9,12 +9,14 @@ import {
   State,
   StreamStartTime,
   UpdatePreferences,
-  UserDetails
+  UserState,
 } from './types'
+import { setUser } from './userSlice'
 
 enum TagTypes {
   Live = 'live',
   Ondemand = 'vod',
+  Recipe = 'recipe',
 }
 
 // Adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/redux/apiSlice.ts
@@ -69,12 +71,14 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
-    getRecipe: builder.mutation<any, any>({
+    getRecipe: builder.query<any, void>({
       query: () => ({
         url: '/recipe/get',
         method: 'GET',
       }),
+      providesTags: (r) => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     displayRecipe: builder.mutation<any, any>({
       query: (id) => ({
@@ -88,6 +92,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: recipe,
       }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     deleteRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
@@ -95,22 +100,17 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
-    }),
-    getLiveRecipe: builder.mutation<any, void>({
-      query: () => ({
-        url: '/recipe/live',
-        method: 'GET',
-      }),
-    }),
-    getOnDemandRecipe: builder.mutation<any, void>({
-      query: () => ({
-        url: '/recipe/ondemand',
-        method: 'GET',
-      }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     getUpcomingRecipe: builder.mutation<any, void>({
       query: () => ({
         url: '/recipe/upcoming',
+        method: 'GET',
+      }),
+    }),
+    getStreamsInfo: builder.mutation<any, void>({
+      query: () => ({
+        url: '/streams',
         method: 'GET',
       }),
     }),
@@ -130,8 +130,8 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
-    updateUserDetails: builder.mutation<any,UserDetails>({
-      query: ({id, displayName, givenName,familyName }) => ({
+    updateUserDetails: builder.mutation<any, UserState>({
+      query: ({ id, displayName, givenName, familyName }) => ({
         url: `/settings/user/update`,
         method: 'PATCH',
         body: {
@@ -141,7 +141,11 @@ export const apiSlice = createApi({
           familyName,
         },
       }),
-    })
+      async onQueryStarted(details, api) {
+        await api.queryFulfilled
+        api.dispatch(setUser(details))
+      },
+    }),
   }),
 })
 
@@ -154,13 +158,12 @@ export const {
   useEndStreamMutation,
   useChangeStepMutation,
   useCreateRecipeMutation,
-  useGetRecipeMutation,
+  useGetRecipeQuery,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
-  useGetLiveRecipeMutation,
-  useGetOnDemandRecipeMutation,
   useGetUpcomingRecipeMutation,
+  useGetStreamsInfoMutation,
   useDisplayRecipeMutation,
   useUpdatePreferencesMutation,
-  useUpdateUserDetailsMutation
+  useUpdateUserDetailsMutation,
 } = apiSlice

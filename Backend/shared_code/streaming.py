@@ -1,6 +1,5 @@
 import os
 import tempfile
-import threading
 import ffmpeg
 from google.cloud.video import live_stream_v1
 from google.cloud.video.live_stream_v1.services.livestream_service import (
@@ -20,6 +19,8 @@ VOD = 2
 project_id = "livefeed-443712"
 location = "europe-west2"
 bucket_name = "livefeed-bucket"
+
+ffmpeg_binary_path = os.path.join(os.getcwd(), 'ffmpeg', 'ffmpeg')
 
 def create_input(channel_id: str) -> live_stream_v1.types.Input:
     """Creates an input.
@@ -92,7 +93,7 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 elementary_streams=["es_video"],
                 segment_settings=live_stream_v1.types.SegmentSettings(
                     segment_duration=duration.Duration(
-                        seconds=2,
+                        seconds=6,
                     ),
                 ),
             ),
@@ -101,7 +102,7 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 elementary_streams=["es_audio"],
                 segment_settings=live_stream_v1.types.SegmentSettings(
                     segment_duration=duration.Duration(
-                        seconds=2,
+                        seconds=6,
                     ),
                 ),
             ),
@@ -111,7 +112,10 @@ def create_channel(channel_id: str) -> live_stream_v1.types.Channel:
                 file_name="manifest.m3u8",
                 type_="HLS",
                 mux_streams=["mux_video", "mux_audio"],
-                max_segment_count=5,
+                max_segment_count=50,
+                segment_keep_duration=duration.Duration(
+                    seconds=120,
+                ),
             ),
         ],
     )
@@ -141,7 +145,7 @@ def delete_channel(channel_id: str):
     name = f"projects/{project_id}/locations/{location}/channels/{channel_id}"
 
     request=live_stream_v1.DeleteChannelRequest(
-        name,
+        name=name,
     )
     
     operation = client.delete_channel(request)
@@ -198,7 +202,7 @@ def stop_channel(channel_id: str) -> live_stream_v1.types.ChannelOperationRespon
 
 def create_recipe_channel(recipe_id):
     input = create_input(recipe_id)
-    create_channel(recipe_id)
+    logging.info(create_channel(recipe_id))
 
     channel_info = get_channel(recipe_id)
     stream_dict = {"output_url": channel_info.output.uri, "input_url": input.uri}
@@ -227,10 +231,13 @@ def rename_stream(recipe_id):
     blobs = bucket.list_blobs(prefix=stream_directory)
     for blob in blobs:
         new_name = blob.name.replace(stream_directory, vod_directory, 1)
-        bucket.rename_blob(blob, new_name)
+        bucket.copy_blob(blob, bucket, new_name)
+        #bucket.rename_blob(blob, new_name)
 
     public_url = bucket.blob(f'{vod_directory}/manifest.m3u8').public_url
     
+    logging.info("Output renamed")
+
     return public_url
 
 def delete_blob_directory(blob_prefix):
@@ -258,22 +265,22 @@ def upload_vod(vod_blob_path, local_path):
     logging.info(f"Uploaded {local_path} to {vod_blob_path}")
 
     return vod_blob.public_url
-
+    
 def convert_stream(vod_manifest, output_mp4_path):
     try:
         (
             ffmpeg
             .input(vod_manifest)
-            .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(overwrite_output=True, capture_stderr=True, capture_stdout=False)
+            .output(output_mp4_path, vcodec='libx264', acodec='aac', strict='experimental', hls_flags='single_file').run(cmd=ffmpeg_binary_path, overwrite_output=True, capture_stderr=True, capture_stdout=False)
         )
-        print(f"Conversion successful: {output_mp4_path}")
+        logging.info(f"Conversion successful: {output_mp4_path}")
     except ffmpeg.Error as e:
         if e.stderr:
             error_message = e.stderr.decode("utf-8")
-            print(f"FFmpeg stderr: {error_message}")
+            logging.error(f"FFmpeg stderr: {error_message}")
         else:
             error_message = "Unknown error occurred during FFmpeg execution."
-            print(error_message)
+            logging.error(error_message)
         raise RuntimeError(f"FFmpeg conversion failed: {error_message}")
     
 def convert_temp_to_vod(temp_vod_manifest, recipe_id):
@@ -282,6 +289,7 @@ def convert_temp_to_vod(temp_vod_manifest, recipe_id):
 
     with tempfile.TemporaryDirectory() as temp_dir:
         output_mp4_path = os.path.join(temp_dir, "output.mp4")
+        logging.info(output_mp4_path)
         
         convert_stream(temp_vod_manifest, output_mp4_path)
         
