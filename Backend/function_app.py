@@ -141,7 +141,13 @@ def chat_negotiate(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse(response_body, status_code=200)
 
 @app.route(route="stream/{recipeId}/start", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
-def start_stream(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Received stream start request')
 
     claim_info = validate_token(req)
@@ -159,14 +165,24 @@ def start_stream(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("Sender is not the creator of the recipe")
         return func.HttpResponse("Unauthorized", status_code=401)
 
+    recipe_data = recipe_container.read_item(recipe_id, partition_key=user_id)
+
+    username = claim_info.get('sub')
+    title = recipe_data.get('title')
+    
     response = streaming.start_stream(recipe_id)
 
-    if (response.streaming_state == "STOPPED"):
-        return func.HttpResponse("Error while starting stream", status_code=500)
-    else:
+    if (response.streaming_state in [2, 3, 7]):
+        signalROutput.set(json.dumps({
+            "target": "eventNotification",
+            "arguments": [f"{username} went live: {title}"]
+        }))
+        
         stream_data['live_status'] = streaming.LIVE
         stream_container.upsert_item(stream_data)
         return func.HttpResponse("Livestream successfully started", status_code=200)
+    else:
+        return func.HttpResponse("Error while starting stream", status_code=500)
 
 @app.route(route="stream/{recipeId}/end", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
 def end_stream(req: func.HttpRequest) -> func.HttpResponse:
@@ -298,7 +314,13 @@ def get_streams_info(req: func.HttpRequest) -> func.HttpResponse:
 ############################
 
 @app.route(route="recipe/create", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
-def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def create_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Received recipe create request')
 
     claim_info = validate_token(req)
@@ -350,6 +372,12 @@ def create_recipe(req: func.HttpRequest) -> func.HttpResponse:
         stream_container.create_item(body=stream_dict, enable_automatic_id_generation=False)
     except Exception as e:
         logging.error(f"Error while creating channel: {e}")
+
+    signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": ["Successfully created recipe"]
+        }))
 
     return func.HttpResponse(json.dumps({"recipe_created": "OK"}), status_code=201, mimetype="application/json")
 
@@ -437,7 +465,13 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     return func.HttpResponse("Error updating recipe", status_code=500)
 
 @app.route(route="recipe/delete", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.POST])
-def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
+@app.generic_output_binding(
+    arg_name="signalROutput",
+    type="signalR",
+    hubName="serverless",
+    connectionStringSetting="AzureSignalRConnectionString"
+)
+def delete_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     logging.info('Delete Recipe')
     
     try:
@@ -454,7 +488,15 @@ def delete_recipe(req: func.HttpRequest) -> func.HttpResponse:
 
         recipe_container.delete_item(item=id,partition_key=user_id)
         streaming.delete_vod(id)
+        streaming.delete_recipe_channel(id)
         stream_container.delete_item(id, partition_key=id)
+
+        signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": ["Successfully deleted recipe"]
+        }))
+
         return func.HttpResponse(json.dumps({"recipe_updated": "OK"}), status_code=200, mimetype="application/json")
 
     except Exception as e:
