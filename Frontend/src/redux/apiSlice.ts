@@ -16,6 +16,7 @@ import { setUser } from './userSlice'
 enum TagTypes {
   Live = 'live',
   Ondemand = 'vod',
+  Recipe = 'recipe',
 }
 
 // Adapted from https://github.com/Grvs44/budgetmanager/blob/main/budgetmanagerpwa/src/redux/apiSlice.ts
@@ -70,12 +71,14 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
     }),
-    getRecipe: builder.mutation<any, any>({
+    getRecipe: builder.query<any, void>({
       query: () => ({
         url: '/recipe/get',
         method: 'GET',
       }),
+      providesTags: (r) => [{ type: TagTypes.Recipe, id: "list" }],
     }),
     displayRecipe: builder.mutation<any, any>({
       query: (id) => ({
@@ -89,6 +92,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: recipe,
       }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
     }),
     deleteRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
@@ -96,6 +100,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
     }),
     getUpcomingRecipe: builder.mutation<any, void>({
       query: () => ({
@@ -153,7 +158,7 @@ export const {
   useEndStreamMutation,
   useChangeStepMutation,
   useCreateRecipeMutation,
-  useGetRecipeMutation,
+  useGetRecipeQuery,
   useUpdateRecipeMutation,
   useDeleteRecipeMutation,
   useGetUpcomingRecipeMutation,
