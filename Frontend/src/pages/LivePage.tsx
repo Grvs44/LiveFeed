@@ -1,19 +1,145 @@
-import React from 'react'
-import { Link } from '@mui/material'
-import { useDispatch } from 'react-redux'
-import { Link as RouteLink } from 'react-router-dom'
-import { setTitle } from '../redux/titleSlice'
+import React, { useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import {
+  Typography,
+  Card,
+  CardMedia,
+  CardContent,
+  Chip,
+  Box,
+} from '@mui/material';
+import { useGetStreamsInfoMutation } from '../redux/apiSlice';
+import { setTitle } from '../redux/titleSlice';
+import { Link as RouterLink } from 'react-router-dom';
+import { Item } from '../redux/types';
+import '../assets/HomePage.css';
 
 export default function LivePage() {
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
+  const [fetchStreamsInfo, { data: streamsData, isLoading, isError }] =
+    useGetStreamsInfoMutation();
 
-  React.useEffect(() => {
-    dispatch(setTitle('Live'))
-  }, [])
+  // Set the title and fetch live streams
+  useEffect(() => {
+    dispatch(setTitle('Live Streams'));
+    fetchStreamsInfo();
+  }, [dispatch, fetchStreamsInfo]);
+
+  // Extract only live streams
+  const liveStreams: Item[] =
+    streamsData
+      ?.filter((stream: any) => stream.live_status === 1)
+      .map((stream: any) => ({
+        id: stream.id,
+        title: stream.title,
+        thumbnail: stream.image,
+        tags: stream.tags,
+        link: `/live/${stream.id}`,
+      })) || [];
+
+  // Handle loading and error states
+  if (isLoading) {
+    return <Typography>Loading live streams...</Typography>;
+  }
+
+  if (isError) {
+    return (
+      <Typography>
+        Failed to load live streams. Please try again later.
+      </Typography>
+    );
+  }
 
   return (
-    <Link component={RouteLink} to="950ae0d4-0eb0-4601-a7f5-f07ae9eb98eb">
-      Stream 1
-    </Link>
-  )
+    <Box sx={{ padding: '20px' }}>
+      {/* Page Title */}
+      <Typography
+        variant="h4"
+        sx={{
+          fontWeight: 'bold',
+          textAlign: 'center',
+          marginBottom: '20px',
+        }}
+      >
+        Live Streams
+      </Typography>
+
+      {/* Grid Container */}
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+          gap: '20px',
+        }}
+      >
+        {/* Render Cards */}
+        {liveStreams.map((stream) => (
+          <Card
+            key={stream.id}
+            component={RouterLink}
+            to={stream.link}
+            sx={{
+              boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+              borderRadius: '10px',
+              textDecoration: 'none',
+              position: 'relative',
+            }}
+          >
+            {/* Badge for "Live" */}
+            <Box
+              sx={{
+                position: 'absolute',
+                top: '10px',
+                left: '10px',
+                backgroundColor: 'red',
+                color: 'white',
+                padding: '5px 10px',
+                borderRadius: '5px',
+                fontSize: '0.8rem',
+                fontWeight: 'bold',
+              }}
+            >
+              LIVE
+            </Box>
+
+            {/* Thumbnail */}
+            <CardMedia
+              component="img"
+              image={stream.thumbnail}
+              alt={stream.title}
+              sx={{
+                height: 200,
+                objectFit: 'cover',
+              }}
+            />
+
+            <CardContent sx={{ padding: '10px' }}>
+              {/* Stream Title */}
+              <Typography
+                variant="subtitle1"
+                sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px' }}
+              >
+                {stream.title}
+              </Typography>
+
+              {/* Stream Tags */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  justifyContent: 'center',
+                  gap: '5px',
+                }}
+              >
+                {stream.tags &&
+                  stream.tags.map((tag, index) => (
+                    <Chip key={index} label={tag} size="small" />
+                  ))}
+              </Box>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+    </Box>
+  );
 }
