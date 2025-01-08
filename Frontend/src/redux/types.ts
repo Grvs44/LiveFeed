@@ -80,9 +80,10 @@ export type State = ReturnType<typeof store.getState>
 export type Item = {
   id: number 
   title: string
-  thumbnail: string;
-  tags?: string[];
-  link: string; 
+  thumbnail: string
+  liveState: number
+  tags?: string[]
+  link: string 
 }
 
 export type SectionProps = {
@@ -112,10 +113,14 @@ export type UpdatePreferences = {
   notifications?: boolean
 }
 
-export type UserDetails = {
+export type UserState = {
   id? : string,
   displayName?: string,
   givenName?: string,
   familyName? : string,
+}
+
+export type NotificationState = {
+  enabled?: boolean
 }
 
