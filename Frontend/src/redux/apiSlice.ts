@@ -9,7 +9,7 @@ import {
   State,
   StreamStartTime,
   UpdatePreferences,
-  UserState
+  UserState,
 } from './types'
 import { setUser } from './userSlice'
 
@@ -71,14 +71,14 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
-      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     getRecipe: builder.query<any, void>({
       query: () => ({
         url: '/recipe/get',
         method: 'GET',
       }),
-      providesTags: (r) => [{ type: TagTypes.Recipe, id: "list" }],
+      providesTags: (r) => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     displayRecipe: builder.mutation<any, any>({
       query: (id) => ({
@@ -92,7 +92,7 @@ export const apiSlice = createApi({
         method: 'PUT',
         body: recipe,
       }),
-      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     deleteRecipe: builder.mutation<any, any>({
       query: (recipe) => ({
@@ -100,7 +100,7 @@ export const apiSlice = createApi({
         method: 'POST',
         body: recipe,
       }),
-      invalidatesTags: () => [{ type: TagTypes.Recipe, id: "list" }],
+      invalidatesTags: () => [{ type: TagTypes.Recipe, id: 'list' }],
     }),
     getUpcomingRecipe: builder.mutation<any, void>({
       query: () => ({
@@ -130,8 +130,8 @@ export const apiSlice = createApi({
         method: 'GET',
       }),
     }),
-    updateUserDetails: builder.mutation<any,UserState>({
-      query: ({id, displayName, givenName,familyName }) => ({
+    updateUserDetails: builder.mutation<any, UserState>({
+      query: ({ id, displayName, givenName, familyName }) => ({
         url: `/settings/user/update`,
         method: 'PATCH',
         body: {
@@ -145,7 +145,7 @@ export const apiSlice = createApi({
         await api.queryFulfilled
         api.dispatch(setUser(details))
       },
-    })
+    }),
   }),
 })
 

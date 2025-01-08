@@ -41,10 +41,9 @@ export type TimedRecipeStep = RecipeStep & {
 }
 
 export type ShoppingListEntry = {
-  id: number
   item: string
-  unit: string
   quantity?: string
+  unit?: string
 }
 
 export type PubsubState = {
