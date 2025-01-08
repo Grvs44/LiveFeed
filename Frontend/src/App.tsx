@@ -11,33 +11,15 @@ import { setNotif } from './redux/notifSlice'
 import { State } from './redux/types'
 
 export default function App() {
-  const notificationsEnabled = useSelector(
-    (state: State) => state.notif.enabled,
-  )
-
   const onNotification = (notification: string) => {
-    if (notificationsEnabled) {
-      console.log('Notification received:', notification)
-      toast(notification, {
-        duration: 5000,
-        position: 'top-right',
-      })
-    }
+    console.log('Notification received:', notification)
+    toast(notification, {
+      duration: 5000,
+      position: 'top-right',
+    })
   }
 
   const [searchQuery, setSearchQuery] = useState('') // Shared state for search
-
-  const dispatch = useDispatch()
-  const token = useSelector((state: State) => state.token.token)
-  const { data, isLoading } = useGetPreferencesQuery(undefined, {
-    skip: token === undefined,
-  })
-
-  React.useEffect(() => {
-    if (data && data.notifications !== undefined) {
-      dispatch(setNotif(data.notifications))
-    }
-  }, [data, dispatch])
 
   return (
     <div

@@ -76,7 +76,7 @@ export default function SettingsPage() {
         >
           <FormControl component="fieldset">
             <Typography variant="h6" sx={{ fontSize: '1.125rem' }} gutterBottom>
-              Notifications
+              Stream Notifications
             </Typography>
             <RadioGroup
               aria-label="notifications"
