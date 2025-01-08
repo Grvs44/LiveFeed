@@ -155,6 +155,11 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     if (claim_info.get('claims') != None):
         user_id = claim_info.get('claims').get('sub')
     else:
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["You must be logged in to start a stream"]
+            }))
         return claim_info.get('error')
 
     recipe_id = req.route_params.get('recipeId')
@@ -163,6 +168,12 @@ def start_stream(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
 
     if (stream_data.get('user_id') != user_id):
         logging.info("Sender is not the creator of the recipe")
+
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["You are not the creator of this recipe"]
+            }))
         return func.HttpResponse("Unauthorized", status_code=401)
 
     recipe_data = recipe_container.read_item(recipe_id, partition_key=user_id)
@@ -334,6 +345,11 @@ def create_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     if (claim_info.get('claims') != None):
         user_id = claim_info.get('claims').get('sub')
     else:
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["You must be logged in to create a recipe"]
+            }))
         return claim_info.get('error')
     
     info = req.get_json()
@@ -448,6 +464,11 @@ def update_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     if (claim_info.get('claims') != None):
         user_id = claim_info.get('claims').get('sub')
     else:
+        signalROutput.set(json.dumps({
+                "userId": user_id,
+                "target": "eventNotification",
+                "arguments": ["You must be logged in to update this recipe"]
+            }))
         return claim_info.get('error')
     
     try:
