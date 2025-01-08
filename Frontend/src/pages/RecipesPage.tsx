@@ -365,10 +365,7 @@ function RecipeManagement () {
   };
 
   const handleStartRecipe = (recipe: Recipe) => {
-    const response = fetchStreamsInfo().unwrap();
-    // component={RouteLink}
-    //       {...props}
-    //       to={import.meta.env.BASE_URL + props.to.valueOf()
+    toast.success("Starting recipe: " + recipe.title);
     console.log('Starting recipe:', recipe.title);
   };
 
@@ -376,6 +373,7 @@ function RecipeManagement () {
   const handleDeleteRecipe = async (recipe : Recipe) => {
   try {
     await deleteRecipe(recipe).unwrap();
+    toast.remove("Recipe deleted successfully");
   } catch (error) {
     console.error("Error deleting recipe:", error);
   }
@@ -395,6 +393,7 @@ function RecipeManagement () {
     try {
       await updateRecipe(editingRecipe).unwrap();
       handleEditClose();
+      toast.success("Recipe updated successfully");
     } catch (error) {
       console.error("Error updating recipe:", error);
     }
