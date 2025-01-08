@@ -76,7 +76,7 @@ export default function SettingsPage() {
         >
           <FormControl component="fieldset">
             <Typography variant="h6" sx={{ fontSize: '1.125rem' }} gutterBottom>
-              Email Notifications
+              Notifications
             </Typography>
             <RadioGroup
               aria-label="notifications"
@@ -87,7 +87,7 @@ export default function SettingsPage() {
               <FormControlLabel
                 value="yes"
                 control={<Radio />}
-                label="Yes, send me notifications"
+                label="Yes, show me notifications"
               />
               <FormControlLabel
                 value="no"
