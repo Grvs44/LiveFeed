@@ -12,8 +12,8 @@ export default function ShoppingListBox(props: ShoppingListBoxProps) {
   return (
     <Box>
       <List>
-        {props.list.map((item) => (
-          <ShoppingListItem key={item.id} item={item} />
+        {props.list.map((item, index) => (
+          <ShoppingListItem key={index} item={item} />
         ))}
       </List>
     </Box>
