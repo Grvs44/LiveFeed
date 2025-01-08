@@ -613,7 +613,7 @@ const deleteShoppingItem = (index: number) => {
                   }
                 }}
                 component={RouteLink} 
-                to={"http://localhost:3000" + `/live/${recipe.id}/start`}
+                to={`/live/${recipe.id}/start`}
                 onClick={() => handleStartRecipe(recipe)}
               >
                 Start Streaming
