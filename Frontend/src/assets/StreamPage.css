@@ -1,0 +1,68 @@
+/* Styles for ChatInput */
+.chat-input-form {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between elements */
+    margin-top: 8px;
+  }
+  
+  .chat-input-textfield {
+    width: 100%;
+    background-color: #f9f9f9;
+    border-radius: 4px;
+  }
+  
+  .chat-input-textfield .MuiOutlinedInput-root fieldset {
+    border-color: #fda448;
+  }
+  
+  .chat-input-textfield .MuiOutlinedInput-root:hover fieldset {
+    border-color: #e68c3b;
+  }
+  
+  .chat-input-textfield .MuiOutlinedInput-root.Mui-focused fieldset {
+    border-color: #fda448;
+    box-shadow: 0 0 0 2px rgba(253, 164, 72, 0.25);
+  }
+  
+  .chat-input-button {
+    color: #fff;
+    font-weight: bold;
+    text-transform: none;
+  }
+  
+  .chat-input-button:hover {
+    background-color: #e68c3b;
+  }
+  
+  .chat-input-button:disabled {
+    background-color: #f0f0f0;
+    color: #a0a0a0;
+  }
+
+/* Styles for ChatItem */
+.chat-item-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .chat-item-username {
+    font-weight: bold;
+    color: #555;
+    white-space: nowrap;
+    margin-right: 8px;
+    width: 15%;
+  }
+  
+  .chat-item-message {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    width: 70%;
+  }
+  
+  .chat-item-time {
+    text-align: right;
+    color: #999;
+    width: 15%;
+  }

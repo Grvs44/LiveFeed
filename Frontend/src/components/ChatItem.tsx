@@ -1,24 +1,24 @@
 import React from 'react'
-import { ListItem, ListItemText } from '@mui/material'
 import { Chat } from '../context/types'
+import '../assets/HomePage.css'
 
 export type ChatItemProps = {
-  chat: Chat
-}
+  chat: Chat;
+};
 
 export default function ChatItem({ chat }: ChatItemProps) {
   return (
-    <ListItem>
-      <ListItemText secondary={chat.username} />
-      <ListItemText primary={chat.message} />
-      <ListItemText secondary={getTime(chat.time)} />
-    </ListItem>
-  )
+    <div className="chat-item-container">
+      <div className="chat-item-username">{chat.username}</div>
+      <div className="chat-item-message">{chat.message}</div>
+      <div className="chat-item-time">{getTime(chat.time)}</div>
+    </div>
+  );
 }
 
 function getTime(time: number) {
-  const date = new Date(time)
-  const hours = String(date.getHours()).padStart(2, '0')
-  const minutes = String(date.getMinutes()).padStart(2, '0')
-  return `${hours}:${minutes}`
+  const date = new Date(time);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${hours}:${minutes}`;
 }
