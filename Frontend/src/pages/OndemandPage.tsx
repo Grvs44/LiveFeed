@@ -61,7 +61,7 @@ export default function OndemandPage() {
           marginBottom: '20px',
         }}
       >
-        On-Demand Streams
+        On Demand Streams
       </Typography>
 
       {/* Grid Container */}

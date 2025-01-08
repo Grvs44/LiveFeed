@@ -70,7 +70,7 @@ export default function HomePage() {
   const filterByTags = (items: Item[]) => {
     if (!selectedTag) return items // Show all items if no tag is selected
 
-    if (selectedTag === 'Favourites') {
+    if (selectedTag === 'For You') {
       const filtered = items.filter((item) => {
         return item.tags?.some((tag: string) =>
           tags.map((t: string) => t.toLowerCase()).includes(tag.toLowerCase()),
@@ -190,7 +190,7 @@ export default function HomePage() {
             },
           }}
         >
-          {/* "All" Button */}
+          {/* "All" Tag */}
           <Chip
             label="All"
             onClick={() => setSelectedTag(null)}
@@ -198,12 +198,12 @@ export default function HomePage() {
             style={{ margin: '5px' }}
           />
 
-          {/* Favourites Chip */}
+          {/* "For You" Tag */}
           {tags.length > 0 && (
             <Chip
-              label="Favourites"
-              onClick={() => setSelectedTag('Favourites')}
-              color={selectedTag === 'Favourites' ? 'primary' : 'default'}
+              label="For You"
+              onClick={() => setSelectedTag('For You')}
+              color={selectedTag === 'For You' ? 'primary' : 'default'}
               style={{ margin: '5px' }}
             />
           )}
