@@ -31,6 +31,7 @@ export default function StartStreamPage() {
     undefined,
   )
   const video = React.useRef<VideoPlayerElement | null>(null)
+  const [videoStarted, setVideoStarted] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     dispatch(setTitle(data?.name || 'Start stream'))
@@ -51,6 +52,7 @@ export default function StartStreamPage() {
     console.log(`Started at: ${event.currentTarget.currentTime}s`)
     sendStreamStartTime({ id, time: Math.floor(Date.now() / 1000) })
     setStreamState(LiveStatus.Started)
+    setVideoStarted(true)
   }
   const onStopStream = () => {
     if (!id) return
@@ -95,15 +97,26 @@ export default function StartStreamPage() {
                 {data.name}
               </Typography>
               <Typography>URL: {data.input}</Typography>
+              {videoStarted || streamState == LiveStatus.Stopped ? null : (
+                <Button
+                  variant="outlined"
+                  onClick={() =>
+                    video.current?.videoElement?.setAttribute(
+                      'src',
+                      data.stream,
+                    )
+                  }
+                >
+                  Refresh video
+                </Button>
+              )}
               {getStreamControl()}
               <StepBox
                 steps={data.recipe}
                 show={streamState == LiveStatus.Started}
                 getVideoTime={() => {
-                  console.warn(`video:`)
-                  console.log(video.current)
                   const time = video.current?.videoElement?.currentTime
-                  console.warn(`videotime:${time}`)
+                  console.log(`videotime:${time}`)
                   return time
                 }}
               />
