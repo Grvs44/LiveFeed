@@ -6,7 +6,7 @@ import Grid from '@mui/material/Grid2'
 import Typography from '@mui/material/Typography'
 import { useDispatch } from 'react-redux'
 import { useParams } from 'react-router-dom'
-import VideoPlayer from '../components/VideoPlayer'
+import VideoPlayer, { VideoPlayerElement } from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import StepBox from '../containers/StepBox'
@@ -30,7 +30,7 @@ export default function StartStreamPage() {
   const [streamState, setStreamState] = React.useState<LiveStatus | undefined>(
     undefined,
   )
-  const video = React.useRef<HTMLVideoElement | null>(null)
+  const video = React.useRef<VideoPlayerElement | null>(null)
 
   React.useEffect(() => {
     dispatch(setTitle(data?.name || 'Start stream'))
@@ -41,6 +41,7 @@ export default function StartStreamPage() {
   }, [isLoading])
 
   const onStartStream = () => {
+    console.log('Start stream button clicked')
     if (!id) return
     startStream(id)
     setStreamState(LiveStatus.Started)
@@ -62,7 +63,7 @@ export default function StartStreamPage() {
       case LiveStatus.Initial:
         return (
           <Button onClick={onStartStream} variant="contained">
-            Start
+            Start stream
           </Button>
         )
       case LiveStatus.Started:
@@ -98,7 +99,13 @@ export default function StartStreamPage() {
               <StepBox
                 steps={data.recipe}
                 show={streamState == LiveStatus.Started}
-                getVideoTime={() => video.current?.currentTime}
+                getVideoTime={() => {
+                  console.warn(`video:`)
+                  console.log(video.current)
+                  const time = video.current?.videoElement?.currentTime
+                  console.warn(`videotime:${time}`)
+                  return time
+                }}
               />
               <ShoppingListBox list={data.shopping} />
             </Grid>
@@ -107,8 +114,9 @@ export default function StartStreamPage() {
                 src={data.stream}
                 onLoadedData={onStreamStart}
                 ref={video}
+                autoPlay={true}
               />
-              <ChatBox sx={{ height: 400 }} />
+              <ChatBox sx={{ height: 200 }} />
             </Grid>
           </Grid>
         </PubSubClientProvider>
