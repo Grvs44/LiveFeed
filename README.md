@@ -29,6 +29,7 @@ npm start
 ## Sources
 ### Backend
 - Livestream management adapted from https://cloud.google.com/livestream/docs/quickstarts/quickstart-hls
+- FFmpeg binary retrieved from https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2025-01-08-13-36
 ### Frontend
 - Project template adapted from https://github.com/github/codespaces-react and https://github.com/Grvs44/budgetmanager
 - `index.tsx`: React Router future flags adapted from https://stackoverflow.com/a/79228826/18309216
