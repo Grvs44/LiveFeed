@@ -15,7 +15,6 @@ export default function StepBox(props: StepBoxProps) {
   const [step, setStep] = React.useState<number>(0)
 
   React.useEffect(() => {
-    console.warn('a')
     const time = props.getVideoTime()
     if (ready && changeStep && props.show && time != undefined)
       changeStep(1, time)
@@ -23,13 +22,11 @@ export default function StepBox(props: StepBoxProps) {
 
   const onChange = (change: number) => {
     const time = props.getVideoTime()
-    console.warn(`onChange time:${time}`)
+    console.log(`onChange time:${time}`)
     if (changeStep && time != undefined) {
-      console.warn('b')
       setStep((step) => {
         const newStep = step + change
-        changeStep(newStep, time)
-        return newStep
+        return changeStep(newStep, time) ? newStep : step
       })
     }
   }
