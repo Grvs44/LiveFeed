@@ -534,8 +534,16 @@ def delete_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
         
 
         recipe_container.delete_item(item=id,partition_key=user_id)
-        streaming.delete_vod(id)
-        streaming.delete_recipe_channel(id)
+        try:
+            streaming.delete_vod(id)
+        except Exception as e:
+            logging.error(f"Error while deleting vod: {e}")
+
+        try:
+            streaming.delete_recipe_channel(id)
+        except Exception as e:
+            logging.error(f"Error while deleting channel: {e}")
+            
         stream_container.delete_item(id, partition_key=id)
 
         signalROutput.set(json.dumps({
@@ -549,13 +557,13 @@ def delete_recipe(req: func.HttpRequest, signalROutput) -> func.HttpResponse:
     except Exception as e:
         logging.error(f'Error deleting recipe: {str(e)}')
 
-    signalROutput.set(json.dumps({
-        "userId": user_id,
-        "target": "eventNotification",
-        "arguments": [f"Error deleting recipe"]
-    }))
-   
-    return func.HttpResponse("Error deleting recipe", status_code=500)
+        signalROutput.set(json.dumps({
+            "userId": user_id,
+            "target": "eventNotification",
+            "arguments": [f"Error deleting recipe"]
+        }))
+    
+        return func.HttpResponse("Error deleting recipe", status_code=500)
 
 @app.route(route="recipe/display", auth_level=func.AuthLevel.ANONYMOUS, methods=[func.HttpMethod.GET])
 def display_recipe(req: func.HttpRequest) -> func.HttpResponse:
