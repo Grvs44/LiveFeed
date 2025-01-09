@@ -25,18 +25,6 @@ export default function WatchLivePage() {
     undefined,
   )
 
-  const onStepUpdate = ({ id, time }: StepUpdate) =>
-    setRecipe((recipe) =>
-      recipe?.map((step) => (step.id === id ? { time, ...step } : step)),
-    )
-
-  const onTimeUpdate: React.ReactEventHandler<HTMLVideoElement> = (event) => {
-    const step = data?.recipe.findLast(
-      ({ time }) => time && time <= event.currentTarget.currentTime,
-    )
-    if (step) setCurrentStep(step.id)
-  }
-
   React.useEffect(() => {
     dispatch(setTitle(data?.name || 'Live'))
     if (data) setCurrentStep(data.recipe[0].id)
@@ -52,7 +40,7 @@ export default function WatchLivePage() {
           groupName={data.group}
           minStepId={data.recipe[0]?.id}
           maxStepId={data.recipe.at(-1)?.id}
-          onStepUpdate={onStepUpdate}
+          onStepUpdate={({ id }) => setCurrentStep(id)}
         >
           <Grid container spacing={2}>
             <Grid size={8}>
@@ -68,11 +56,7 @@ export default function WatchLivePage() {
               >
                 By {data?.streamer}
               </Typography>
-              <VideoPlayer
-                autoPlay={true}
-                src={data?.stream}
-                onTimeUpdate={onTimeUpdate}
-              />
+              <VideoPlayer autoPlay={true} src={data?.stream} />
               <StreamEndMessage />
               <ChatBox sx={{ height: 200 }} />
             </Grid>
