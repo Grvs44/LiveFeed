@@ -73,14 +73,14 @@ export default function MenuDrawer(props: CustomMenuDrawerProps) {
               <ListItemText>Upcoming Recipe</ListItemText>
             </ListItemButtonLink>
           </ListItem>
-          <ListItem>
+          {/* <ListItem>
             <ListItemButtonLink to="saved" onClick={handleTabSwitch}>
               <ListItemIcon>
                 <BookmarksIcon />
               </ListItemIcon>
               <ListItemText>Saved</ListItemText>
             </ListItemButtonLink>
-          </ListItem>
+          </ListItem> */}
           <ListItem>
             <ListItemButtonLink to="recipes" onClick={handleTabSwitch}>
               <ListItemIcon>
