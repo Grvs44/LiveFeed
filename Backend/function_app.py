@@ -289,7 +289,7 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
 def get_streams_info(req: func.HttpRequest) -> func.HttpResponse:
     try:
         stream_query = """
-        SELECT c.id, c.stream_url, c.live_status
+        SELECT c.id, c.user_id, c.stream_url, c.live_status
         FROM Streams c
         """
         stream_items = list(stream_container.query_items(
@@ -319,7 +319,7 @@ def get_streams_info(req: func.HttpRequest) -> func.HttpResponse:
             recipe = recipe_map.get(rid, {})
             combined_list.append({
                 "id": rid,
-                "stream_url": s.get("stream_url", ""),
+                "streamer": get_display_name(s.get("user_id", "")),
                 "live_status": s.get("live_status", 3), # 0: Upcoming, 1: Live, 2: On-demand
                 "image": recipe.get("image", ""),
                 "title": recipe.get("title", ""),

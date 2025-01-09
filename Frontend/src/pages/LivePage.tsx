@@ -8,6 +8,7 @@ import {
   Chip,
   Box,
 } from '@mui/material';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { useGetStreamsInfoMutation } from '../redux/apiSlice';
 import { setTitle } from '../redux/titleSlice';
 import { Link as RouterLink } from 'react-router-dom';
@@ -31,6 +32,7 @@ export default function LivePage() {
       ?.filter((stream: any) => stream.live_status === 1)
       .map((stream: any) => ({
         id: stream.id,
+        streamer: stream.streamer,
         title: stream.title,
         thumbnail: stream.image,
         tags: stream.tags,
@@ -54,7 +56,7 @@ export default function LivePage() {
     <Box sx={{ padding: '20px' }}>
       {/* Page Title */}
       <Typography
-        variant="h4"
+        variant="h3"
         sx={{
           fontWeight: 'bold',
           textAlign: 'center',
@@ -72,7 +74,6 @@ export default function LivePage() {
           gap: '20px',
         }}
       >
-        {/* Render Cards */}
         {liveStreams.map((stream) => (
           <Card
             key={stream.id}
@@ -86,19 +87,7 @@ export default function LivePage() {
             }}
           >
             {/* Badge for "Live" */}
-            <Box
-              sx={{
-                position: 'absolute',
-                top: '10px',
-                left: '10px',
-                backgroundColor: 'red',
-                color: 'white',
-                padding: '5px 10px',
-                borderRadius: '5px',
-                fontSize: '0.8rem',
-                fontWeight: 'bold',
-              }}
-            >
+            <Box className="badgeLive">
               LIVE
             </Box>
 
@@ -117,11 +106,22 @@ export default function LivePage() {
               {/* Stream Title */}
               <Typography
                 variant="subtitle1"
-                sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px' }}
+                sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '5px' }}
               >
                 {stream.title}
               </Typography>
-
+              {/* Streamer */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '10px',
+                }}
+              >
+                <RestaurantMenuIcon sx={{ marginRight: '5px' }} />
+                <Typography variant="subtitle1">{stream.streamer}</Typography>
+              </Box>
               {/* Stream Tags */}
               <Box
                 sx={{
@@ -133,7 +133,7 @@ export default function LivePage() {
               >
                 {stream.tags &&
                   stream.tags.map((tag, index) => (
-                    <Chip key={index} label={tag} size="small" />
+                    <Chip key={index} label={tag}/>
                   ))}
               </Box>
             </CardContent>
