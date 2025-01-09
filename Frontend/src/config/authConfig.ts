@@ -5,7 +5,7 @@
  * Licensed under the MIT License.
  */
 
-import { LogLevel } from "@azure/msal-browser";
+import { Configuration, LogLevel } from "@azure/msal-browser";
 
 /**
  * Enter here the user flows and custom policies for your B2C application
@@ -35,7 +35,7 @@ export const b2cPolicies = {
  * For a full list of MSAL.js configuration parameters, visit:
  * https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/configuration.md 
  */
-export const msalConfig = {
+export const msalConfig: Configuration = {
     auth: {
         clientId: 'cd703894-d64e-4298-839f-e27789b331ac', // This is the ONLY mandatory field that you need to supply.
         authority: b2cPolicies.authorities.signUpSignIn.authority, // Choose SUSI as your default authority.

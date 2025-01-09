@@ -26,8 +26,8 @@ export default function WatchLivePage() {
 
   const onStepUpdate = ({ id, time }: StepUpdate) =>
     setRecipe((recipe) =>
-      recipe?.map((recipe) =>
-        recipe.id === id ? { time, ...recipe } : recipe,
+      recipe?.map((step) =>
+        step.id === id ? { time, ...step } : step,
       ),
     )
 
@@ -74,7 +74,7 @@ export default function WatchLivePage() {
                 src={data?.stream}
                 onTimeUpdate={onTimeUpdate}
               />
-              <ChatBox sx={{ height: 400 }} />
+              <ChatBox sx={{ height: 200 }} />
             </Grid>
             <Grid size={4}>
             <Box

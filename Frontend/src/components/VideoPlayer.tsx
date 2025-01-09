@@ -4,6 +4,12 @@ import 'shaka-player/dist/controls.css'
 
 export type VideoPlayerProps = React.VideoHTMLAttributes<HTMLVideoElement>
 
-export default function VideoPlayer(props: VideoPlayerProps) {
-  return <ShakaPlayer {...props} />
+export interface VideoPlayerElement {
+  videoElement: HTMLVideoElement
 }
+
+const VideoPlayer = React.forwardRef<VideoPlayerElement, VideoPlayerProps>(
+  (props, ref) => <ShakaPlayer {...props} ref={ref} />,
+)
+
+export default VideoPlayer
