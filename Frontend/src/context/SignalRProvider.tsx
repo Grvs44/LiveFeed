@@ -16,6 +16,7 @@ export type ProviderValue = {
 export type SignalRProviderProps = {
   children: React.ReactNode
   onNotification: (notification: string) => void
+  onStreamNotification: (message: string, recipeId: string) => void
 }
 
 export const SignalRContext = React.createContext<ProviderValue>({
@@ -82,7 +83,7 @@ export default function SignalRProvider(props: SignalRProviderProps) {
           'streamNotification',
           (notification: StreamNotification) => {
             if (notificationsEnabled) {
-              props.onNotification(notification.message)
+              props.onStreamNotification(notification.message, notification.recipeId)
               console.log('Stream notification received:', notification.message)
             }
           },
