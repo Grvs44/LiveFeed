@@ -20,6 +20,7 @@ export type ProviderValue = {
   sendMessage?: (message: string) => Promise<void>
   currentStep?: number
   changeStep?: (step: number, time: number) => boolean
+  endReceived: boolean
 }
 
 export type PubSubClientProviderProps = {
@@ -35,6 +36,7 @@ export const PubSubClientContext = React.createContext<ProviderValue>({
   canSend: true, // initialise to true so "signed out" message isn't displayed while loading
   chats: [],
   sending: false,
+  endReceived: false,
 })
 
 // WebPubSubClient code adapted from https://learn.microsoft.com/en-us/javascript/api/overview/azure/web-pubsub-client-readme?view=azure-node-latest
@@ -51,6 +53,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
   const [currentStep, setCurrentStep] = React.useState<number | undefined>(
     undefined,
   )
+  const [endReceived, setEndReceived] = React.useState<boolean>(false)
 
   React.useEffect(() => {
     const headers: HeadersInit = {}
@@ -103,6 +106,9 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
           } else {
             console.warn('Unhandled step update')
           }
+        } else if (messageData.type == MessageType.End) {
+          console.log('End message received')
+          setEndReceived(true)
         } else {
           console.error('Unkown message type: ' + messageData.type)
         }
@@ -166,6 +172,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     sendMessage,
     currentStep,
     changeStep,
+    endReceived,
   }
 
   return (
