@@ -26,8 +26,8 @@ export default function WatchLivePage() {
 
   const onStepUpdate = ({ id, time }: StepUpdate) =>
     setRecipe((recipe) =>
-      recipe?.map((recipe) =>
-        recipe.id === id ? { time, ...recipe } : recipe,
+      recipe?.map((step) =>
+        step.id === id ? { time, ...step } : step,
       ),
     )
 
