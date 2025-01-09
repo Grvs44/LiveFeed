@@ -34,6 +34,7 @@ export const apiSlice = createApi({
     getLiveStream: builder.query<LiveStream, string>({
       query: (id) => `stream/${id}`,
       providesTags: (_result, _error, id) => [{ type: TagTypes.Live, id }],
+      keepUnusedDataFor: 0,
     }),
     getOndemandStream: builder.query<OndemandStream, string>({
       query: (id) => `vod/${id}`,
