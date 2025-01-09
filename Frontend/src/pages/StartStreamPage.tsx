@@ -30,10 +30,11 @@ export default function StartStreamPage() {
   const [streamState, setStreamState] = React.useState<LiveStatus | undefined>(
     undefined,
   )
+  const video = React.useRef<HTMLVideoElement | null>(null)
 
   React.useEffect(() => {
-    dispatch(setTitle('Start stream'))
-  }, [])
+    dispatch(setTitle(data?.name || 'Start stream'))
+  }, [isLoading])
 
   React.useEffect(() => {
     if (data) setStreamState(data.liveStatus)
@@ -97,11 +98,16 @@ export default function StartStreamPage() {
               <StepBox
                 steps={data.recipe}
                 show={streamState == LiveStatus.Started}
+                getVideoTime={() => video.current?.currentTime}
               />
               <ShoppingListBox list={data.shopping} />
             </Grid>
             <Grid size={8}>
-              <VideoPlayer src={data.stream} onLoadedData={onStreamStart} />
+              <VideoPlayer
+                src={data.stream}
+                onLoadedData={onStreamStart}
+                ref={video}
+              />
               <ChatBox sx={{ height: 400 }} />
             </Grid>
           </Grid>

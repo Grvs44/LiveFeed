@@ -19,7 +19,7 @@ export type ProviderValue = {
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
   currentStep?: number
-  changeStep?: (step: number) => Promise<void>
+  changeStep?: (step: number, time: number) => Promise<void>
 }
 
 export type PubSubClientProviderProps = {
@@ -138,8 +138,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     setSending(false)
   }
 
-  const changeStep: ProviderValue['changeStep'] = async (step) => {
-    // TODO: @Grvs44 maybe move this to middleware?
+  const changeStep: ProviderValue['changeStep'] = async (step, time) => {
     if (
       props.minStepId &&
       props.maxStepId &&
@@ -150,7 +149,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
       changeRecipeStep({
         recipeId: props.groupName,
         stepId: step,
-        time: getSeconds(),
+        time,
       })
     } else {
       console.log(`Step ${step} out of range`)
@@ -173,5 +172,3 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     </PubSubClientContext.Provider>
   )
 }
-
-const getSeconds = () => Math.floor(Date.now() / 1000)
