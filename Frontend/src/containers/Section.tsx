@@ -5,12 +5,13 @@ import {
   CardMedia,
   CardContent,
   IconButton,
-  Chip
+  Chip,
+  Box
 } from '@mui/material';
-import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import { ArrowBack, ArrowForward, RestaurantMenu } from '@mui/icons-material';
 import { Item, SectionProps } from '../redux/types';
-import '../assets/HomePage.css';
 import { Link as RouterLink } from 'react-router-dom';
+import '../assets/HomePage.css';
 
 export default function Section({ title, items }: SectionProps) {
   const [startIndex, setStartIndex] = useState(0); // Index of the first visible item
@@ -71,14 +72,7 @@ export default function Section({ title, items }: SectionProps) {
           </IconButton>
 
           {/* Items */}
-          <div className="itemsGrid"
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)', // 3 cards per row
-            gap: '1rem', // Space between cards
-            width: '100%',
-          }}
-          >
+          <div className="itemsGrid">
             {visibleItems.map((item) => (
               <Card
                 key={item.id}
@@ -105,7 +99,7 @@ export default function Section({ title, items }: SectionProps) {
                     )}
                   </div>
 
-                  {/* The actual image */}
+                  {/* Thumbnail */}
                   <CardMedia
                     component="img"
                     image={item.thumbnail}
@@ -115,22 +109,31 @@ export default function Section({ title, items }: SectionProps) {
                 </div>
 
                 <CardContent style={{ padding: '5px' }}>
-                  {/* Display Title */}
+                  {/* Stream Title */}
                   <Typography
                     variant="subtitle1"
-                    style={{ textAlign: 'center', marginBottom: '5px' }}
+                    style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '0px' }}
                   >
                     {item.title}
                   </Typography>
-
-                  {/* Display Tags */}
+                  <Box
+                    sx={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '5px',
+                    }}
+                  >
+                    <RestaurantMenu sx={{ marginRight: '5px' }} />
+                    <Typography variant="subtitle1">{item.streamer}</Typography>
+                  </Box>
+                  {/* Stream Tags */}
                   <div className="tagsContainer">
                     {item.tags &&
                       item.tags.map((tag, index) => (
                         <Chip
                           key={index}
                           label={tag}
-                          className="tagChip"
                         />
                       ))}
                   </div>
