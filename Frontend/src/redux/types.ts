@@ -78,7 +78,8 @@ export type RecipeStepChange = {
 export type State = ReturnType<typeof store.getState>
 
 export type Item = {
-  id: number 
+  id: string
+  streamer: string 
   title: string
   thumbnail: string
   liveState: number

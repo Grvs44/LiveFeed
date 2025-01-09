@@ -8,17 +8,16 @@ import {
   Chip,
   Box,
 } from '@mui/material';
+import RestaurantMenuIcon from '@mui/icons-material/RestaurantMenu';
 import { useGetStreamsInfoMutation } from '../redux/apiSlice';
 import { setTitle } from '../redux/titleSlice';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink, useParams } from 'react-router-dom';
 import { Item } from '../redux/types';
-import '../assets/HomePage.css';
 
 export default function OndemandPage() {
   const dispatch = useDispatch();
   const [fetchStreamsInfo, { data: streamsData, isLoading, isError }] =
     useGetStreamsInfoMutation();
-
   // Set the title and fetch on-demand streams
   useEffect(() => {
     dispatch(setTitle('On-Demand Streams'));
@@ -31,6 +30,7 @@ export default function OndemandPage() {
       ?.filter((stream: any) => stream.live_status === 2) // 2 indicates on-demand
       .map((stream: any) => ({
         id: stream.id,
+        streamer: stream.streamer,
         title: stream.title,
         thumbnail: stream.image,
         tags: stream.tags,
@@ -39,7 +39,7 @@ export default function OndemandPage() {
 
   // Handle loading and error states
   if (isLoading) {
-    return <Typography>Loading on-demand streams...</Typography>;
+    return <Typography>Loading on demand streams...</Typography>;
   }
 
   if (isError) {
@@ -54,14 +54,14 @@ export default function OndemandPage() {
     <Box sx={{ padding: '20px' }}>
       {/* Page Title */}
       <Typography
-        variant="h4"
+        variant="h3"
         sx={{
           fontWeight: 'bold',
           textAlign: 'center',
           marginBottom: '20px',
         }}
       >
-        On-Demand Streams
+        On Demand Streams
       </Typography>
 
       {/* Grid Container */}
@@ -72,7 +72,6 @@ export default function OndemandPage() {
           gap: '20px',
         }}
       >
-        {/* Render Cards */}
         {onDemandStreams.map((stream) => (
           <Card
             key={stream.id}
@@ -99,11 +98,22 @@ export default function OndemandPage() {
               {/* Stream Title */}
               <Typography
                 variant="subtitle1"
-                sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '10px' }}
+                sx={{ textAlign: 'center', fontWeight: 'bold', marginBottom: '5px' }}
               >
                 {stream.title}
               </Typography>
-
+              {/* Streamer */}
+              <Box
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: '10px',
+                }}
+              >
+                <RestaurantMenuIcon sx={{ marginRight: '5px' }} />
+                <Typography variant="subtitle1">{stream.streamer}</Typography>
+              </Box>
               {/* Stream Tags */}
               <Box
                 sx={{
@@ -115,7 +125,7 @@ export default function OndemandPage() {
               >
                 {stream.tags &&
                   stream.tags.map((tag, index) => (
-                    <Chip key={index} label={tag} size="small" />
+                    <Chip key={index} label={tag}/>
                   ))}
               </Box>
             </CardContent>
