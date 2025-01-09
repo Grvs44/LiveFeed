@@ -74,7 +74,7 @@ export default function WatchLivePage() {
                 src={data?.stream}
                 onTimeUpdate={onTimeUpdate}
               />
-              <ChatBox sx={{ height: 400 }} />
+              <ChatBox sx={{ height: 200 }} />
             </Grid>
             <Grid size={4}>
             <Box
