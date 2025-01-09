@@ -35,9 +35,6 @@ export default function StartStreamPage() {
 
   React.useEffect(() => {
     dispatch(setTitle(data?.name || 'Start stream'))
-  }, [isLoading])
-
-  React.useEffect(() => {
     if (data) setStreamState(data.liveStatus)
   }, [isLoading])
 
@@ -100,12 +97,7 @@ export default function StartStreamPage() {
               {videoStarted || streamState == LiveStatus.Stopped ? null : (
                 <Button
                   variant="outlined"
-                  onClick={() =>
-                    video.current?.videoElement?.setAttribute(
-                      'src',
-                      data.stream,
-                    )
-                  }
+                  onClick={() => window.location.reload()}
                 >
                   Refresh video
                 </Button>
