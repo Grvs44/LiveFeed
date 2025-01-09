@@ -56,15 +56,15 @@
   /* Grid container for displaying the cards */
   .itemsGrid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 25px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: '1rem';
     flex-grow: 1;
   }
   
   /* The Card item styles */
   .cardItem {
     width: 330px;
-    height: 270px;
+    height: 310px;
     text-decoration: none;
     position: relative;
     overflow: hidden;
@@ -86,7 +86,7 @@
   /* Wrapper for the CardMedia area */
   .cardMediaContainer {
     position: relative;
-    height: 190px;
+    height: 200px;
     overflow: hidden;
   }
   
@@ -133,15 +133,6 @@
     flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 100px;
-  }
-  
-  /* Individual Chip styling */
-  .tagChip {
-    font-size: 12px;
-    border-radius: 20px;
-    background-color: #F0F0F0;
-    color: #333;
-    font-weight: bold;
   }
 
 .homePageContainer {
