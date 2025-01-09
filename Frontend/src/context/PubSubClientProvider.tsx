@@ -19,7 +19,7 @@ export type ProviderValue = {
   sending: boolean
   sendMessage?: (message: string) => Promise<void>
   currentStep?: number
-  changeStep?: (step: number, time: number) => Promise<void>
+  changeStep?: (step: number, time: number) => boolean
 }
 
 export type PubSubClientProviderProps = {
@@ -138,7 +138,7 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
     setSending(false)
   }
 
-  const changeStep: ProviderValue['changeStep'] = async (step, time) => {
+  const changeStep: ProviderValue['changeStep'] = (step, time) => {
     if (
       props.minStepId &&
       props.maxStepId &&
@@ -151,8 +151,10 @@ export default function PubSubClientProvider(props: PubSubClientProviderProps) {
         stepId: step,
         time,
       })
+      return true
     } else {
       console.log(`Step ${step} out of range`)
+      return false
     }
   }
 
