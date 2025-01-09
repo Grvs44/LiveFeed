@@ -9,9 +9,9 @@ import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import { Box, Chip, IconButton } from '@mui/material'
 import TAGS from '../config/Tags'
-import {
-  useGetStreamsInfoMutation,
-  useGetPreferencesQuery,
+import { 
+  useGetStreamsInfoMutation, 
+  useGetPreferencesQuery, 
 } from '../redux/apiSlice'
 import { setTags } from '../redux/tagsSlice'
 import { State } from '../redux/types'
@@ -31,7 +31,6 @@ export default function HomePage() {
   }>()
 
   const [fetchStreamsInfo, { data: streamsData }] = useGetStreamsInfoMutation()
-
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   // Fetch data on component mount
@@ -96,6 +95,7 @@ export default function HomePage() {
       ?.filter((stream: any) => stream.live_status === 1)
       .map((stream: any) => ({
         id: stream.id,
+        streamer: stream.streamer,
         title: stream.title,
         thumbnail: stream.image,
         tags: stream.tags,
@@ -108,6 +108,7 @@ export default function HomePage() {
       ?.filter((stream: any) => stream.live_status === 2)
       .map((stream: any) => ({
         id: stream.id,
+        streamer: stream.streamer,
         title: stream.title,
         thumbnail: stream.image,
         tags: stream.tags,
@@ -120,6 +121,7 @@ export default function HomePage() {
       ?.filter((stream: any) => stream.live_status === 0)
       .map((stream: any) => ({
         id: stream.id,
+        streamer: stream.streamer,
         title: stream.title,
         thumbnail: stream.image,
         tags: stream.tags,
