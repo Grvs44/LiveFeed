@@ -278,8 +278,7 @@ def next_step(req: func.HttpRequest) -> func.HttpResponse:
     stream_data['step_timings'][step_id] = time
     stream_container.upsert_item(stream_data)
 
-    live_time = math.floor(datetime.now().timestamp())
-    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": live_time}}
+    step_data = {"type": messages.STEP, "content": {"id": step_id, "time": time}}
 
     CHAT_PUBSUB_SERVICE.send_to_group(group=recipe_id, message=step_data, content_type="application/json")
 

@@ -6,6 +6,7 @@ import RecipeBox, { RecipeBoxProps } from './RecipeBox'
 export type StepBoxProps = {
   show?: boolean
   steps: RecipeBoxProps['steps']
+  getVideoTime: () => number | undefined
 }
 
 export default function StepBox(props: StepBoxProps) {
@@ -14,15 +15,18 @@ export default function StepBox(props: StepBoxProps) {
   const [step, setStep] = React.useState<number>(0)
 
   React.useEffect(() => {
-    if (ready && changeStep) changeStep(1)
-  }, [ready])
+    const time = props.getVideoTime()
+    if (ready && changeStep && props.show && time != undefined)
+      changeStep(1, time)
+  }, [ready, props.show])
 
   const onChange = (change: number) => {
-    if (changeStep) {
+    const time = props.getVideoTime()
+    console.log(`onChange time:${time}`)
+    if (changeStep && time != undefined) {
       setStep((step) => {
         const newStep = step + change
-        changeStep(newStep)
-        return newStep
+        return changeStep(newStep, time) ? newStep : step
       })
     }
   }
