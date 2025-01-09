@@ -10,6 +10,7 @@ import VideoPlayer, { VideoPlayerElement } from '../components/VideoPlayer'
 import ChatBox from '../containers/ChatBox'
 import ShoppingListBox from '../containers/ShoppingListBox'
 import StepBox from '../containers/StepBox'
+import StreamEndMessage from '../containers/StreamEndMessage'
 import PubSubClientProvider from '../context/PubSubClientProvider'
 import {
   useEndStreamMutation,
@@ -121,6 +122,7 @@ export default function StartStreamPage() {
                 ref={video}
                 autoPlay={true}
               />
+              <StreamEndMessage />
               <ChatBox sx={{ height: 200 }} />
             </Grid>
           </Grid>
