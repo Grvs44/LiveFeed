@@ -1,4 +1,4 @@
-# COMP3207 Coursework 2
+# LiveFeed
 ## Running the Application Locally
 ### Backend
 1. Enter the `Backend` directory:
